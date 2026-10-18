@@ -55,4 +55,4 @@ node tools/sample-questions.js maths-l2 1      # one example of every question, 
 ## Publishing
 
 GitHub repo settings → **Pages** → Source: **Deploy from a branch** → Branch: `main`, folder `/ (root)`.
-The site then appears at `https://gorillabananas.github.io/ncea-prep/`.
+The site then appears at `https://gorillabananas.github.io/NCEA-prep/`.
