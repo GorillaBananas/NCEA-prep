@@ -36,6 +36,9 @@
 .unit-row.is-started .us { color: var(--ink); }
 .unit-row .margin-mark { top: 50%; transform: translateY(-50%) rotate(-4deg); }
 
+.practise { color: var(--sc, var(--ink)); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
+.mixed { display: flex; gap: 20px; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: 22px 26px; }
+.mixed h3 { margin-bottom: 4px; }
 .foot { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--line); max-width: 70ch; }
 
 /* unit page */
@@ -71,6 +74,7 @@
 .bline .note { font-size: clamp(1.3rem, 2vw, 1.75rem); transform: rotate(-2deg); white-space: nowrap; }
 .bline.hlrow .m .katex-display > .katex { background: linear-gradient(transparent 10%, var(--hl) 10%, var(--hl) 90%, transparent 90%); padding: 0 .3em; border-radius: 3px; }
 .bline.wrong .m { position: relative; color: var(--muted); }
+.bline .bq { font-size: clamp(1.05rem, 1.9vw, 1.4rem); font-family: var(--f-body); }
 .bline.wrong .m::after { content: ""; position: absolute; left: -4px; right: -4px; top: 52%; height: 3px; background: var(--pen); border-radius: 2px; transform: scaleX(0) rotate(-2deg); transform-origin: left; transition: transform .5s ease .7s; }
 .bline.wrong.on .m::after { transform: scaleX(1) rotate(-2deg); }
 .card { padding: 30px 30px 26px; display: flex; flex-direction: column; gap: 14px; justify-content: center; font-size: 1.06rem; }

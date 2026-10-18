@@ -154,6 +154,8 @@
     const ro = new ResizeObserver(() => { size(); render(); }); ro.observe(canvas);
     const mq = window.matchMedia('(prefers-color-scheme: dark)'); mq.addEventListener && mq.addEventListener('change', () => { C = colors(el); render(); });
     size(); load(0); requestAnimationFrame((n) => { last = n; frame(n); });
+    // canvas text needs the web fonts loaded first, or it silently falls back
+    if (document.fonts && document.fonts.load) Promise.all(['700 20px Pen', '800 20px Schibsted', '700 20px Atkinson', '500 20px Atkinson'].map((f) => document.fonts.load(f))).then(() => render()).catch(() => {});
     if (opts.autoplay && !reduce()) st.play();
     return st;
   };

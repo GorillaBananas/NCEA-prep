@@ -1,7 +1,7 @@
 /* AS 91262 (Maths 2.7) Apply calculus methods in solving problems */
 (function () {
   const P = NP, R = P.R, T = String.raw;
-  const m = (tex) => '$' + String(tex).replace(/</g, '\\lt ') + '$';
+  const m = (tex) => '$' + String(tex).replace(/</g, '\\lt ').replace(/([a-z])\^\{1\}/g, '$1') + '$'; // x^{1} reads as x
   const B = (at, tex, note, o = {}) => Object.assign({ at, tex: tex == null ? tex : tex.replace(/</g, '\\lt '), note }, o);
   const C = (at, html) => ({ at, html });
   const nf = P.nf, poly = P.poly, sc = P.sc, ev = P.evalPoly, d = P.dPoly, I = P.iPoly;
@@ -29,7 +29,7 @@
       { dur: 11, card: [C(0, '<h2>The derivative is a formula for the gradient.</h2>'), C(2.5, `<p class="eq">${m(T`y = x^2 \;\Rightarrow\; \dfrac{dy}{dx} = 2x`)}</p>`), C(6, `<p>At ${m('x = 1.5')} the gradient is ${m(T`2 \times 1.5 = 3`)}. The purple line is the gradient function.</p>`)],
         draw(a) { const v = a.view(-3, 3, -6, 8); a.axes(v); a.plot(v, (x) => x * x, a.C.c1); a.plot(v, (x) => 2 * x, a.C.c4, 3, a.seg(a.p, 0.15, 0.5));
           const al = a.seg(a.p, 0.55, 0.7); a.tangent(v, (x) => x * x, (x) => 2 * x, 1.5, 1, a.C.c2, al); a.dot(v, 1.5, 3, a.C.c4, 7, al);
-          a.alpha(al, () => a.line(v.X(1.5), v.Y(2.25), v.X(1.5), v.Y(3), a.C.muted, 1.5, [4, 4])); a.text('dy/dx = 2x', v.X(-2.8), v.Y(-5), { col: a.C.c4, alpha: a.seg(a.p, 0.3, 0.5) }); a.text('at x = 1.5, gradient 3', v.X(1.7), v.Y(3.4), { font: 'pen', col: a.C.pen, alpha: al }); } },
+          a.alpha(al, () => a.line(v.X(1.5), v.Y(2.25), v.X(1.5), v.Y(3), a.C.muted, 1.5, [4, 4])); a.text('dy/dx = 2x', v.X(-2.8), v.Y(-5), { col: a.C.c4, alpha: a.seg(a.p, 0.3, 0.5) }); a.text('at x = 1.5, gradient = 3', v.X(-2.8), v.Y(7.2), { font: 'pen', col: a.C.pen, alpha: al, bg: a.C.sheet }); } },
       { dur: 12, card: [C(0, '<h2>The power rule.</h2>'), C(2.5, '<p>Multiply by the power, then take one off the power.</p>'), C(8, '<p>Each term separately. Lone numbers vanish because a flat line has gradient zero.</p>')],
         board: [B(0.5, 'y = 3x^4', '', { big: true }), B(3, T`\dfrac{dy}{dx} = 4 \times 3x^{3} = 12x^3`, 'times power, power − 1', { hl: true }), B(6.5, T`5x \;\to\; 5`, 'x disappears'), B(8.5, T`7 \;\to\; 0`, 'constants vanish')] },
       { dur: 11, card: [C(0, '<h2>Fractions work exactly the same.</h2>'), C(3, '<p>The examiners noted students losing marks when a fraction was involved. Slow down on these.</p>')],
@@ -97,7 +97,7 @@
       { dur: 11, card: [C(0, '<h2>A tangent touches the curve and matches its gradient.</h2>'), C(4, `<p>You need two things for its equation: the gradient ${m('m')} and a point ${m('(x_1, y_1)')}.</p>`)],
         draw(a) { const v = a.view(-1, 6, -3, 8); a.axes(v); const f = (x) => x * x - 4 * x + 5; a.plot(v, f, a.C.c1);
           const al = a.seg(a.p, 0.25, 0.45); a.alpha(al, () => a.line(v.X(1), v.Y(-2), v.X(5.5), v.Y(7), a.C.c2, 3)); a.dot(v, 3, 2, a.C.pen, 7, al);
-          a.text('(3, 2)', v.X(3) + 12, v.Y(2) + 18, { font: 'pen', col: a.C.pen, alpha: al }); a.text('tangent: y = 2x − 4', v.X(5.4), v.Y(7.4), { align: 'right', col: a.C.c2, alpha: a.seg(a.p, 0.55, 0.7) }); a.text('y = x² − 4x + 5', v.X(-0.8), v.Y(7.4), { col: a.C.c1 }); } },
+          a.text('(3, 2)', v.X(3) + 12, v.Y(2) + 18, { font: 'pen', col: a.C.pen, alpha: al }); a.text('tangent: y = 2x − 4', v.X(5.8), v.Y(-2.2), { align: 'right', col: a.C.c2, alpha: a.seg(a.p, 0.55, 0.7), bg: a.C.sheet }); a.text('y = x² − 4x + 5', v.X(1.2), v.Y(7.4), { col: a.C.c1, bg: a.C.sheet }); } },
       { dur: 14, card: [C(0, '<h2>The tangent recipe.</h2>'), C(3, '<p>Gradient from the derivative. Point from the original function. Then the straight-line formula.</p>')],
         board: [B(0.5, "f(x) = x^2 - 4x + 5"), B(2, "f'(x) = 2x - 4"), B(4, "m = f'(3) = 2", 'gradient: use f′'), B(6, 'y_1 = f(3) = 2', 'point: use f'), B(8.5, 'y - 2 = 2(x - 3)'), B(10.5, 'y = 2x - 4', '', { hl: true })] },
       { dur: 12, card: [C(0, '<h2>Backwards: where is the gradient 6?</h2>'), C(3, '<p>Set the derivative equal to 6 and solve. A common slip in 2025: putting the gradient into f(x) instead.</p>')],
@@ -237,7 +237,7 @@
       { dur: 11, card: [C(0, '<h2>Shapes drop one level.</h2>'), C(3, '<p>A parabola\'s gradient graph is a straight line. A cubic\'s is a parabola.</p>'), C(7, '<p>The examiners asked for one smooth curve, correct x-intercepts and a symmetrical shape.</p>')],
         draw(a) { const v = a.view(-3, 5, -6, 8); a.axes(v); const f = (x) => (x - 1) ** 2 - 4, df = (x) => 2 * (x - 1); a.plot(v, f, a.C.c1); a.plot(v, df, a.C.c4, 3.5, a.seg(a.p, 0.25, 0.6));
           const al = a.seg(a.p, 0.6, 0.75); a.alpha(al, () => a.line(v.X(1), v.Y(-4), v.X(1), v.Y(0), a.C.pen, 2, [6, 6])); a.dot(v, 1, 0, a.C.pen, 7, al);
-          a.text('f(x) parabola', v.X(-2.8), v.Y(7), { col: a.C.c1 }); a.text('f′(x) straight line', v.X(4.8), v.Y(7), { col: a.C.c4, align: 'right', alpha: a.seg(a.p, 0.4, 0.6) }); } },
+          a.text('f(x) parabola', v.X(-2.8), v.Y(7), { col: a.C.c1, bg: a.C.sheet }); a.text('f′(x) straight line', v.X(4.8), v.Y(-5), { col: a.C.c4, align: 'right', alpha: a.seg(a.p, 0.4, 0.6), bg: a.C.sheet }); } },
     ],
     example: {
       problem: 'The graph of ' + m('f(x)') + ' has a maximum at ' + m('x = -1') + ' and a minimum at ' + m('x = 3') + '. Describe the graph of ' + m("f'(x)") + '.' + P.svg.graph([{ f: (x) => (x ** 3 / 3 - x * x - 3 * x) / 2, col: 'var(--c1)' }], { x0: -3, x1: 5, y0: -6, y1: 4, step: 1, lstep: 1, ystep: 1, lystep: 2, w: 420, h: 240, alt: 'Cubic with a maximum at x = −1 and a minimum at x = 3' }),
@@ -296,7 +296,7 @@
     scenes: [
       { dur: 13, card: [C(0, '<h2>The best value sits at a turning point.</h2>'), C(3, '<p>40 m of fence makes three sides of a paddock against a wall. Width x, length 40 − 2x.</p>'), C(8.5, '<p>The area is greatest where its graph is flat.</p>')],
         draw(a) { const v = a.view(0, 20, 0, 240, a.fs * 3); a.axes(v, { step: 2, ystep: 40, lstep: 4, lystep: 40 }); const A = (x) => x * (40 - 2 * x); a.plot(v, A, a.C.c1);
-          const x = 2 + 16 * a.seg(a.p, 0.05, 0.6) - 6 * a.seg(a.p, 0.6, 0.75); a.dot(v, x, A(x), a.C.c2, 7);
+          const x = 2 + 16 * a.seg(a.p, 0.05, 0.55) - 8 * a.seg(a.p, 0.58, 0.75); a.dot(v, x, A(x), a.C.c2, 7);
           a.text(`x = ${P.n(x, 1)} m, area = ${P.n(A(x), 0)} m²`, 20, 30, { bg: a.C.sheet, col: a.C.c2, size: 1.1 });
           const al = a.seg(a.p, 0.78, 0.9); a.alpha(al, () => a.line(v.X(7), v.Y(200), v.X(13), v.Y(200), a.C.pen, 3)); a.text('max: gradient 0', v.X(10), v.Y(200) - 24, { align: 'center', font: 'pen', col: a.C.pen, alpha: al }); } },
       { dur: 14, card: [C(0, '<h2>Differentiate, set to zero, solve.</h2>'), C(10, '<p>Prove it is a max. Then answer the question that was asked, with units.</p>')],
@@ -324,7 +324,7 @@
     gens: [
       () => { const L = 4 * R.int(5, 30), x = L / 4, A = (L * L) / 8;
         return { kind: 'num', answer: A, prompt: `${L} m of fencing forms three sides of a rectangle against a wall. Find the maximum area enclosed, in m².`, wrong: [{ v: x, msg: 'That is the best width. Now find the area.' }, { v: (L / 4) ** 2, msg: 'Only three sides are fenced: A = x(' + L + ' − 2x).' }], sol: [m(`A = x(${L} - 2x)`), m(`A' = ${L} - 4x = 0 \\Rightarrow x = ${x}`), m(`A = ${x} \\times ${L - 2 * x} = ${A}`) + ' m²'] }; },
-      () => { const a = R.pick([2, 5, 10, 0.5]), x = R.int(4, 30), b = 2 * a * x, c = R.int(5, 40) * 10, Pmax = -a * x * x + b * x - c;
+      () => { const a = R.pick([2, 5, 10, 0.5]), x = R.int(6, 30), b = 2 * a * x, c = 10 * R.int(1, Math.max(1, Math.floor((a * x * x * 0.7) / 10))), Pmax = -a * x * x + b * x - c;
         return { kind: 'num', answer: Pmax, prompt: `A business makes ${m('P = ' + poly([[-a, 2], [b, 1], [-c, 0]]))} dollars profit when it sells ${m('x')} items. Find the maximum profit in dollars.`, wrong: [{ v: x, msg: 'That is how many items give the maximum. The question asks for the profit.' }], sol: [m(`P' = ${poly([[-2 * a, 1], [b, 0]])} = 0 \\Rightarrow x = ${x}`), m(`P'' = ${-2 * a} < 0`) + ', a maximum', m(`P(${x}) = ${nf(Pmax)}`)] }; },
       () => { const s = 6 * R.int(2, 7), x = s / 6, V = x * (s - 2 * x) ** 2;
         return { kind: 'num', answer: x, prompt: `Squares of side ${m('x')} cm are cut from the corners of a ${s} cm square card to make an open box with ${m(`V = x(${s} - 2x)^2`)}. Find the value of ${m('x')} that gives the largest volume.`,
@@ -352,7 +352,7 @@
         board: [B(0.5, "f'(x) = 6x^2", '', { big: true }), B(3, T`f(x) = \dfrac{6x^3}{3} + c`, 'power + 1, ÷ new power'), B(6, 'f(x) = 2x^3 + c', '', { hl: true }), B(8.5, T`\text{check: } \tfrac{d}{dx}(2x^3) = 6x^2 \checkmark`)] },
       { dur: 11, card: [C(0, '<h2>Why + c?</h2>'), C(3, `<p>Every one of these curves has gradient ${m('2x')}. Anti-differentiating cannot tell which one you started with.</p>`), C(8, '<p>The 2025 examiners listed leaving out + c as a Not Achieved slip.</p>')],
         draw(a) { const v = a.view(-3, 3, -4, 9); a.axes(v); [-3, -1, 1, 3, 5].forEach((c, k) => a.plot(v, (x) => x * x + c, [a.C.c1, a.C.c3, a.C.c4, a.C.c2, a.C.c1][k], 3, a.seg(a.p, 0.05 + k * 0.1, 0.2 + k * 0.1)));
-          a.text('y = x² + c', v.X(2.9), v.Y(8.5), { align: 'right', font: 'pen', col: a.C.pen }); } },
+          a.text('y = x² + c', v.X(2.9), v.Y(-3.3), { align: 'right', font: 'pen', col: a.C.pen, bg: a.C.sheet }); } },
       { dur: 12, card: [C(0, '<h2>Finding c: use a point.</h2>'), C(3, '<p>"The curve passes through (2, 5)." Substitute it in and solve.</p>')],
         board: [B(0.5, "f'(x) = 4x - 3"), B(2.5, 'f(x) = 2x^2 - 3x + c'), B(5, '5 = 2(2)^2 - 3(2) + c', 'sub (2, 5)'), B(7.5, 'c = 3'), B(9.5, 'f(x) = 2x^2 - 3x + 3', '', { hl: true })] },
       { dur: 9, card: [C(0, '<h2>Two classic slips.</h2>'), C(5, '<p>Long expressions: tick off each term as you go. Missing a term was another 2025 slip.</p>')],

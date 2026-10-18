@@ -1,7 +1,7 @@
 /* AS 91261 (Maths 2.6) Apply algebraic methods in solving problems */
 (function () {
   const P = NP, R = P.R, T = String.raw;
-  const m = (tex) => '$' + String(tex).replace(/</g, '\\lt ') + '$';
+  const m = (tex) => '$' + String(tex).replace(/</g, '\\lt ').replace(/([a-z])\^\{1\}/g, '$1') + '$'; // x^{1} reads as x
   const B = (at, tex, note, o = {}) => Object.assign({ at, tex: tex == null ? tex : tex.replace(/</g, '\\lt '), note }, o);
   const C = (at, html) => ({ at, html });
   const nf = P.nf, poly = P.poly, sc = P.sc;
@@ -37,13 +37,13 @@
       const top = k ** n, divs = [2, 3, 4, 6, 8, 9, 12, 16].filter((d) => top % d === 0 && top / d > 1);
       const mm = R.pick(divs), b = R.int(1, a * n - 1), c = top / mm, p = a * n - b;
       return {
-        kind: 'multi', ordered: true, answer: [c, p], answerTex: `${c}x^{${p}}`,
+        kind: 'multi', ordered: true, answer: [c, p], answerTex: p === 1 ? `${c}x` : `${c}x^{${p}}`,
         prompt: `Simplify ${m(T`\dfrac{(${k}x^{${a}})^{${n}}}{${mm}${b === 1 ? 'x' : `x^{${b}}`}}`)}. Your answer looks like ${m('cx^p')}.`,
         fmt: 'Enter the number in front, then the power. For example: 3, 4',
         scaffold: [m(T`(${k}x^{${a}})^{${n}} = ${top}x^{${a * n}}`) + ' (power of a power: multiply)', m(T`\dfrac{${top}x^{${a * n}}}{${mm}${b === 1 ? 'x' : `x^{${b}}`}}`)],
         hint: 'Divide the numbers. For the powers, subtract the bottom one from the top one.',
         wrong: [{ v: [c, a + n - b], msg: 'For a power of a power, multiply the indices: ' + m(`(x^${a})^${n} = x^{${a * n}}`) + '.' }],
-        sol: [m(T`${top} \div ${mm} = ${c}`), m(T`x^{${a * n} - ${b}} = x^{${p}}`), 'Answer: ' + m(`${c}x^{${p}}`)],
+        sol: [m(T`${top} \div ${mm} = ${c}`), m(T`x^{${a * n} - ${b}} = ${p === 1 ? 'x' : `x^{${p}}`}`), 'Answer: ' + m(p === 1 ? `${c}x` : `${c}x^{${p}}`)],
       };
     },
     gens: [
@@ -78,7 +78,7 @@
       },
       () => {
         const q = R.pick([2, 3]), p = R.pick([1, 2, 4, 5].filter((x) => x % q !== 0)), n = -p / q;
-        const rootTex = q === 2 ? `\\sqrt{x^{${p}}}` : `\\sqrt[3]{x^{${p}}}`;
+        const xp = p === 1 ? 'x' : `x^{${p}}`, rootTex = q === 2 ? `\\sqrt{${xp}}` : `\\sqrt[3]{${xp}}`;
         return {
           kind: 'num', answer: n, answerTex: nf(n), fmt: 'A fraction like -2/3 is fine.',
           prompt: `Write ${m(T`\dfrac{1}{${p === 1 ? (q === 2 ? '\\sqrt{x}' : '\\sqrt[3]{x}') : rootTex}}`)} as ${m('x^n')}. What is ${m('n')}?`,
@@ -235,7 +235,7 @@
     id: 'alg-fractions', title: 'Algebraic fractions', mins: 9,
     blurb: 'Factorise, cancel, combine. Examiners flagged fractions as a weak spot in 2025.',
     scenes: [
-      { dur: 12, card: [C(0, '<h2>Factorise first, then cancel.</h2>'), C(3, '<p>You can only cancel factors: whole brackets or numbers that multiply the whole top and bottom.</p>'), C(8, `<p>The examiners said fractions tripped up students on all three papers in 2025.</p>`)],
+      { dur: 12, card: [C(0, '<h2>Factorise first, then cancel.</h2>'), C(3, '<p>You can only cancel factors: whole brackets or numbers that multiply the whole top and bottom.</p>'), C(8, `<p>The 2025 examiners said weak algebra, especially with fractions, held students back on all three papers.</p>`)],
         board: [B(0.5, T`\dfrac{x^2 - 9}{x + 3}`, '', { big: true }), B(3.5, T`= \dfrac{(x-3)(x+3)}{x+3}`, 'factorise'), B(6.5, 'x - 3', 'cancel the bracket', { hl: true })] },
       { dur: 10, card: [C(0, '<h2>The two illegal cancels.</h2>'), C(2.5, '<p>A plus sign glues terms together. You cannot cancel part of a sum.</p>'), C(7, '<p>If in doubt, test with a number. Put x = 2 in both sides.</p>')],
         board: [B(0.5, T`\dfrac{x^2 + 5}{x} = x + 5`, 'illegal', { wrong: true }), B(3.5, T`\dfrac{x + 6}{3} = x + 2`, 'illegal', { wrong: true }), B(6.5, T`\dfrac{x + 6}{3} = \dfrac{x}{3} + 2`, 'fine', { hl: true })] },
@@ -419,8 +419,8 @@
           const v = a.view(-3, 5, -5, 6); a.axes(v);
           const f = (x) => x * x - 2 * x - 3; a.plot(v, f, a.C.c1, 3.5, a.seg(a.p, 0, 0.5));
           const al = a.seg(a.p, 0.55, 0.7); a.dot(v, -1, 0, a.C.pen, 7, al); a.dot(v, 3, 0, a.C.pen, 7, al);
-          a.text('x = −1', v.X(-1), v.Y(0) - 22, { align: 'center', font: 'pen', col: a.C.pen, alpha: al }); a.text('x = 3', v.X(3), v.Y(0) - 22, { align: 'center', font: 'pen', col: a.C.pen, alpha: al });
-          a.text('y = x² − 2x − 3', v.X(4.4), v.Y(5.2), { align: 'right', col: a.C.c1, alpha: a.seg(a.p, 0.3, 0.5) });
+          a.text('x = −1', v.X(-1) - 14, v.Y(0) + 26, { align: 'right', font: 'pen', col: a.C.pen, alpha: al }); a.text('x = 3', v.X(3) + 14, v.Y(0) + 26, { font: 'pen', col: a.C.pen, alpha: al });
+          a.text('y = x² − 2x − 3', v.X(-2.8), v.Y(5.4), { col: a.C.c1, alpha: a.seg(a.p, 0.3, 0.5), bg: a.C.sheet });
         } },
       { dur: 12, card: [C(0, '<h2>Factorise, then each bracket equals zero.</h2>'), C(4, '<p>If two things multiply to zero, one of them must be zero.</p>')],
         board: [B(0.5, 'x^2 - 2x - 3 = 0', '', { big: true }), B(2.5, '(x - 3)(x + 1) = 0'), B(5, T`x - 3 = 0 \;\text{ or }\; x + 1 = 0`, 'either can be zero'), B(8, T`x = 3 \;\text{ or }\; x = -1`, '', { hl: true })] },

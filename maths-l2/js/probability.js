@@ -9,7 +9,7 @@
 
   /* ---------- shared canvas helpers ---------- */
   function drawTree(a, first, second, opts = {}) {
-    const { W, H, C: col } = a; const x0 = W * 0.08, x1 = W * 0.42, x2 = W * 0.76; const ym = H / 2;
+    const { W, H, C: col } = a; const x0 = W * 0.04, x1 = W * 0.34, x2 = W * 0.64; const ym = H / 2;
     const leafY = (k) => H * 0.12 + k * ((H * 0.76) / 3);
     const p = a.p; let leaf = 0;
     first.forEach((b, i) => {
@@ -18,7 +18,7 @@
       second[i].forEach((c, j) => {
         const y2 = leafY(leaf + j); const al2 = a.seg(p, 0.2 + (leaf + j) * 0.06, 0.32 + (leaf + j) * 0.06);
         a.alpha(al2, () => a.line(x1 + 8, y1, x2 - 46, y2, col.muted, 2)); a.text(c.l, x2 - 40, y2, { alpha: al2, font: 'head' }); a.text(c.p, (x1 + x2 - 38) / 2, (y1 + y2) / 2 + (y2 < y1 ? -14 : 18), { alpha: al2, font: 'pen', col: col.pen, align: 'center' });
-        if (c.end) a.text(c.end, x2 + 70, y2, { alpha: a.seg(p, opts.endAt || 0.6, (opts.endAt || 0.6) + 0.1), col: c.hl ? col.ink : col.muted, bg: c.hl ? col.hl : null });
+        if (c.end) a.text(c.end, x2 + 56, y2, { alpha: a.seg(p, opts.endAt || 0.6, (opts.endAt || 0.6) + 0.1), col: c.hl ? col.ink : col.muted, bg: c.hl ? col.hl : null });
       });
       leaf += second[i].length;
     });
@@ -174,7 +174,7 @@
       { dur: 11, card: [C(0, '<h2>Say it in words, with the context.</h2>'), C(3, `<p>"People not wearing a seatbelt were <b>5 times as likely</b> to be injured as people wearing one."</p>`), C(8, '<p>The group on top of the fraction goes first in the sentence.</p>')],
         board: [B(0.5, T`\text{RR} > 1`, 'more likely'), B(2, T`\text{RR} = 1`, 'no difference'), B(3.5, T`\text{RR} < 1`, 'less likely')] },
       { dur: 11, card: [C(0, '<h2>Careful with the wording.</h2>'), C(5, '<p>"Times as likely" and "% more likely" are different scales.</p>')],
-        board: [B(0.5, T`\text{RR} = 1.5`), B(2.5, T`\text{"1.5\% more likely"}`, 'no', { wrong: true }), B(5, T`\text{"1.5 times as likely"} = \text{"50\% more likely"}`, '', { hl: true })] },
+        board: [B(0.5, T`\text{RR} = 1.5`), B(2.5, null, 'no', { wrong: true, html: '<p class="bq">“1.5% more likely”</p>' }), B(5, null, '', { hl: true, html: '<p class="bq"><span class="hl">“1.5 times as likely” = “50% more likely”</span></p>' })] },
       { dur: 13, card: [C(0, '<h2>Excellence: judge a claim.</h2>'), C(3, '<p>Claim: "Students with phones in the bedroom are twice as likely to sleep under 8 hours." Your table gives RR = 1.6.</p>'), C(9, '<p>So the claim overstates it. Also: one survey shows a link, not that phones cause it.</p>')],
         board: [B(4, T`\text{RR} = 1.6 < 2`), B(6.5, T`\text{claim not supported}`, 'use numbers', { hl: true })] },
     ],
@@ -222,10 +222,10 @@
       { dur: 13, card: [C(0, '<h2>Expected value: the long-run average.</h2>'), C(3, `<p>A raffle ticket wins ${P.money(10)} with probability 0.1, ${P.money(2)} with 0.3, otherwise nothing.</p>`), C(8.5, `<p>Multiply each value by its probability and add.</p>`)],
         board: [B(4, T`E(X) = 10(0.1) + 2(0.3) + 0(0.6)`), B(7, '= 1 + 0.6 = 1.6', '$1.60 a ticket', { hl: true })] },
       { dur: 12, card: [C(0, '<h2>It is the balance point.</h2>'), C(3, '<p>Bar heights are the probabilities. The distribution balances at 1.6.</p>')],
-        draw(a) { const v = a.view(-1, 11, 0, 0.75); const X = [0, 2, 10], Pp = [0.6, 0.3, 0.1]; a.line(v.X(-1), v.Y(0), v.X(11), v.Y(0), a.C.muted, 2);
+        draw(a) { const v = a.view(-1, 11, -0.2, 0.75); const X = [0, 2, 10], Pp = [0.6, 0.3, 0.1]; a.line(v.X(-1), v.Y(0), v.X(11), v.Y(0), a.C.muted, 2);
           X.forEach((x, k) => { const h = Pp[k] * a.seg(a.p, 0.05 + k * 0.1, 0.2 + k * 0.1); a.box(v.X(x) - 18, v.Y(h), 36, v.Y(0) - v.Y(h), { fill: a.C.c4, stroke: false, alpha: 0.8 }); a.text(String(x), v.X(x), v.Y(0) + 16, { align: 'center' }); a.text(String(Pp[k]), v.X(x), v.Y(h) - 14, { align: 'center', col: a.C.muted, size: 0.85, alpha: a.seg(a.p, 0.2 + k * 0.1, 0.3 + k * 0.1) }); });
           const al = a.seg(a.p, 0.5, 0.65); const cx = v.X(1.6), cy = v.Y(0); const ctx = a.ctx; ctx.save(); ctx.globalAlpha = al; ctx.fillStyle = a.C.pen; ctx.beginPath(); ctx.moveTo(cx, cy + 4); ctx.lineTo(cx - 14, cy + 30); ctx.lineTo(cx + 14, cy + 30); ctx.closePath(); ctx.fill(); ctx.restore();
-          a.text('E(X) = 1.6', cx + 20, cy + 22, { font: 'pen', col: a.C.pen, alpha: al }); } },
+          a.text('E(X) = 1.6 balances here', cx + 22, cy + 34, { font: 'pen', col: a.C.pen, alpha: al }); } },
       { dur: 11, card: [C(0, '<h2>Expected number: n × p.</h2>'), C(3, '<p>500 students, each late with probability 0.19.</p>'), C(7, '<p>Round sensibly in context: you cannot have 0.5 of a student.</p>')],
         board: [B(3, '500 \\times 0.19 = 95', 'n × p', { hl: true }), B(6, T`\text{about 95 students}`)] },
     ],
@@ -357,7 +357,7 @@
     gens: [
       () => { const mu = R.pick([60, 75, 100, 170, 250]), sd = R.pick([4, 6, 8, 10, 15]), p = R.pick([0.1, 0.2, 0.25, 0.7, 0.8, 0.9, 0.95]); const x = mu + P.invPhi(p) * sd;
         return { kind: 'num', answer: x, dp: 1, tol: 0.11, prompt: `${m('X')} is normal with mean ${mu} and standard deviation ${sd}. Find the value ${m('x')} with ${m(`P(X < x) = ${p}`)}. Give 1 decimal place.`, wrong: [{ v: mu - P.invPhi(p) * sd, msg: 'Check which side of the mean x is on.' }], sol: [m(`z = ${n(P.invPhi(p), 4)}`), m(`x = ${mu} ${P.invPhi(p) < 0 ? '-' : '+'} ${n(Math.abs(P.invPhi(p)), 4)} \\times ${sd} = ${P.f(x, 1)}`)] }; },
-      () => { const mu = R.pick([60, 75, 100, 170, 250]), sd = R.pick([4, 6, 8, 10, 15]), top = R.pick([5, 10, 15, 20, 2.5]); const z = P.invPhi(1 - top / 100), x = mu + z * sd;
+      () => { const mu = R.pick([55, 60, 65, 70]), sd = R.pick([8, 10, 12, 15]), top = R.pick([5, 10, 15, 20, 2.5]); const z = P.invPhi(1 - top / 100), x = mu + z * sd;
         return { kind: 'num', answer: x, dp: 1, tol: 0.11, prompt: `Test scores are normal with mean ${mu} and standard deviation ${sd}. What score is needed to be in the top ${top}%? Give 1 decimal place.`, wrong: [{ v: mu + P.invPhi(top / 100) * sd, msg: 'Top ' + top + '% means ' + (100 - top) + '% below. Use the left area ' + n(1 - top / 100) + '.' }], sol: [`Area to the left: ${n(1 - top / 100)}`, m(`z = ${n(z, 4)}`), m(`x = ${mu} + ${n(z, 4)} \\times ${sd} = ${P.f(x, 1)}`)] }; },
       () => { const mu = R.pick([250, 330, 500, 750, 1000]), d = R.pick([5, 8, 10, 12, 15]), pc = R.pick([1, 2, 2.5, 5, 10]); const z = P.invPhi(pc / 100), sd = -d / z;
         return { kind: 'num', answer: sd, dp: 2, tol: 0.02, prompt: `Bottles are filled with a mean of ${mu} mL. ${pc}% of bottles contain less than ${mu - d} mL. Assuming a normal distribution, find the standard deviation. Give 2 decimal places.`, wrong: [{ v: d / P.invPhi(1 - pc / 100) * -1, msg: 'The standard deviation must be positive. Check the sign of z: below the mean is negative.' }], sol: [m(`z = \\text{InvNorm}(${n(pc / 100)}) = ${n(z, 4)}`), m(T`\dfrac{${mu - d} - ${mu}}{\sigma} = ${n(z, 4)}`), m(T`\sigma = \dfrac{${-d}}{${n(z, 4)}} = ${P.f(sd, 2)}`) + ' mL'] }; },
@@ -402,7 +402,7 @@
       { dur: 12, card: [C(0, '<h2>Centre: median or mean.</h2>'), C(3, '<p>In a skewed distribution the mean is dragged towards the tail.</p>'), C(8, '<p>So for skewed data, the median is the better summary of a typical value.</p>')],
         board: [B(0.5, T`\text{right skew: mean} > \text{median}`), B(3, T`\text{left skew: mean} < \text{median}`), B(5.5, T`\text{symmetric: mean} \approx \text{median}`)] },
       { dur: 11, card: [C(0, '<h2>Spread: IQR or standard deviation.</h2>'), C(3, '<p>Always compare with numbers, and always in context.</p>'), C(7, '<p class="pen">"Year 13 commute times were more spread out (IQR 18 min vs 9 min)."</p>')],
-        board: [B(0.5, T`\text{IQR} = Q_3 - Q_1`), B(3, T`\text{sd: average distance from the mean}`)] },
+        board: [B(0.5, T`\text{IQR} = Q_3 - Q_1`), B(3, T`\text{sd: a typical distance from the mean}`)] },
       { dur: 11, card: [C(0, '<h2>When is a normal model wrong?</h2>'), C(3, '<p>Normal means symmetric, one peak, bell-shaped. A strongly skewed or two-peaked histogram does not fit.</p>'), C(8, '<p>Recognising this was a 2025 Excellence skill.</p>')],
         draw(a) { const bins = SHAPES.right; const bw = (a.W * 0.7) / bins.length, base = a.H * 0.75, x0 = a.W * 0.15; const k = a.H * 0.035;
           bins.forEach((c, i) => a.box(x0 + i * bw, base - c * k, bw - 3, c * k, { fill: a.C.c2, stroke: false, alpha: 0.8 }));

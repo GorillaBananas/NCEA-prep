@@ -80,7 +80,7 @@
         const us = units(std);
         const done = us.filter((u) => status(u.id) === 'done').length;
         return `<section class="std" style="--sc:${std.col}">
-          <div class="std-head"><h2>${std.short}</h2><p class="muted">AS ${std.code}, ${std.credits} credits. ${std.name}.</p><p class="std-count"><b>${done}</b> of ${us.length} done</p></div>
+          <div class="std-head"><h2>${std.short}</h2><p class="muted">AS ${std.code}, ${std.credits} credits. ${std.name}. <a class="practise" href="#/practice/${std.code}">Practise all of ${std.short.toLowerCase()}</a></p><p class="std-count"><b>${done}</b> of ${us.length} done</p></div>
           <ol class="units">${us.map((u) => { const st = status(u.id); return `<li class="unit-row is-${st}">
             ${st === 'done' ? '<span class="margin-mark" aria-hidden="true">✓</span>' : st === 'weak' ? '<span class="margin-mark" aria-hidden="true">!</span>' : ''}
             <a href="#/u/${u.id}"><span class="ut">${u.title}</span><span class="ub">${u.blurb}</span></a>
@@ -94,6 +94,7 @@
         </section>
         ${started ? '' : `<section class="how sheet"><h3>How each topic works</h3><ol class="steps5"><li><b>Watch</b> a one-minute animated explainer</li><li><b>Follow</b> a worked example, step by step</li><li><b>Finish</b> one yourself, with the start done for you</li><li><b>Quiz</b>: five quick questions with instant feedback</li><li><b>Exam tips</b>: what earns the marks</li></ol></section>`}
         <div id="contents">${contents}</div>
+        <section class="mixed sheet"><div><h3>Final week: mix all three papers</h3><p class="muted">12 questions across algebra, calculus and probability, in random order, like the real exam.</p></div><a class="btn" href="#/practice/all">Start mixed practice</a></section>
         <footer class="foot muted small"><p>Content follows the NZQA standards ${cfg.standards.map((s) => s.code).join(', ')}. Past papers and marking schedules are on the <a href="${cfg.nzqa}" target="_blank" rel="noopener">NZQA subject page</a>.</p></footer>`, { wide: false });
       const c = m.querySelector('a[href="#contents"]'); if (c) c.onclick = (e) => { e.preventDefault(); document.getElementById('contents').scrollIntoView({ behavior: 'smooth' }); };
     }
@@ -259,6 +260,40 @@
       next();
     }
 
+    /* ---------- mixed practice for one standard (or all) ---------- */
+    function practice(code) {
+      const std = cfg.standards.find((s) => s.code === code);
+      const pool = std ? units(std) : allUnits();
+      const N = std ? Math.max(8, pool.length + 2) : 12;
+      const picks = P.R.shuffle(pool).concat(P.R.shuffle(pool)).slice(0, N);
+      const items = picks.map((u) => ({ u, q: P.R.pick(u.gens)() }));
+      const title = std ? `${std.short} practice` : 'Mixed practice';
+      const m = frame(`<section class="unit-head" style="--sc:${std ? std.col : 'var(--ink)'}"><h1>${title}</h1><p class="lede">${N} questions from ${std ? 'every ' + std.short.toLowerCase() + ' topic' : 'all three papers'}, in random order, like the exam. About ${Math.round(N * 1.5)} minutes. Use paper and your calculator.</p></section><div class="pips">${items.map(() => '<i></i>').join('')}</div><div class="qhost"></div>`, { crumb: title, timing: '*' });
+      const pips = [...m.querySelectorAll('.pips i')]; let k = 0; const missed = new Map(); const t0 = Date.now();
+      const next = () => {
+        if (k >= items.length) {
+          touch();
+          const score = items.length - [...missed.values()].reduce((a, b) => a + b, 0);
+          const mins = Math.max(1, Math.round((Date.now() - t0) / 60000));
+          m.querySelector('.pips').remove();
+          m.querySelector('.qhost').innerHTML = `<div class="result sheet"><p class="score pen">${score}<span>/${items.length}</span></p><h2>${score === items.length ? 'Exam ready on this one.' : score >= items.length * 0.7 ? 'Solid.' : 'Good practice. Now fix the gaps.'}</h2><p>${mins} minute${mins === 1 ? '' : 's'}.${missed.size ? ' Go back over these topics:' : ''}</p>
+            ${missed.size ? `<ol class="units">${[...missed.keys()].map((u) => `<li class="unit-row"><a href="#/u/${u.id}"><span class="ut">${u.title}</span><span class="ub">${stdOf(u).short}</span></a><span class="us">${missed.get(u)} missed</span></li>`).join('')}</ol>` : ''}
+            <div class="row after"><button class="btn again">Another set</button><a class="btn ghost" href="#/">Back to topics</a></div></div>`;
+          m.querySelector('.again').onclick = () => practice(code);
+          return;
+        }
+        const { u, q } = items[k]; pips[k].classList.add('now');
+        P.ask(m.querySelector('.qhost'), q, { label: std ? `Question ${k + 1} of ${items.length}` : `Question ${k + 1} of ${items.length}: ${stdOf(u).short}`, nextLabel: k === items.length - 1 ? 'See my score' : 'Next question', onAnswer: (ok) => { pips[k].classList.remove('now'); pips[k].classList.add(ok ? 'ok' : 'no'); } })
+          .then((r) => {
+            const x = U(u.id);
+            if (r.ok) { if (x.s === 2) { x.box = Math.min(5, x.box + 1); x.due = Date.now() + BOX_DAYS[x.box] * DAY; } }
+            else { missed.set(u, (missed.get(u) || 0) + 1); if (x.s === 2) { x.box = 1; x.due = Date.now() + DAY; } }
+            save(); k++; next();
+          });
+      };
+      next();
+    }
+
     /* ---------- progress + share with parent ---------- */
     function encode() {
       const u = {}; for (const un of allUnits()) { const x = U(un.id); u[un.id] = [x.s, x.d == null ? -1 : x.d, x.b, x.q, Math.round(x.t / 60)]; }
@@ -312,6 +347,7 @@
       if (a === 'diagnostic') return diagnostic();
       if (a === 'diagnostic-results') return diagResults();
       if (a === 'review') return review();
+      if (a === 'practice') return practice(b);
       if (a === 'progress') return progress();
       if (a === 'dad') return dad(b || '');
       if (a === 'contents') { home(); document.getElementById('contents').scrollIntoView(); return; }
