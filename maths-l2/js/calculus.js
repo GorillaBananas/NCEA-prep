@@ -117,6 +117,7 @@
         wrong: [{ v: ev(terms, x0), msg: 'That is f(x), the height of the curve. The gradient comes from f′(x).' }],
         more: (moreGrad(terms, x0, true)), sol: [m(`f'(${x0}) = ${poly(dt).replace(/x/g, '(' + nf(x0) + ')')}`), m(`= ${nf(ans)}`)] };
     },
+    grades: 'AAAAA', // level of each generator below: A = apply a method, M = connect steps or use it in context, E = reason it through
     gens: [
       () => { const a = R.nz(-6, 6), n = R.int(3, 5), b = R.nz(-9, 9), c = R.nz(-9, 9); const t = [[a, n], [b, 1], [c, 0]];
         return P.mcq({ prompt: `Differentiate ${m(`y = ${poly(t)}`)}`, more: ({ steps: [
@@ -202,6 +203,7 @@
         scaffold: [m(`m = 2(${x1})${sc(a)} = ${mm}`), m(`y_1 = ${y1}`) + ', so the point is ' + m(`(${x1}, ${y1})`)], hint: 'Use y − y₁ = m(x − x₁), then rearrange.',
         more: (moreTangent(t, x1, mm, y1, c, true)), sol: [m(`y - ${par(y1)} = ${mm}(x - ${par(x1)})`), m(`y = ${poly([[mm, 1], [c, 0]])}`), m(`c = ${c}`)] };
     },
+    grades: 'MAAAM', // level of each generator below: A = apply a method, M = connect steps or use it in context, E = reason it through
     gens: [
       () => { const cubic = Math.random() < 0.4; const a = R.nz(-4, 4), b = R.int(-5, 5), x1 = R.nz(-3, 3);
         const t = cubic ? [[1, 3], [a, 1], [b, 0]] : [[1, 2], [a, 1], [b, 0]]; const mm = ev(d(t), x1), y1 = ev(t, x1), c = y1 - mm * x1;
@@ -282,6 +284,7 @@
         scaffold: [m(`y' = ${poly(d(t))} = 0`), m(`x = ${h}`)], hint: 'Put x back into the original equation to find y.', wrong: [{ v: [h, 0], msg: 'y is not 0 at the turning point. Substitute x into the original equation.' }],
         more: (moreTP(t, a, h, k)), sol: [m(`y = ${poly(t).replace(/x/g, '(' + nf(h) + ')')} = ${k}`), 'Turning point: ' + m(`(${h}, ${k})`)] };
     },
+    grades: 'AAMME', // level of each generator below: A = apply a method, M = connect steps or use it in context, E = reason it through
     gens: [
       () => { const a = R.pick([1, 2, -1, -2, 3]), h = R.nz(-4, 4), k = R.int(-6, 8); const t = [[a, 2], [-2 * a * h, 1], [a * h * h + k, 0]];
         return { kind: 'multi', ordered: true, answer: [h, k], prompt: `Find the coordinates of the turning point of ${m(`y = ${poly(t)}`)}.`, fmt: 'Enter x, then y. For example: 2, -5', more: (moreTP(t, a, h, k)), sol: [m(`y' = ${poly(d(t))} = 0`), m(`x = ${h}`), m(`y = ${k}`), 'Turning point ' + m(`(${h}, ${k})`)] }; },
@@ -380,6 +383,7 @@
     St(`Read the x values of the two marked turning points.`, m(T`f'(x) = 0 \text{ at } x = ${p} \text{ and } x = ${q}`)),
   ], check: 'Lay a ruler on the curve at each point. It should sit flat.', trap: 'Giving where the curve crosses the x-axis. That is where f(x) = 0, not f′(x) = 0.' }), sol: [m(`x = ${p}`) + ' and ' + m(`x = ${q}`)] };
     },
+    grades: 'MMA', // level of each generator below: A = apply a method, M = connect steps or use it in context, E = reason it through
     gens: [
       () => { let p, q; do { p = R.int(-3, 1); q = R.int(0, 3); } while (q - p < 2); const s = R.pick([1, -1]);
         const f = (x) => s * (x ** 3 / 3 - ((p + q) / 2) * x * x + p * q * x), df = (x) => s * (x - p) * (x - q);
@@ -461,6 +465,7 @@
         scaffold: [m(`A = x(${L} - 2x) = ${L}x - 2x^2`), m(`A' = ${L} - 4x = 0 \\Rightarrow x = ${x}`)], hint: 'Put x back into the area formula.',
         wrong: [{ v: x, msg: 'That is the width that gives the maximum. The question asks for the area.' }], more: (moreFence(L, x, A)), sol: [m(`A = ${x}(${L} - ${2 * x}) = ${x} \\times ${L - 2 * x} = ${A}`) + ' m²'] };
     },
+    grades: 'EAMAM', // level of each generator below: A = apply a method, M = connect steps or use it in context, E = reason it through
     gens: [
       () => { const L = 4 * R.int(5, 30), x = L / 4, A = (L * L) / 8;
         return { kind: 'num', answer: A, prompt: `${L} m of fencing forms three sides of a rectangle against a wall. Find the maximum area enclosed, in m².`, wrong: [{ v: x, msg: 'That is the best width. Now find the area.' }, { v: (L / 4) ** 2, msg: 'Only three sides are fenced: A = x(' + L + ' − 2x).' }], more: (moreFence(L, x, A)), sol: [m(`A = x(${L} - 2x)`), m(`A' = ${L} - 4x = 0 \\Rightarrow x = ${x}`), m(`A = ${x} \\times ${L - 2 * x} = ${A}`) + ' m²'] }; },
@@ -535,6 +540,7 @@
       return { kind: 'num', answer: c, prompt: `${m(`f'(x) = ${poly(t)}`)} and the curve passes through ${m(`(${x1}, ${y1})`)}. Find ${m('c')}.`,
         scaffold: [m(`f(x) = ${poly(F)} + c`)], hint: `Substitute x = ${x1} and y = ${y1}, then solve for c.`, more: (moreFindC(t, F, x1, y1, c, 'f(x)')), sol: [m(`${y1} = ${poly(F).replace(/x/g, '(' + nf(x1) + ')')} + c`), m(`${y1} = ${nf(ev(F, x1))} + c`), m(`c = ${c}`)] };
     },
+    grades: 'AMMA', // level of each generator below: A = apply a method, M = connect steps or use it in context, E = reason it through
     gens: [
       () => { const a = R.pick([2, 3, 4, 6, 8, 10, 12]), n = R.pick([1, 2, 3]), b = R.nz(-9, 9); const t = [[a * (n + 1) / (n + 1) * 1, n], [b, 0]]; const F = I(t);
         return P.mcq({ prompt: `Anti-differentiate ${m(poly(t))}`, more: ({ steps: [
@@ -605,6 +611,7 @@
     St(`The velocity is ${v} m/s.`),
   ], trap: 'Leaving out c. The starting velocity is given so you can find it.' }), sol: [m(`v(${t}) = ${p === 1 ? '' : p}(${t})^2 + ${u} = ${v}`) + ' m/s'] };
     },
+    grades: 'AAMMAM', // level of each generator below: A = apply a method, M = connect steps or use it in context, E = reason it through
     gens: [
       () => { const a = R.int(1, 2), b = R.nz(-6, 6), c = R.int(-5, 9), t = R.int(1, 5); const s = [[a, 3], [b, 2], [c, 1]]; const vv = ev(d(s), t);
         return { kind: 'num', answer: vv, prompt: `A particle's displacement is ${m(`s = ${poly(s, 't')}`)} metres. Find its velocity at ${m(`t = ${t}`)} seconds.`, wrong: [{ v: ev(s, t), msg: 'That is the displacement. Velocity is ds/dt.' }], more: ({ steps: [

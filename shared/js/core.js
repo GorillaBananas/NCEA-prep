@@ -189,7 +189,8 @@
   P.money = (v) => '<span class="nomath">$' + (typeof v === 'number' ? v.toLocaleString('en-NZ', { minimumFractionDigits: Number.isInteger(v) ? 0 : 2, maximumFractionDigits: 2 }) : v) + '</span>';
   P.h = (html) => { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; };
   // make a question from a unit's generator, remembering both so "Try one like it" can make another
-  P.gen = (u, g) => { const q = g(); q.unit = u; q.regen = g; return q; };
+  // make a question from a unit's generator, tagged with its unit and NCEA level (u.grades lines up with u.gens)
+  P.gen = (u, g) => { const q = g(); q.unit = u; q.regen = g; const k = u.gens.indexOf(g); if (!q.grade && k >= 0 && u.grades) q.grade = u.grades[k]; return q; };
   // build an MCQ question: choices = [{t, ok, why}], shuffled
   P.mcq = (base, choices) => Object.assign({ kind: 'mcq', choices: R.shuffle(choices) }, base);
   // remove duplicate distractors (same text) keeping the correct one

@@ -2,7 +2,8 @@
    Usage: node tools/check-questions.js maths-l2 [runs]   (needs katex: npm i katex)
    Checks: valid shape, finite answers, exactly one correct MCQ choice, no duplicate choices,
    the stated answer (and its rounded form) is accepted, wrong-answer hints never match the answer,
-   and every piece of TeX renders. */
+   every piece of TeX renders, every generator has an NCEA level, and every Aim higher question is complete
+   and consistent (see checkAim). */
 const vm = require('vm'), fs = require('fs'), path = require('path');
 const katex = require(process.env.KATEX || 'katex');
 const subject = process.argv[2] || 'maths-l2', RUNS = +process.argv[3] || 300;
@@ -68,6 +69,35 @@ function checkQ(q, where) {
   } else err(where, 'unknown kind ' + q.kind, q);
 }
 
+// "Aim higher": three parts (A, M, E), each with an answer check, a model answer with at least one key line,
+// and a reason; the check's answer must appear in the model answer (catches a typo in either); two upgrade questions.
+const flat = (h) => String(h).replace(/<\/?[a-z][^>]*>/gi, '').replace(/\u2212/g, '-').replace(/\s+/g, '');
+function checkAim(u, id) {
+  const a = u.aim; if (!a) return err(id, 'no Aim higher question');
+  texIn(a.intro, id + '.aim.intro');
+  if (!a.parts || a.parts.length !== 3) return err(id, 'Aim higher needs 3 parts');
+  a.parts.forEach((p, k) => {
+    const w = `${id}.aim.part${'abc'[k]}`;
+    texIn(p.q, w); texIn(p.earns, w + '.earns');
+    if (!p.earns) err(w, 'no "why this earns" line');
+    if (!p.model || !p.model.length) return err(w, 'no model answer');
+    if (!p.model.some((st) => st.key)) err(w, 'no key line in the model answer');
+    p.model.forEach((st) => { texIn(st.m, w + '.model'); texIn(st.note, w + '.note'); });
+    if (!p.check) return err(w, 'no answer check');
+    const q = Object.assign({ prompt: p.q, more: { steps: [{ say: 'x' }] } }, p.check);
+    checkQ(q, w + '.check');
+    if (q.kind !== 'mcq') {
+      const text = flat(p.model.map((st) => st.m).join(' '));
+      for (const v of [].concat(q.answer)) { const t = q.dp != null && !Number.isInteger(v) ? P.f(v, q.dp) : P.n(v); if (!text.includes(t)) err(w, `answer ${t} does not appear in the model answer`); }
+    }
+  });
+  if (!a.up || a.up.length !== 2) return err(id, 'needs 2 upgrade questions');
+  a.up.forEach((x, k) => {
+    if (x.part !== k + 1) err(id, `upgrade ${k} should be on part ${'bc'[k]}`);
+    for (const bare of [false, true]) { const q = P.upgradeQ(u, k, bare); q.unit = u; checkQ(q, `${id}.upgrade${k}`); if (q.grade !== 'ME'[k]) err(id, 'upgrade level wrong'); }
+  });
+}
+
 const ids = cfg.standards.flatMap((s) => s.units);
 for (const id of ids) {
   const u = P.unitById[id];
@@ -81,8 +111,14 @@ for (const id of ids) {
   u.tips.forEach((t) => texIn(t, id + '.tips'));
   const gens = [['faded', u.faded], ...u.gens.map((g, k) => ['gen' + k, g])]; if (u.diag) gens.push(['diag', u.diag]);
   for (const [name, g] of gens) for (let r = 0; r < RUNS; r++) { let q; try { q = g(); } catch (e) { err(`${id}.${name}`, 'threw ' + e.message); break; } checkQ(q, `${id}.${name}`); }
+  // NCEA levels: one letter (A, M or E) per generator
+  if (typeof u.grades !== 'string' || u.grades.length !== u.gens.length || /[^AME]/.test(u.grades)) err(id, `grades "${u.grades}" must have one of A/M/E per generator (${u.gens.length})`);
+  else { const q = P.gen(u, u.gens[0]); if (q.grade !== u.grades[0]) err(id, 'P.gen did not tag the level'); }
+  checkAim(u, id);
   const total = u.scenes.reduce((a, s) => a + s.dur, 0);
-  console.log(`  ${id.padEnd(16)} ${u.gens.length} generators, explainer ${total}s`);
+  console.log(`  ${id.padEnd(16)} ${u.gens.length} generators (${u.grades}), explainer ${total}s, aim higher ${u.aim ? '✓' : '✗'}`);
 }
+const lv = ids.map((id) => (P.unitById[id] || {}).grades || '').join('');
+console.log(`\nLevels: ${[...'AME'].map((g) => `${g} ${lv.split(g).length - 1}`).join(', ')} generators, plus ${ids.length * 3} Aim higher parts and ${ids.length * 2} upgrade questions.`);
 console.log(errors ? `\n${errors} problem(s) found.` : `\nAll ${ids.length} units passed (${RUNS} runs per generator).`);
 process.exit(errors ? 1 : 0);

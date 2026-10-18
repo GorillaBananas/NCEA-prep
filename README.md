@@ -1,6 +1,6 @@
 # NCEA Prep
 
-Short, focused revision for NCEA exams. Each topic is about ten minutes:
+Short, focused revision for NCEA exams. Each topic is about ten to fifteen minutes:
 
 1. **Watch** a one-minute animated explainer (built in the browser, pausable, step by step).
 2. **Example**: a worked example revealed one step at a time, with margin notes on where marks are won.
@@ -9,13 +9,22 @@ Short, focused revision for NCEA exams. Each topic is about ten minutes:
    After a wrong answer, **"Still don't understand? Show me step by step"** opens a slower walkthrough
    using that question's own numbers: the big idea, each step with the reason for it, how to check,
    and the common trap. **"Try one like it"** then gives a fresh, unscored question of the same type.
-5. **Exam tips** drawn from the NZQA assessment reports.
+   Every question carries its NCEA level: **Achieved** (use a method), **Merit** (link steps, use a model,
+   relate it to the context) or **Excellence** (devise a strategy, reason, prove or justify).
+5. **Aim higher**: one fixed exam-style question in three parts that climb Achieved → Merit → Excellence.
+   The student tries each part and checks the final answer, then sees a model answer. Margin notes mark the
+   lines that earn the grade, and a line says why, in NZQA's terms. The student marks their own working
+   against the highlighted lines. Two **"Upgrade this answer"** questions follow: a correct answer one grade
+   short, and the student picks what it needs to move up.
+6. **Exam tips** drawn from the NZQA assessment reports.
 
 Around the topics:
 
 - **Check-up**: one question per topic to find weak spots, then a plan with a daily pace.
 - **Free choice**: any topic can be opened at any time.
 - **Daily review**: mixed questions from finished topics on a spaced schedule (1, 2, 4, 7, 14 days).
+- **Level profile**: practice sets, daily review and the progress page show results by level, for example
+  "Solid at Achieved, shaky at Merit", with the next step to take. Mixed practice includes Upgrade questions.
 - **Progress link**: the student can send a link that shows a read-only progress report. Progress is saved in the browser; nothing is sent to a server.
 
 ## Subjects
@@ -36,7 +45,7 @@ shared/js/player.js   animated explainer player
 shared/js/quiz.js     question renderer and small SVG figure builders
 shared/js/app.js      the subject app: home, check-up, units, review, progress, parent report
 shared/vendor/        KaTeX (maths typesetting) and fonts, self-hosted
-maths-l2/             a subject: index.html, config.js and one file of units per standard
+maths-l2/             a subject: index.html, config.js, one file of units per standard, and ladders.js (Aim higher)
 tools/                checks for question generators
 ```
 
@@ -44,8 +53,9 @@ tools/                checks for question generators
 
 1. Copy `maths-l2/` to a new folder, for example `physics-l2/`.
 2. Edit `js/config.js`: id, title, exam date, standards and the list of unit ids.
-3. Write units with `NP.addUnit({ id, title, blurb, mins, scenes, example, faded, gens, tips })`. See `maths-l2/js/algebra.js` for the pattern.
-4. Add the subject to the list in the root `index.html`.
+3. Write units with `NP.addUnit({ id, title, blurb, mins, recap, scenes, example, faded, grades, gens, tips })`, where `grades` is one letter (A, M or E) per generator. See `maths-l2/js/algebra.js` for the pattern.
+4. Add an Aim higher question for each unit (`ladders.js`): three parts, each with a check, a model answer with key lines, and a reason, plus two upgrade questions.
+5. Add the subject to the list in the root `index.html`.
 
 ### Checking questions
 
@@ -60,7 +70,8 @@ Two browser checks (serve the folder, e.g. `python3 -m http.server`):
 - `tools/figures.html?runs=100`: renders every graph, tree and histogram and reports labels that overlap.
 - `tools/walkthroughs.html?runs=5`: open at phone width; renders every walkthrough and reports maths errors or equations wider than the screen.
 
-Every question type must have a `more` walkthrough and every unit a `recap`; `check-questions.js` fails without them.
+Every question type must have a `more` walkthrough and a level, and every unit a `recap` and an Aim higher question;
+`check-questions.js` fails without them. For Aim higher it also checks that each part's answer appears in its model answer.
 
 ## Publishing
 

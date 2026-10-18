@@ -13,7 +13,7 @@
   }
   function answerText(q) {
     if (q.answerTex) return '$' + q.answerTex.replace(/</g, '\\lt ') + '$';
-    if (q.kind === 'mcq') { const c = q.choices.find((c) => c.ok); return c ? c.t : ''; }
+    if (q.kind === 'mcq') { const c = q.choices.find((c) => c.ok); return !c ? '' : /<svg/.test(c.t) ? 'the graph marked in green' : c.t; }
     if (q.kind === 'multi') return '$' + q.answer.map((a) => (q.dp != null ? P.f(a, q.dp) : P.nf(a))).join(',\\ ') + '$';
     return '$' + (q.dp != null ? P.f(q.answer, q.dp) : P.nf(q.answer)) + '$';
   }
@@ -62,14 +62,20 @@
     return h + '</div>';
   }
   let qid = 0;
-  P.deepHtml = deepHtml; P.disp = (h) => disp(minus(h)); // exposed for tools/walkthroughs.html
+  P.deepHtml = deepHtml; P.disp = (h) => disp(minus(h)); P.minus = minus; // exposed for tools/walkthroughs.html
+
+  // NCEA grade levels. A = use a method correctly; M = link steps, use a model, relate it to the context;
+  // E = devise a strategy, reason it through, prove, generalise or justify in context.
+  P.gradeName = { A: 'Achieved', M: 'Merit', E: 'Excellence' };
+  P.gradeHow = { A: 'use a method correctly', M: 'link the steps and relate it to the context', E: 'reason it through, prove or justify' };
+  P.lvl = (g, short) => `<span class="lvl lvl-${g}" title="${P.gradeName[g]} level: ${P.gradeHow[g]}"><span class="bars" aria-hidden="true"><i></i><i></i><i></i></span>${short ? g : P.gradeName[g]}</span>`;
 
   // Render one question. Resolves with {ok, skipped, tries} after the student continues.
   P.ask = (host, q, o = {}) => new Promise((resolve) => {
     const mode = o.mode || 'quiz';
     const tries = o.tries || 1;
     const el = P.h(`<div class="q sheet${mode === 'diag' ? ' diag' : ''}">
-      ${o.label ? `<div class="q-label">${o.label}</div>` : ''}
+      ${o.label || q.grade ? `<div class="q-label">${o.label ? `<span>${o.label}</span>` : ''}${q.grade && mode !== 'diag' ? P.lvl(q.grade) : ''}</div>` : ''}
       <div class="q-prompt">${q.prompt}</div>
       ${q.fig ? `<div class="q-fig">${q.fig}</div>` : ''}
       ${q.scaffold ? `<ol class="q-scaffold">${q.scaffold.map((s) => `<li>${s}</li>`).join('')}<li class="gap">?</li></ol>` : ''}
@@ -86,16 +92,18 @@
       el.classList.add(ok ? 'is-right' : 'is-wrong');
       mark.innerHTML = ok ? TICK : skipped ? '' : CROSS;
       ans.querySelectorAll('input,button').forEach((b) => (b.disabled = true));
+      if (q.kind === 'mcq') { const right = ans.querySelector(`[data-k="${q.choices.findIndex((c) => c.ok)}"]`); if (right) right.classList.add('right'); }
       let html = '';
+      const okWhy = q.kind === 'mcq' ? (q.choices.find((c) => c.ok) || {}).why : null;
       if (mode === 'diag') {
         html = ok ? '<p class="pen big">Correct</p>' : `<p class="pen big">${skipped ? 'Skipped. That is useful to know.' : 'Not this time. Noted for your plan.'}</p>`;
       } else if (ok) {
-        html = `<p class="pen big">${P.R.pick(['Correct', 'Yes', 'Nailed it', 'Correct, nice working'])}</p>${q.sol ? '<button class="linkbtn showsol">See the full working</button><div class="sol" hidden></div>' : ''}`;
+        html = `<p class="pen big">${P.R.pick(['Correct', 'Yes', 'Nailed it', 'Correct, nice working'])}</p>${okWhy ? `<p class="why">${minus(okWhy)}</p>` : ''}${q.sol ? '<button class="linkbtn showsol">See the full working</button><div class="sol" hidden></div>' : ''}`;
       } else {
-        html = `<p class="pen big">${skipped ? 'Here is how it goes' : 'Not quite'}</p>${msg ? `<p class="why">${minus(msg)}</p>` : ''}<p class="ansline">Answer: ${answerText(q)}</p>${q.sol ? '<div class="sol"></div>' : ''}`;
+        html = `<p class="pen big">${skipped ? 'Here is how it goes' : 'Not quite'}</p>${msg ? `<p class="why">${minus(msg)}</p>` : ''}<p class="ansline">Answer: ${answerText(q)}</p>${okWhy ? `<p class="why">${minus(okWhy)}</p>` : ''}${q.sol ? '<div class="sol"></div>' : ''}`;
         if (q.more || q.sol) html += `<button class="btn ghost small deepbtn" aria-expanded="false">Still don't understand? Show me step by step</button><div class="deephost" hidden></div>`;
       }
-      html += `<div class="row q-next"><button class="btn small nextq">${o.nextLabel || 'Next'}</button></div>`;
+      if (!o.noNext) html += `<div class="row q-next"><button class="btn small nextq">${o.nextLabel || 'Next'}</button></div>`;
       fb.innerHTML = html;
       const sol = fb.querySelector('.sol');
       if (sol) sol.innerHTML = '<ol>' + q.sol.map((s) => `<li>${disp(minus(s))}</li>`).join('') + '</ol>';
@@ -108,16 +116,18 @@
         dh.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         const tb = dh.querySelector('.tryone');
         if (tb) tb.onclick = () => {
-          const nq = q.regen(); nq.unit = q.unit; nq.regen = q.regen;
+          const nq = q.regen(); nq.unit = q.unit; nq.regen = q.regen; nq.grade = nq.grade || q.grade;
           const nest = dh.querySelector('.nested'); dh.querySelector('.deep-try').remove();
           P.ask(nest, nq, { mode: 'practice', tries: 2, depth: (o.depth || 0) + 1, label: 'Try one like it (not scored)', nextLabel: 'Done' })
-            .then((r) => { nest.innerHTML = `<p class="pen big">${r.ok ? 'You have got it now.' : 'Keep going: it clicks with practice.'}</p><p class="muted small">Carry on with the ${o.nextLabel ? '“' + o.nextLabel + '”' : 'Next'} button below.</p>`; nx.focus({ preventScroll: true }); });
+            .then((r) => { nest.innerHTML = `<p class="pen big">${r.ok ? 'You have got it now.' : 'Keep going: it clicks with practice.'}</p><p class="muted small">Carry on with the ${o.nextLabel ? '“' + o.nextLabel + '”' : 'Next'} button below.</p>`; if (nx) nx.focus({ preventScroll: true }); });
           nest.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         };
       };
       P.math(fb);
-      const nx = fb.querySelector('.nextq'); nx.onclick = () => resolve({ ok, skipped: !!skipped, tries: n }); nx.focus({ preventScroll: true });
+      const nx = fb.querySelector('.nextq');
+      if (nx) { nx.onclick = () => resolve({ ok, skipped: !!skipped, tries: n }); nx.focus({ preventScroll: true }); }
       if (o.onAnswer) o.onAnswer(ok);
+      if (o.noNext) resolve({ ok, skipped: !!skipped, tries: n }); // the caller shows what comes next
     }
 
     function attempt(input) {
@@ -139,7 +149,7 @@
     if (q.kind === 'mcq') {
       const pics = q.choices.some((c) => /<svg/.test(c.t));
       ans.innerHTML = '<div class="choices' + (pics ? ' pics' : '') + '">' + q.choices.map((c, k) => `<button class="choice" data-k="${k}"><span class="key">${'ABCD'[k]}</span><span>${c.t}</span></button>`).join('') + '</div>';
-      ans.querySelectorAll('.choice').forEach((b) => (b.onclick = () => { ans.querySelectorAll('.choice').forEach((x) => x.classList.remove('picked')); b.classList.add('picked'); attempt(+b.dataset.k); if (finished) { const right = q.choices.findIndex((c) => c.ok); ans.querySelector(`[data-k="${right}"]`).classList.add('right'); } }));
+      ans.querySelectorAll('.choice').forEach((b) => (b.onclick = () => { ans.querySelectorAll('.choice').forEach((x) => x.classList.remove('picked')); b.classList.add('picked'); attempt(+b.dataset.k); }));
     } else {
       const id = 'qa' + ++qid;
       ans.innerHTML = `<form class="numform" autocomplete="off"><label class="visually-hidden" for="${id}">Your answer</label><input id="${id}" class="numin" inputmode="decimal" spellcheck="false" placeholder="Your answer"><button class="btn" type="submit">Check</button></form><p class="fmt">${minus(fmtHint(q))}</p>`;

@@ -105,6 +105,7 @@
   ], check: `Put x = 2 into the question and into ${m(`${c}x^{${p}}`)}. Both give ${c * 2 ** p}.`, trap: `Adding the powers in the bracket (${a} + ${n}) instead of multiplying them.` }), sol: [m(T`${top} \div ${mm} = ${c}`), m(T`x^{${a * n} - ${b}} = ${p === 1 ? 'x' : `x^{${p}}`}`), 'Answer: ' + m(p === 1 ? `${c}x` : `${c}x^{${p}}`)],
       };
     },
+    grades: 'AAAAAM', // level of each generator below: A = apply a method, M = connect steps or use it in context, E = reason it through
     gens: [
       () => {
         const k = R.pick([2, 3, 5]), n = R.pick([2, 3]), v = R.pick(['y', 'x', 'a']);
@@ -250,6 +251,7 @@
         more: (moreTri(p, q)), sol: [m(`${p} \\times ${br(q)} = ${c}`) + ' and ' + m(`${p} + ${br(q)} = ${b}`), 'So ' + m(`${poly([[1, 2], [b, 1], [c, 0]])} = (x${sc(p)})(x${sc(q)})`)],
       };
     },
+    grades: 'AAAMAA', // level of each generator below: A = apply a method, M = connect steps or use it in context, E = reason it through
     gens: [
       () => {
         let p, q; do { p = R.nz(-9, 9); q = R.nz(-9, 9); } while (p === q || p + q === 0);
@@ -384,6 +386,7 @@
         more: (moreCancel(p, q, top)), sol: ['Cancel ' + m(`(x${sc(p)})`) + ' from top and bottom', 'Answer: ' + m(`x${sc(q)}`)],
       };
     },
+    grades: 'AMMAA', // level of each generator below: A = apply a method, M = connect steps or use it in context, E = reason it through
     gens: [
       () => {
         let p, q; do { p = R.nz(-7, 7); q = R.nz(-7, 7); } while (p === q || p + q === 0);
@@ -502,6 +505,7 @@
   ], check: `Put t back in: ${m(T`${u} + ${a} \times ${t} = ${v}`)}, which is v.`, trap: 'Dividing before subtracting. Undo in reverse order, so the + u goes first.' }), sol: [m(T`t = \dfrac{${v} - ${u}}{${a}} = \dfrac{${v - u}}{${a}} = ${t}`)],
       };
     },
+    grades: 'AAAMM', // level of each generator below: A = apply a method, M = connect steps or use it in context, E = reason it through
     gens: [
       () => {
         const a = R.int(2, 7), b = R.nz(-9, 9), c = R.int(2, 5);
@@ -631,6 +635,7 @@
   ], check: `Put x = ${p} into ${m(ex)}: you get 0. The same happens for x = ${q}.`, trap: `Copying the sign from the bracket. If ${m(`x${sc(-p)} = 0`)}, then x = ${p}, not ${-p}.` }), sol: [m(`x${sc(-p)} = 0 \\Rightarrow x = ${p}`), m(`x${sc(-q)} = 0 \\Rightarrow x = ${q}`)],
       };
     },
+    grades: 'AAAMM', // level of each generator below: A = apply a method, M = connect steps or use it in context, E = reason it through
     gens: [
       () => {
         let p, q; do { p = R.nz(-9, 9); q = R.nz(-9, 9); } while (p === q);
@@ -742,6 +747,7 @@
     St('Square root both sides. A square root has two answers, positive and negative.', m(T`k = \pm\sqrt{${4 * c}} = \pm ${2 * mm}`)),
   ], check: `With k = ${2 * mm}, the equation is ${m(`(x + ${mm})^2 = 0`)}, which has one repeated root.`, trap: `Giving only k = ${2 * mm}. ${m(`(-${2 * mm})^2`)} is also ${4 * c}.` }), sol: [m(T`k = \pm\sqrt{${4 * c}} = \pm ${2 * mm}`)] };
     },
+    grades: 'AAMMM', // level of each generator below: A = apply a method, M = connect steps or use it in context, E = reason it through
     gens: [
       () => { const a = R.nz(-4, 5), b = R.nz(-9, 9), c = R.nz(-9, 9), D = b * b - 4 * a * c; const ex = poly([[a, 2], [b, 1], [c, 0]]);
         return { kind: 'num', answer: D, prompt: `Find the discriminant of ${m(ex + ' = 0')}.`, wrong: [{ v: -b * b - 4 * a * c, msg: m(`(${b})^2`) + ' is positive.' }, { v: b * b + 4 * a * c, msg: 'Check the sign of ' + m('4ac') + '.' }], more: ({ steps: [
@@ -836,6 +842,7 @@
         wrong: [{ v: Math.log(a) / Math.log(b), msg: 'Upside down. It is log ' + b + ' divided by log ' + a + '.' }, { v: b / a, msg: 'You cannot divide by the base. Use logs.' }],
         more: (moreExp(a, b, x)), sol: [m(T`x = \dfrac{\log ${b}}{\log ${a}} = ${P.f(x, 2)}`)] };
     },
+    grades: 'AAAMAA', // level of each generator below: A = apply a method, M = connect steps or use it in context, E = reason it through
     gens: [
       () => { const [b, val, tex] = R.pick([[2, 5, '32'], [2, -3, '\\tfrac{1}{8}'], [3, 4, '81'], [3, -2, '\\tfrac{1}{9}'], [10, 3, '1000'], [10, -2, '0.01'], [5, 3, '125'], [9, 0.5, '3'], [4, 0.5, '2'], [8, 1 / 3, '2'], [2, 0.5, '\\sqrt{2}'], [7, 0, '1']]);
         return { kind: 'num', answer: val, answerTex: nf(val), prompt: `Evaluate ${m(`\\log_{${b}} ${tex}`)} without a calculator.`, more: ({ steps: [
@@ -923,6 +930,7 @@
         scaffold: [m(`${poly([[1, 2], [b, 1], [c, 0]])} = ${poly([[mm, 1], [k, 0]])}`), m(`${poly([[1, 2], [-(p + q), 1], [p * q, 0]])} = 0`)],
         hint: 'Factorise and set each bracket to zero.', more: (moreMeet(p, q, mm, k, b, c)), sol: [m(`${P.fac(p)}${P.fac(q)} = 0`), m(`x = ${p} \\text{ or } x = ${q}`)] };
     },
+    grades: 'AMMM', // level of each generator below: A = apply a method, M = connect steps or use it in context, E = reason it through
     gens: [
       () => { let x, y; do { x = R.int(-5, 6); y = R.int(-5, 6); } while (x === 0 && y === 0); let a, b, c, d; do { a = R.nz(-4, 5); b = R.nz(-4, 5); c = R.nz(-4, 5); d = R.nz(-4, 5); } while (a * d - b * c === 0);
         const e1 = poly([[a, 1]]) + ' ' + (b < 0 ? '-' : '+') + ' ' + (Math.abs(b) === 1 ? '' : Math.abs(b)) + 'y', e2 = poly([[c, 1]]) + ' ' + (d < 0 ? '-' : '+') + ' ' + (Math.abs(d) === 1 ? '' : Math.abs(d)) + 'y';

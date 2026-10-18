@@ -119,6 +119,7 @@
     St('Either path gives B, so add them.', m(`P(B) = ${n(p * q)} + ${n((1 - p) * r)} = ${f4(ans)}`)),
   ], check: `Your answer is between ${Math.min(q, r)} and ${Math.max(q, r)}, the two chances of B. It always will be, because it is a weighted average of them.`, trap: 'Adding along a path, or multiplying across paths. Along: multiply. Across: add.' }), sol: [m(`P(B) = ${n(p * q)} + ${n((1 - p) * r)} = ${f4(ans)}`)] };
     },
+    grades: 'AAMMAE', // level of each generator below: A = apply a method, M = connect steps or use it in context, E = reason it through
     gens: [
       () => { const p = R.pick([0.2, 0.3, 0.35, 0.45, 0.6, 0.7]), q = R.pick([0.15, 0.25, 0.4, 0.55, 0.8]);
         return { kind: 'num', answer: p * q, dp: 4, tol: PT, prompt: `${Math.round(p * 100)}% of customers buy a coffee. Of those, ${Math.round(q * 100)}% also buy food. Find the probability a customer buys a coffee and food.`, wrong: [{ v: p + q, msg: 'AND along a branch means multiply, not add.' }], more: ({ steps: [
@@ -214,6 +215,7 @@
     St(`Of those, ${a} are in the "${ctx.c[0]}" column. That is the top.`),
     St('Divide.', m(T`\dfrac{${a}}{${a + b}} = ${f4(a / (a + b))}`)),
   ], check: `Ask yourself “out of whom?”. Out of the ${a + b} who ${ctx.rp[0]}.`, trap: `Dividing by the grand total, ${t.tot}. That answers a different question.` }), sol: [m(T`\dfrac{${a}}{${a + b}} = ${f4(a / (a + b))}`)] }; },
+    grades: 'AMMMA', // level of each generator below: A = apply a method, M = connect steps or use it in context, E = reason it through
     gens: [
       () => { const t = makeTable(); const { ctx, a, tot } = t;
         return { kind: 'num', answer: a / tot, dp: 4, tol: PT, fig: t.fig, prompt: `One of these ${ctx.who} is chosen at random. Find the probability they ${ctx.rp[0]} and ${ctx.cp[0]}.`, wrong: [{ v: a / (t.a + t.b), msg: '"And" uses the grand total, not the row total.' }], more: ({ steps: [
@@ -282,6 +284,7 @@
     St(`Write the percentages as decimals: ${n(p1 * 100)}% = ${p1} and ${n(p2 * 100)}% = ${p2}.`, m(T`\text{RR} = \dfrac{${p1}}{${p2}} = ${P.f(p1 / p2, 2)}`)),
     St(`In words: smokers were ${P.f(p1 / p2, 2)} times as likely to develop the condition as non-smokers.`),
   ], trap: 'Subtracting the risks. Relative risk is always a division.' }), sol: [m(T`\text{RR} = \dfrac{${p1}}{${p2}} = ${P.f(p1 / p2, 2)}`)] }; },
+    grades: 'AMEA', // level of each generator below: A = apply a method, M = connect steps or use it in context, E = reason it through
     gens: [
       () => { const t = makeTable(); const { ctx, a, b, c, d } = t; const rr = (a / (a + b)) / (c / (c + d));
         return { kind: 'num', answer: rr, dp: 2, tol: 0.011, fig: t.fig, prompt: `Find the relative risk of ${ctx.cn} for ${ctx.who} who ${ctx.rp[0]}, compared with those who ${ctx.rp[1]}. Give your answer to 2 decimal places.`,
@@ -366,6 +369,7 @@
     St('Add them.', m(`${n(x[0] * p1)} + ${n(x[1] * p2)} + 0 = ${n(E)}`)),
     St(`On average, each spin pays out ${P.money(E)}.`),
   ], check: `The answer is between 0 and ${x[0]}, the smallest and largest payouts. An average always is.`, trap: 'Averaging the payouts without the probabilities. A rare big prize counts for less.' }), sol: [m(`= ${n(x[0] * p1)} + ${n(x[1] * p2)} = ${n(E)}`)] }; },
+    grades: 'AAMMM', // level of each generator below: A = apply a method, M = connect steps or use it in context, E = reason it through
     gens: [
       () => { const v = R.distinct(3, 1, 9).sort((a, b) => a - b); const ps = R.pick([[0.2, 0.5, 0.3], [0.1, 0.6, 0.3], [0.25, 0.25, 0.5], [0.4, 0.35, 0.25]]); const E = v.reduce((s, x, k) => s + x * ps[k], 0);
         return { kind: 'num', answer: E, prompt: `${m('X')} takes the values ${v.join(', ')} with probabilities ${ps.join(', ')}. Find ${m('E(X)')}.`, wrong: [{ v: (v[0] + v[1] + v[2]) / 3, msg: 'Weight each value by its probability.' }], more: ({ steps: [
@@ -454,6 +458,7 @@
     faded() { const q = normalQ(); const c = q.c, u = q.u; const ans = nz(q.z2);
       return { kind: 'num', answer: ans, dp: 4, tol: PT, prompt: `${c} are normally distributed with mean ${q.mu} ${u} and standard deviation ${q.sd} ${u}. Find ${m(`P(X < ${n(q.b)})`)}.`, fig: P.svg.normal(q.mu, q.sd, { shade: [null, q.b], marks: [{ x: q.mu, label: String(q.mu) }, { x: q.b, label: n(q.b) }] }),
         scaffold: [m(T`z = \dfrac{${n(q.b)} - ${q.mu}}{${q.sd}} = ${n(q.z2)}`)], hint: 'Use normal cdf with a very low lower bound, or the standard normal for z = ' + n(q.z2) + '.', wrong: [{ v: 1 - ans, msg: 'That is the area above. "Less than" is the area to the left.' }], more: (moreLeft(q, q.b, q.z2, ans)), sol: [m(`P(X < ${n(q.b)}) = ${f4(ans)}`)] }; },
+    grades: 'AAAMA', // level of each generator below: A = apply a method, M = connect steps or use it in context, E = reason it through
     gens: [
       () => { const q = normalQ(); const c = q.c, u = q.u; const ans = nz(q.z1);
         return { kind: 'num', answer: ans, dp: 4, tol: PT, prompt: `${c} are normally distributed with mean ${q.mu} ${u} and standard deviation ${q.sd} ${u}. Find the probability a value is less than ${n(q.a)} ${u}.`, wrong: [{ v: 1 - ans, msg: 'That is the area to the right. Sketch it: "less than" is the left.' }], more: (moreLeft(q, q.a, q.z1, ans)), sol: [m(T`z = \tfrac{${n(q.a)} - ${q.mu}}{${q.sd}} = ${n(q.z1)}`), m(`P(X < ${n(q.a)}) = ${f4(ans)}`)] }; },
@@ -516,6 +521,7 @@
     },
     faded() { const mu = R.pick([50, 70, 100, 150]), sd = R.pick([5, 8, 10, 15]), p = R.pick([0.8, 0.85, 0.9, 0.95, 0.975]); const z = P.invPhi(p), x = mu + z * sd;
       return { kind: 'num', answer: x, dp: 1, tol: 0.11, prompt: `${m('X')} is normal with mean ${mu} and standard deviation ${sd}. Find ${m('x')} such that ${m(`P(X < x) = ${p}`)}. Give 1 decimal place.`, scaffold: [m(`z = \\text{InvNorm}(${p}) = ${n(z, 4)}`)], hint: 'x = mean + z × standard deviation', wrong: [{ v: mu - z * sd, msg: 'Area ' + p + ' to the left is above the mean, so x is bigger than ' + mu + '.' }], more: (moreInv(mu, sd, p, [St(`This works backwards: you know the area, ${p}, and want the value x that cuts it off.`)])), sol: [m(`x = ${mu} + ${n(z, 4)} \\times ${sd} = ${P.f(x, 1)}`)] }; },
+    grades: 'AMMMA', // level of each generator below: A = apply a method, M = connect steps or use it in context, E = reason it through
     gens: [
       () => { const mu = R.pick([60, 75, 100, 170, 250]), sd = R.pick([4, 6, 8, 10, 15]), p = R.pick([0.1, 0.2, 0.25, 0.7, 0.8, 0.9, 0.95]); const x = mu + P.invPhi(p) * sd;
         return { kind: 'num', answer: x, dp: 1, tol: 0.11, prompt: `${m('X')} is normal with mean ${mu} and standard deviation ${sd}. Find the value ${m('x')} with ${m(`P(X < x) = ${p}`)}. Give 1 decimal place.`, wrong: [{ v: mu - P.invPhi(p) * sd, msg: 'Check which side of the mean x is on.' }], more: (moreInv(mu, sd, p, [St(`You know the area to the left of x, ${p}. You want x itself.`)])), sol: [m(`z = ${n(P.invPhi(p), 4)}`), m(`x = ${mu} ${P.invPhi(p) < 0 ? '-' : '+'} ${n(Math.abs(P.invPhi(p)), 4)} \\times ${sd} = ${P.f(x, 1)}`)] }; },
@@ -607,6 +613,7 @@
     St(`The running total passes the halfway point in the ${lo} to ${hi} bar, so that is where the median is.`),
   ], trap: 'Picking the tallest bar. That shows the most common values (the mode), not the middle one.' }), sol: [`The running total passes halfway in the ${lo} to ${hi} interval.`] },
         [{ t: `${lo} to ${hi}`, ok: true }].concat(near.map(([a2, b2]) => ({ t: `${a2} to ${b2}`, why: 'Add the bar heights from the left. The median is where the running total passes halfway.' })))); },
+    grades: 'AMMMA', // level of each generator below: A = apply a method, M = connect steps or use it in context, E = reason it through
     gens: [
       () => { const key = R.pick(['sym', 'right', 'left', 'bi']); const h = R.pick(HCTX); const bins = jitter(SHAPES[key]);
         return P.mcq({ fig: P.svg.hist([{ name: h[0], bins, col: 'var(--c4)' }], edgesFor(h, bins.length), { unit: h[1] }), prompt: 'Which best describes the shape of this distribution?', more: ({ steps: [
