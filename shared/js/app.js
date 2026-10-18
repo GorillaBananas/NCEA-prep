@@ -143,7 +143,7 @@
       }
       if (tab === 'turn') {
         panel.innerHTML = `<p class="muted intro">The first steps are done for you. Finish it off. You get two tries.</p><div class="qhost"></div>`;
-        const run = () => P.ask(panel.querySelector('.qhost'), u.faded(), { mode: 'practice', tries: 2, nextLabel: 'Start the quiz' }).then(() => { x.f = 1; save(); go('quiz'); });
+        const run = () => P.ask(panel.querySelector('.qhost'), P.gen(u, u.faded), { mode: 'practice', tries: 2, nextLabel: 'Start the quiz' }).then(() => { x.f = 1; save(); go('quiz'); });
         run();
       }
       if (tab === 'quiz') quiz(u, panel, x);
@@ -161,7 +161,7 @@
 
     function pickQs(u, n) {
       const gens = P.R.shuffle(u.gens);
-      const qs = []; for (let k = 0; k < n; k++) qs.push(gens[k % gens.length]());
+      const qs = []; for (let k = 0; k < n; k++) qs.push(P.gen(u, gens[k % gens.length]));
       return qs;
     }
 
@@ -239,7 +239,7 @@
         frame(`<section class="unit-head"><h1>Nothing to review yet.</h1><p class="lede">Finish a topic quiz first. Topics come back here a day later, then after 2, 4, 7 and 14 days, which is when memories need a top-up.</p><div class="actions"><a class="btn" href="#/">Choose a topic</a></div></section>`, { crumb: 'Review' });
         return;
       }
-      const items = P.R.shuffle(pool).map((u) => ({ u, q: P.R.pick(u.gens)() }));
+      const items = P.R.shuffle(pool).map((u) => ({ u, q: P.gen(u, P.R.pick(u.gens)) }));
       const m = frame(`<section class="unit-head"><h1>Daily review</h1><p class="lede">${items.length} mixed questions from topics you have done. Mixing them up is harder, and that is the point: it is how the exam feels.</p></section><div class="pips">${items.map(() => '<i></i>').join('')}</div><div class="qhost"></div>`, { crumb: 'Review', timing: '*' });
       const pips = [...m.querySelectorAll('.pips i')]; let k = 0, score = 0;
       const next = () => {
@@ -266,7 +266,7 @@
       const pool = std ? units(std) : allUnits();
       const N = std ? Math.max(8, pool.length + 2) : 12;
       const picks = P.R.shuffle(pool).concat(P.R.shuffle(pool)).slice(0, N);
-      const items = picks.map((u) => ({ u, q: P.R.pick(u.gens)() }));
+      const items = picks.map((u) => ({ u, q: P.gen(u, P.R.pick(u.gens)) }));
       const title = std ? `${std.short} practice` : 'Mixed practice';
       const m = frame(`<section class="unit-head" style="--sc:${std ? std.col : 'var(--ink)'}"><h1>${title}</h1><p class="lede">${N} questions from ${std ? 'every ' + std.short.toLowerCase() + ' topic' : 'all three papers'}, in random order, like the exam. About ${Math.round(N * 1.5)} minutes. Use paper and your calculator.</p></section><div class="pips">${items.map(() => '<i></i>').join('')}</div><div class="qhost"></div>`, { crumb: title, timing: '*' });
       const pips = [...m.querySelectorAll('.pips i')]; let k = 0; const missed = new Map(); const t0 = Date.now();

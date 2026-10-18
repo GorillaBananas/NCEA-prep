@@ -14,9 +14,55 @@
   function answerText(q) {
     if (q.answerTex) return '$' + q.answerTex.replace(/</g, '\\lt ') + '$';
     if (q.kind === 'mcq') { const c = q.choices.find((c) => c.ok); return c ? c.t : ''; }
-    if (q.kind === 'multi') return '$' + q.answer.map((a) => P.nf(q.dp != null ? P.round(a, q.dp) : a)).join(',\\ ') + '$';
+    if (q.kind === 'multi') return '$' + q.answer.map((a) => (q.dp != null ? P.f(a, q.dp) : P.nf(a))).join(',\\ ') + '$';
     return '$' + (q.dp != null ? P.f(q.answer, q.dp) : P.nf(q.answer)) + '$';
   }
+
+  // The slower walkthrough behind "Still don't understand?": the big idea, then each step in plain words.
+  // a step that is one whole equation is shown on its own line (display maths), so it never wraps mid-expression
+  // and a line with two parts side by side (\qquad) is stacked, one part per line.
+  // On narrow screens a long chain A = B = C is also stacked, one step per line, lined up on the = signs.
+  const splitTop = (tex, sep) => { const out = []; let depth = 0, cur = ''; for (let i = 0; i < tex.length; i++) { const ch = tex[i]; if (ch === '{') depth++; else if (ch === '}') depth--; if (depth === 0 && tex.startsWith(sep, i)) { out.push(cur); cur = ''; i += sep.length - 1; continue; } cur += ch; } out.push(cur); return out; };
+  const disp = (h) => {
+    const t = String(h).trim(); if (!/^\$[^$]+\$$/.test(t)) return h;
+    const tex = t.slice(1, -1), narrow = window.innerWidth < 700;
+    let lines = tex.includes('\\qquad') ? tex.split('\\qquad') : [tex];
+    if (narrow) {
+      // "A ⇒ B": B starts a new line
+      lines = lines.flatMap((l) => l.split(/(?:\\;\s*)?\\Rightarrow(?:\s*\\;)?/).map((x, k) => (k ? '\\Rightarrow ' + x.trim() : x.trim())));
+      // "x = 2 or x = 3": one answer per line
+      lines = lines.flatMap((l) => {
+        const parts = l.split(/(?:\\quad\s*)?\\text\{\s*(or|and)\s*\}(?:\s*\\quad)?/);
+        const out = [parts[0].trim()];
+        for (let k = 1; k < parts.length; k += 2) out.push('\\text{' + parts[k] + ' }\\ ' + parts[k + 1].trim());
+        return out;
+      });
+      // "a = 3, \quad b = 7": one item per line
+      lines = lines.flatMap((l) => (/,\s*\\quad/.test(l) ? l.split(/\\quad/).map((x) => x.trim()) : [l]));
+      // a long chain A = B = C: one step per line, lined up on the = signs
+      lines = lines.map((l) => {
+        if (/\\text|,/.test(l)) return l;
+        const eq = splitTop(l, '=');
+        return (eq.length > 2 && l.length > 24) || (eq.length === 2 && l.length > 30) ? '\\begin{aligned}' + eq[0] + ' &= ' + eq.slice(1).join(' \\\\ &= ') + '\\end{aligned}' : l;
+      });
+    }
+    return '$$' + (lines.length > 1 ? '\\begin{gathered}' + lines.join('\\\\') + '\\end{gathered}' : lines[0]) + '$$';
+  };
+  // proper minus signs for negative numbers in plain text (maths is left to KaTeX)
+  const minus = (h) => (h == null ? h : String(h).split(/(\$\$?[^$]*\$\$?|<[^>]+>)/).map((seg, i) => (i % 2 ? seg : seg.replace(/(^|[\s(:;,])-(?=\d)/g, '$1\u2212'))).join(''));
+  function deepHtml(q) {
+    const d = q.more || { steps: (q.sol || []).map((m) => ({ m })) };
+    const idea = d.idea || (q.unit && q.unit.recap);
+    let h = '<div class="deep">';
+    if (idea) h += `<div class="deep-idea"><h4>The big idea</h4><p>${idea}</p></div>`;
+    if (d.ask) h += `<p class="deep-ask"><b>What the question wants:</b> ${minus(d.ask)}</p>`;
+    h += '<ol class="deep-steps">' + d.steps.map((st) => `<li>${st.say ? `<p class="say">${minus(st.say)}</p>` : ''}${st.m ? `<div class="m">${disp(minus(st.m))}</div>` : ''}</li>`).join('') + '</ol>';
+    if (d.check) h += `<p class="deep-check"><b>Check it:</b> ${minus(d.check)}</p>`;
+    if (d.trap) h += `<p class="deep-trap"><span class="pen">Watch out:</span> ${minus(d.trap)}</p>`;
+    return h + '</div>';
+  }
+  let qid = 0;
+  P.deepHtml = deepHtml; P.disp = (h) => disp(minus(h)); // exposed for tools/walkthroughs.html
 
   // Render one question. Resolves with {ok, skipped, tries} after the student continues.
   P.ask = (host, q, o = {}) => new Promise((resolve) => {
@@ -46,13 +92,29 @@
       } else if (ok) {
         html = `<p class="pen big">${P.R.pick(['Correct', 'Yes', 'Nailed it', 'Correct, nice working'])}</p>${q.sol ? '<button class="linkbtn showsol">See the full working</button><div class="sol" hidden></div>' : ''}`;
       } else {
-        html = `<p class="pen big">${skipped ? 'Here is how it goes' : 'Not quite'}</p>${msg ? `<p class="why">${msg}</p>` : ''}<p class="ansline">Answer: ${answerText(q)}</p>${q.sol ? '<div class="sol"></div>' : ''}`;
+        html = `<p class="pen big">${skipped ? 'Here is how it goes' : 'Not quite'}</p>${msg ? `<p class="why">${minus(msg)}</p>` : ''}<p class="ansline">Answer: ${answerText(q)}</p>${q.sol ? '<div class="sol"></div>' : ''}`;
+        if (q.more || q.sol) html += `<button class="btn ghost small deepbtn" aria-expanded="false">Still don't understand? Show me step by step</button><div class="deephost" hidden></div>`;
       }
       html += `<div class="row q-next"><button class="btn small nextq">${o.nextLabel || 'Next'}</button></div>`;
       fb.innerHTML = html;
       const sol = fb.querySelector('.sol');
-      if (sol) sol.innerHTML = '<ol>' + q.sol.map((s) => `<li>${s}</li>`).join('') + '</ol>';
-      const sb = fb.querySelector('.showsol'); if (sb) sb.onclick = () => { sol.hidden = false; sb.remove(); };
+      if (sol) sol.innerHTML = '<ol>' + q.sol.map((s) => `<li>${disp(minus(s))}</li>`).join('') + '</ol>';
+      const sb = fb.querySelector('.showsol'); if (sb) sb.onclick = () => { sol.hidden = false; sb.remove(); P.fit(sol); };
+      const db = fb.querySelector('.deepbtn');
+      if (db) db.onclick = () => {
+        const dh = fb.querySelector('.deephost');
+        dh.innerHTML = deepHtml(q) + (q.regen && (o.depth || 0) < 1 ? '<div class="row deep-try"><button class="btn small tryone">Try one like it</button><span class="muted small">Not scored. Same type, new numbers.</span></div><div class="nested"></div>' : '');
+        dh.hidden = false; db.remove(); P.math(dh);
+        dh.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        const tb = dh.querySelector('.tryone');
+        if (tb) tb.onclick = () => {
+          const nq = q.regen(); nq.unit = q.unit; nq.regen = q.regen;
+          const nest = dh.querySelector('.nested'); dh.querySelector('.deep-try').remove();
+          P.ask(nest, nq, { mode: 'practice', tries: 2, depth: (o.depth || 0) + 1, label: 'Try one like it (not scored)', nextLabel: 'Done' })
+            .then((r) => { nest.innerHTML = `<p class="pen big">${r.ok ? 'You have got it now.' : 'Keep going: it clicks with practice.'}</p><p class="muted small">Carry on with the ${o.nextLabel ? '“' + o.nextLabel + '”' : 'Next'} button below.</p>`; nx.focus({ preventScroll: true }); });
+          nest.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        };
+      };
       P.math(fb);
       const nx = fb.querySelector('.nextq'); nx.onclick = () => resolve({ ok, skipped: !!skipped, tries: n }); nx.focus({ preventScroll: true });
       if (o.onAnswer) o.onAnswer(ok);
@@ -65,7 +127,7 @@
       n++;
       if (r.ok) return finish(true);
       if (n < tries) {
-        fb.innerHTML = `<p class="pen big">Not quite. Have another go.</p>${r.msg ? `<p class="why">${r.msg}</p>` : q.hint ? `<p class="why">Hint: ${q.hint}</p>` : ''}`;
+        fb.innerHTML = `<p class="pen big">Not quite. Have another go.</p>${r.msg ? `<p class="why">${minus(r.msg)}</p>` : q.hint ? `<p class="why">Hint: ${minus(q.hint)}</p>` : ''}`;
         P.math(fb);
         const inp = ans.querySelector('input'); if (inp) { inp.select(); }
         ans.querySelectorAll('.choice.picked').forEach((b) => { b.disabled = true; b.classList.add('struck'); });
@@ -79,7 +141,8 @@
       ans.innerHTML = '<div class="choices' + (pics ? ' pics' : '') + '">' + q.choices.map((c, k) => `<button class="choice" data-k="${k}"><span class="key">${'ABCD'[k]}</span><span>${c.t}</span></button>`).join('') + '</div>';
       ans.querySelectorAll('.choice').forEach((b) => (b.onclick = () => { ans.querySelectorAll('.choice').forEach((x) => x.classList.remove('picked')); b.classList.add('picked'); attempt(+b.dataset.k); if (finished) { const right = q.choices.findIndex((c) => c.ok); ans.querySelector(`[data-k="${right}"]`).classList.add('right'); } }));
     } else {
-      ans.innerHTML = `<form class="numform" autocomplete="off"><label class="visually-hidden" for="qa">Your answer</label><input id="qa" class="numin" inputmode="decimal" spellcheck="false" placeholder="Your answer"><button class="btn" type="submit">Check</button></form><p class="fmt">${fmtHint(q)}</p>`;
+      const id = 'qa' + ++qid;
+      ans.innerHTML = `<form class="numform" autocomplete="off"><label class="visually-hidden" for="${id}">Your answer</label><input id="${id}" class="numin" inputmode="decimal" spellcheck="false" placeholder="Your answer"><button class="btn" type="submit">Check</button></form><p class="fmt">${minus(fmtHint(q))}</p>`;
       const f = ans.querySelector('form'), inp = f.querySelector('input');
       f.onsubmit = (e) => { e.preventDefault(); if (inp.value.trim()) attempt(inp.value); };
       setTimeout(() => inp.focus({ preventScroll: true }), 50);
@@ -94,6 +157,10 @@
 
   /* ---------- tiny SVG figure builders for questions ---------- */
   const S = (P.svg = { n: 0 });
+  // approximate width in px of a 12px axis label (digits and minus signs)
+  const labW = (t) => String(t).length * 7 + 2;
+  // smallest step (a multiple of base) that keeps evenly spaced labels apart
+  const fitStep = (base, pxPerUnit, sample) => { const need = Math.max(...sample.map(labW)) + 8; let k = 1; while (base * k * pxPerUnit < need && k < 50) k++; return base * k; };
   // graph of functions. fns: [{f, col}], opts: {x0,x1,y0,y1, w, h, pts:[{x,y,label}], step, labels}
   S.graph = (fns, o) => {
     const w = o.w || 420, h = o.h || 300, pad = 30;
@@ -106,9 +173,10 @@
     if (o.y0 <= 0 && o.y1 >= 0) s += `<line x1="${X(o.x0)}" y1="${Y(0)}" x2="${X(o.x1)}" y2="${Y(0)}" class="ax"/>`;
     if (o.x0 <= 0 && o.x1 >= 0) s += `<line x1="${X(0)}" y1="${Y(o.y0)}" x2="${X(0)}" y2="${Y(o.y1)}" class="ax"/>`;
     if (o.labels !== false) {
-      const ls = o.lstep || step;
+      const pxX = (w - 2 * pad) / (o.x1 - o.x0), pxY = (h - 2 * pad) / (o.y1 - o.y0);
+      const ls = fitStep(o.lstep || step, pxX, [o.x0, o.x1].map((v) => String(v).replace('-', '−')));
       for (let x = Math.ceil(o.x0 / ls) * ls; x <= o.x1; x += ls) if (x !== 0) s += `<text x="${X(x)}" y="${(o.y0 <= 0 && o.y1 >= 0 ? Y(0) : Y(o.y0)) + 14}" class="tl" text-anchor="middle">${String(x).replace('-', '−')}</text>`;
-      const lys = o.lystep || ys;
+      let lys = o.lystep || ys; while (lys * pxY < 16) lys *= 2;
       if (o.ylabels !== false) for (let y = Math.ceil(o.y0 / lys) * lys; y <= o.y1; y += lys) if (y !== 0) s += `<text x="${(o.x0 <= 0 && o.x1 >= 0 ? X(0) : X(o.x0)) - 5}" y="${Y(y) + 4}" class="tl" text-anchor="end">${String(y).replace('-', '−')}</text>`;
     }
     const cid = 'cp' + (++S.n);
@@ -132,7 +200,8 @@
       s += `<text x="${pad}" y="${top}" class="gl">${g.name}</text>`;
       g.bins.forEach((c, k) => { const bh = (c / max) * (rowH - 52); s += `<rect x="${X(edges[k]) + 1}" y="${base - bh}" width="${X(edges[k + 1]) - X(edges[k]) - 2}" height="${bh}" style="fill:${g.col || 'var(--c1)'}" class="bar"/>`; });
       s += `<line x1="${pad}" y1="${base}" x2="${w - pad}" y2="${base}" class="ax"/>`;
-      edges.forEach((e, k) => { if (k % (o.every || 1) === 0) s += `<text x="${X(e)}" y="${base + 14}" class="tl" text-anchor="middle">${e}</text>`; });
+      const every = o.every || Math.ceil((Math.max(...edges.map(labW)) + 8) / (X(edges[1]) - X(edges[0])));
+      edges.forEach((e, k) => { if (k % every === 0) s += `<text x="${X(e)}" y="${base + 14}" class="tl" text-anchor="middle">${e}</text>`; });
     });
     if (o.unit) s += `<text x="${w - pad}" y="${h - 2}" class="tl" text-anchor="end">${o.unit}</text>`;
     return s + '</svg>';
@@ -178,7 +247,24 @@
       s += `<path d="${sd2}" class="shade"/>`;
     }
     s += `<path d="${d}" class="cv" style="stroke:var(--c1)"/><line x1="${pad}" y1="${base}" x2="${w - pad}" y2="${base}" class="ax"/>`;
-    for (const m of o.marks || [{ x: mu, label: String(mu) }]) s += `<line x1="${X(m.x)}" y1="${base}" x2="${X(m.x)}" y2="${base + 5}" class="ax"/><text x="${X(m.x)}" y="${base + 18}" class="tl" text-anchor="middle">${m.label}</text>`;
+    // Labels: the cut-off values matter most. Each takes the first row where it does not touch a neighbour
+    // (up to three rows, with a leader line). The mean's label is shown only if it fits; its tick always stays.
+    const all = o.marks || [{ x: mu, label: String(mu) }];
+    const minor = (m) => all.length > 1 && Math.abs(m.x - mu) < 1e-9;
+    const placed = []; let rows = 1;
+    const fits = (l, r, row) => placed.every((q) => q.row !== row || r + 4 <= q.l || l >= q.r + 4);
+    for (const m of all.filter((q) => !minor(q)).concat(all.filter(minor))) {
+      const cx = X(m.x), hw = labW(m.label) / 2; let row = -1;
+      for (let k = 0; k < (minor(m) ? 1 : 3); k++) if (fits(cx - hw, cx + hw, k)) { row = k; break; }
+      if (row < 0 && minor(m)) { for (let k = 1; k < rows; k++) if (fits(cx - hw, cx + hw, k)) { row = k; break; } }
+      placed.push({ m, cx, row, l: cx - hw, r: cx + hw });
+      if (row >= 0) rows = Math.max(rows, row + 1);
+    }
+    for (const q of placed) {
+      s += `<line x1="${q.cx}" y1="${base}" x2="${q.cx}" y2="${base + 5 + Math.max(0, q.row) * 13}" class="ax"/>`;
+      if (q.row >= 0) s += `<text x="${q.cx}" y="${base + 18 + q.row * 16}" class="tl" text-anchor="middle">${q.m.label}</text>`;
+    }
+    if (rows > 1) s = s.replace(`viewBox="0 0 ${w} ${h}"`, `viewBox="0 0 ${w} ${h + 16 * (rows - 1)}"`);
     return s + '</svg>';
   };
 })();

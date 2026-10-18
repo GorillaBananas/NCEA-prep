@@ -9,10 +9,63 @@
   const signed = (c) => (c < 0 ? '-' + Math.abs(c) : String(c));
   const br = (c) => (c < 0 ? '(' + c + ')' : String(c));
 
+  /* ---------- "Still don't understand?" walkthroughs ---------- */
+  const St = (say, mm) => ({ say, m: mm });
+  const cont = (t) => (t.startsWith('-') ? ' - ' + t.slice(1) : ' + ' + t);
+  const co = (k, v = 'x') => (k === 1 ? v : k === -1 ? '-' + v : k + v);
+  // factorise x^2 + bx + c into (x + p)(x + q)
+  const moreTri = (p, q) => {
+    const b = p + q, c = p * q;
+    return { steps: [
+      St(`When you expand ${m('(x + p)(x + q)')} you get ${m(T`x^2 + (p + q)x + pq`)}. So the two numbers must <b>multiply</b> to the last number and <b>add</b> to the middle number.`),
+      St(`Here that means: multiply to ${m(String(c))} and add to ${m(String(b))}.`),
+      St(c < 0 ? 'The product is negative, so one number is positive and one is negative.' : b < 0 ? 'The product is positive but the sum is negative, so both numbers are negative.' : 'The product and the sum are both positive, so both numbers are positive.'),
+      St(`Go through the factor pairs of ${Math.abs(c)} and test each sum. ${p} and ${q} work:`, m(T`${p} \times ${br(q)} = ${c} \qquad ${p} + ${br(q)} = ${b}`)),
+      St('Put them into the brackets.', m(`(x${sc(p)})(x${sc(q)})`)),
+    ], check: `Expand your brackets. You should get ${m(poly([[1, 2], [b, 1], [c, 0]]))} back.`, trap: 'Getting the signs the wrong way round. Expanding to check catches this every time.' };
+  };
+  // (x^2 + (p+q)x + pq) / (x + p)
+  const moreCancel = (p, q, top) => ({ steps: [
+    St('You can only cancel something that multiplies the whole top and the whole bottom. The top is a sum, so factorise it first.'),
+    St(`Find two numbers that multiply to ${p * q} and add to ${p + q}: ${p} and ${q}.`, m(`${top} = (x${sc(p)})(x${sc(q)})`)),
+    St(`Now ${m(`(x${sc(p)})`)} is on the top and the bottom. Anything divided by itself is 1, so it cancels.`, m(T`\dfrac{\cancel{(x${sc(p)})}\,(x${sc(q)})}{\cancel{(x${sc(p)})}}`)),
+    St('What is left is the answer.', m(`x${sc(q)}`)),
+  ], check: `Multiply your answer by the bottom: ${m(`(x${sc(q)})(x${sc(p)})`)} expands back to ${m(top)}.`, trap: 'Cancelling the x terms straight away. Parts of a sum never cancel.' });
+  // a^x = b by logs
+  const moreExp = (a, b, x) => ({ steps: [
+    St('x is stuck up in the power. Logs bring it down.'),
+    St('Take the log of both sides.', m(T`\log ${a}^x = \log ${b}`)),
+    St(`Use the log law ${m(T`\log(a^n) = n\log a`)}. The power x moves to the front.`, m(T`x \log ${a} = \log ${b}`)),
+    St(`${m(T`\log ${a}`)} is just a number. Divide both sides by it.`, m(T`x = \dfrac{\log ${b}}{\log ${a}}`)),
+    St('Use your calculator: log, then the number, for each part.', m(`x = ${P.f(x, 2)}`)),
+  ], check: `${m(`${a}^{${P.f(x, 2)}}`)} on your calculator should come out very close to ${b}.`, trap: `Dividing the wrong way round. The log of the answer, ${b}, goes on top.` });
+  // where a line y = mm x + k meets a curve y = x^2 + bx + c
+  const moreMeet = (p, q, mm, k, b, c) => ({ steps: [
+    St('Where two graphs meet, they have the same y value. So set the two right-hand sides equal.', m(`${poly([[1, 2], [b, 1], [c, 0]])} = ${poly([[mm, 1], [k, 0]])}`)),
+    St('Move every term to the left so the right side is zero.', m(`${poly([[1, 2], [-(p + q), 1], [p * q, 0]])} = 0`)),
+    St('Factorise.', m(`${P.fac(p)}${P.fac(q)} = 0`)),
+    St('Either bracket can be zero, so there are two answers.', m(T`x = ${p} \quad\text{or}\quad x = ${q}`)),
+  ], check: `At x = ${p}, the curve gives ${p * p + b * p + c} and the line gives ${mm * p + k}. They are the same.`, trap: `Leaving the ${m(poly([[mm, 1]]))} on the right. Every term must move across.` });
+  // two linear equations by elimination
+  const moreElim = (a, b, c, d, x, y, e1, e2) => {
+    const m1 = Math.abs(d), m2 = Math.abs(b), same = Math.sign(b) === Math.sign(d);
+    const r1 = (a * x + b * y) * m1, r2 = (c * x + d * y) * m2, cx = same ? a * m1 - c * m2 : a * m1 + c * m2, rhs = same ? r1 - r2 : r1 + r2;
+    const how = [m1 > 1 ? `multiply equation 1 by ${m1}` : '', m2 > 1 ? `multiply equation 2 by ${m2}` : ''].filter(Boolean).join(' and ');
+    const yt = (k) => (k < 0 ? ' - ' : ' + ') + (Math.abs(k) === 1 ? '' : Math.abs(k)) + 'y';
+    return { steps: [
+      St(`Name them. Equation 1: ${m(`${e1} = ${a * x + b * y}`)}. Equation 2: ${m(`${e2} = ${c * x + d * y}`)}.`),
+      St(`Make the y terms the same size so they can cancel. ${how ? how[0].toUpperCase() + how.slice(1) + '.' : 'They already are.'}`, m(T`${poly([[a * m1, 1]])}${yt(b * m1)} = ${r1} \qquad ${poly([[c * m2, 1]])}${yt(d * m2)} = ${r2}`)),
+      St(same ? 'The y terms now have the same sign, so subtract the equations. The y terms disappear.' : 'The y terms now have opposite signs, so add the equations. The y terms disappear.', m(`${poly([[cx, 1]])} = ${rhs}`)),
+      St('Divide to find x.', m(`x = ${x}`)),
+      St(`Put x = ${x} back into equation 1 and solve for y.`, m(T`${a}(${x})${yt(b)} = ${a * x + b * y} \;\Rightarrow\; y = ${y}`)),
+    ], check: `Test both values in equation 2: ${m(T`${c}(${x}) + ${br(d)}(${br(y)}) = ${c * x + d * y}`)}.`, trap: 'Adding when the signs match, or subtracting when they differ. Same signs: subtract. Different signs: add.' };
+  };
+
   /* ================= 1. Index laws and surds ================= */
   P.addUnit({
     id: 'indices', title: 'Index laws and surds', mins: 9,
     blurb: 'Simplify powers, roots and negative indices without the classic slips.',
+    recap: 'Powers are shorthand for repeated multiplying. Three rules do most of the work: when you multiply, add the powers; when you divide, subtract them; a power of a power, multiply them. A negative power means “one over”. A fraction power is a root: the bottom number is the root and the top number is the power.',
     scenes: [
       { dur: 10, card: [C(0, '<h2>A power hits everything inside the bracket.</h2>'), C(3, `<p>Examiners flagged this slip in last year's exam: writing ${m('(2y)^3')} as ${m('2y^3')}.</p>`), C(6.5, '<p>Write it out once and you will not make that mistake again.</p>')],
         board: [B(0.4, '(2y)^3', '', { big: true }), B(2.4, '= 2y^3', 'not this', { wrong: true }), B(4.6, T`= 2y \times 2y \times 2y`), B(6.6, '= 8y^3', 'cube every factor', { hl: true })] },
@@ -43,13 +96,24 @@
         scaffold: [m(T`(${k}x^{${a}})^{${n}} = ${top}x^{${a * n}}`) + ' (power of a power: multiply)', m(T`\dfrac{${top}x^{${a * n}}}{${mm}${b === 1 ? 'x' : `x^{${b}}`}}`)],
         hint: 'Divide the numbers. For the powers, subtract the bottom one from the top one.',
         wrong: [{ v: [c, a + n - b], msg: 'For a power of a power, multiply the indices: ' + m(`(x^${a})^${n} = x^{${a * n}}`) + '.' }],
-        sol: [m(T`${top} \div ${mm} = ${c}`), m(T`x^{${a * n} - ${b}} = ${p === 1 ? 'x' : `x^{${p}}`}`), 'Answer: ' + m(p === 1 ? `${c}x` : `${c}x^{${p}}`)],
+        more: ({ ask: 'Tidy it into one number times one power of x.', steps: [
+    St(`Start with the bracket. The power ${n} outside applies to everything inside: the ${k} and the ${m(`x^{${a}}`)}.`, m(T`(${k}x^{${a}})^{${n}} = ${k}^{${n}} \times x^{${a} \times ${n}}`)),
+    St(`${m(`${k}^{${n}}`)} means ${Array(n).fill(k).join(' × ')} = ${top}. A power of a power multiplies: ${a} × ${n} = ${a * n}.`, m(`${top}x^{${a * n}}`)),
+    St('Now divide. The numbers divide as normal.', m(T`${top} \div ${mm} = ${c}`)),
+    St(`Powers of x subtract when you divide, because the x's on the bottom cancel the same number of x's on top.`, m(T`x^{${a * n}} \div x^{${b}} = x^{${a * n} - ${b}} = x^{${p}}`)),
+    St('Put the two parts together.', m(`${c}x^{${p}}`)),
+  ], check: `Put x = 2 into the question and into ${m(`${c}x^{${p}}`)}. Both give ${c * 2 ** p}.`, trap: `Adding the powers in the bracket (${a} + ${n}) instead of multiplying them.` }), sol: [m(T`${top} \div ${mm} = ${c}`), m(T`x^{${a * n} - ${b}} = ${p === 1 ? 'x' : `x^{${p}}`}`), 'Answer: ' + m(p === 1 ? `${c}x` : `${c}x^{${p}}`)],
       };
     },
     gens: [
       () => {
         const k = R.pick([2, 3, 5]), n = R.pick([2, 3]), v = R.pick(['y', 'x', 'a']);
-        return P.mcq({ prompt: `Simplify ${m(`(${k}${v})^${n}`)}`, sol: [m(`(${k}${v})^${n} = ${Array(n).fill(k + v).join(T` \times `)}`), m(`= ${k ** n}${v}^${n}`)] }, P.uniq([
+        return P.mcq({ prompt: `Simplify ${m(`(${k}${v})^${n}`)}`, more: ({ steps: [
+    St(`The power ${n} is outside the bracket, so it applies to everything inside: the number ${k} and the letter ${v}.`),
+    St('Write it out as repeated multiplying. That is all a power means.', m(`(${k}${v})^${n} = ${Array(n).fill(k + v).join(T` \times `)}`)),
+    St('Multiply the numbers together and the letters together.', m(T`${Array(n).fill(k).join(T` \times `)} = ${k ** n} \qquad ${Array(n).fill(v).join(T` \times `)} = ${v}^${n}`)),
+    St('Put them back together.', m(`${k ** n}${v}^${n}`)),
+  ], check: `Try ${v} = 1: the question gives ${m(`${k}^${n} = ${k ** n}`)}, and so does your answer.`, trap: `Giving the power only to the letter. The ${k} is inside the bracket, so it gets the power too.` }), sol: [m(`(${k}${v})^${n} = ${Array(n).fill(k + v).join(T` \times `)}`), m(`= ${k ** n}${v}^${n}`)] }, P.uniq([
           { t: m(`${k ** n}${v}^${n}`), ok: true },
           { t: m(`${k}${v}^${n}`), why: `Only the ${v} got the power. The ${k} is inside the bracket, so it must be raised to the power too.` },
           { t: m(`${k * n}${v}^${n}`), why: `That multiplied ${k} by ${n}. Raising to the power ${n} means ${Array(n).fill(k).join(' × ')}.` },
@@ -63,7 +127,12 @@
           kind: 'num', answer: ans, tol: neg ? 1e-4 : undefined, answerTex: neg ? `\\frac{1}{${val}}` : String(val), fmt: 'Work it out without a calculator. A fraction like 1/4 is fine.',
           prompt: `Evaluate ${m(`${b}^{${neg ? '-' : ''}\\frac{${p}}{${q}}}`)}`,
           wrong: neg ? [{ v: val, msg: 'The negative index means one over: the answer is ' + m(`\\frac{1}{${val}}`) + '.' }] : [],
-          sol: [m(T`${q === 2 ? '\\sqrt{' + b + '}' : '\\sqrt[' + q + ']{' + b + '}'} = ${root}`) + ' (the bottom of the fraction is the root)', m(`${root}^${p} = ${val}`) + ' (the top is the power)', neg ? 'Negative index, so flip it: ' + m(`\\frac{1}{${val}}`) : ''].filter(Boolean),
+          more: ({ steps: [
+    St(`A fraction power does two jobs. The bottom number (${q}) is a root. The top number (${p}) is a power.`, m(T`${b}^{\frac{${p}}{${q}}} = \left(${q === 2 ? `\\sqrt{${b}}` : `\\sqrt[${q}]{${b}}`}\right)^{${p}}`)),
+    St(`Do the root first, because it makes the number smaller. Which number, multiplied by itself ${q === 2 ? 'twice' : q + ' times'}, gives ${b}? It is ${root}.`, m(T`${q === 2 ? `\\sqrt{${b}}` : `\\sqrt[${q}]{${b}}`} = ${root}`)),
+    St(`Now the power: ${root} to the power ${p}.`, m(`${root}^${p} = ${val}`)),
+    ...(neg ? [St('The minus sign in the power means “one over”. So flip it.', m(T`${b}^{-\frac{${p}}{${q}}} = \dfrac{1}{${val}}`))] : []),
+  ], check: `On your calculator, type ${b} ^ (${neg ? '−' : ''}${p} ÷ ${q}). You get ${neg ? P.n(ans, 6) : val}.`, trap: `Treating the fraction as a multiplier, like ${b} × ${p} ÷ ${q}. A fraction power is a root and a power.` }), sol: [m(T`${q === 2 ? '\\sqrt{' + b + '}' : '\\sqrt[' + q + ']{' + b + '}'} = ${root}`) + ' (the bottom of the fraction is the root)', m(`${root}^${p} = ${val}`) + ' (the top is the power)', neg ? 'Negative index, so flip it: ' + m(`\\frac{1}{${val}}`) : ''].filter(Boolean),
         };
       },
       () => {
@@ -73,7 +142,12 @@
           prompt: `Write ${m(T`\dfrac{x^{${a}}\sqrt{x}}{x^{${b}}}`)} in the form ${m('x^n')}. What is ${m('n')}?`,
           fmt: 'A fraction like 3/2 or a decimal like 1.5 is fine.',
           wrong: [{ v: a + 2 - b, msg: m(T`\sqrt{x} = x^{\frac12}`) + ', not ' + m('x^2') + '.' }],
-          sol: [m(T`\sqrt{x} = x^{\frac12}`), m(T`x^{${a}} \times x^{\frac12} = x^{${nf(a + 0.5)}}`), m(T`x^{${nf(a + 0.5)} - ${b}} = x^{${nf(n)}}`)],
+          more: ({ steps: [
+    St('The index laws only work when every part is a power of x. A square root is the power one half.', m(T`\sqrt{x} = x^{\frac12}`)),
+    St('Multiplying powers of x: add the powers.', m(T`x^{${a}} \times x^{\frac12} = x^{${a} + \frac12} = x^{${nf(a + 0.5)}}`)),
+    St('Dividing: subtract the bottom power from the top power.', m(T`x^{${nf(a + 0.5)}} \div x^{${b}} = x^{${nf(a + 0.5)} - ${b}} = x^{${nf(n)}}`)),
+    St(`So ${m('n')} is ${m(nf(n))}, which is ${P.n(n)} as a decimal.`),
+  ], check: `Put x = 4 into the question. Then work out ${m(`4^{${nf(n)}}`)} on your calculator. Both give ${P.n(4 ** n)}.`, trap: `Writing ${m(T`\sqrt{x}`)} as ${m('x^2')}. A root is a fraction power, not a square.` }), sol: [m(T`\sqrt{x} = x^{\frac12}`), m(T`x^{${a}} \times x^{\frac12} = x^{${nf(a + 0.5)}}`), m(T`x^{${nf(a + 0.5)} - ${b}} = x^{${nf(n)}}`)],
         };
       },
       () => {
@@ -83,13 +157,22 @@
           kind: 'num', answer: n, answerTex: nf(n), fmt: 'A fraction like -2/3 is fine.',
           prompt: `Write ${m(T`\dfrac{1}{${p === 1 ? (q === 2 ? '\\sqrt{x}' : '\\sqrt[3]{x}') : rootTex}}`)} as ${m('x^n')}. What is ${m('n')}?`,
           wrong: [{ v: p / q, msg: 'It is one over the root, so the power is negative.' }, { v: -q / p, msg: 'The root goes on the bottom of the fraction: ' + m(T`\sqrt[${q}]{x^{${p}}} = x^{\frac{${p}}{${q}}}`) + '.' }],
-          sol: [m(T`${rootTex} = x^{\frac{${p}}{${q}}}`) + ' (root on the bottom)', 'One over it makes the power negative: ' + m(`x^{${nf(n)}}`)],
+          more: ({ steps: [
+    St('First turn the root into a power. The root number goes on the bottom of the fraction; the power inside goes on top.', m(T`${rootTex} = x^{\frac{${p}}{${q}}}`)),
+    St('Now it is “one over” that power. One over is exactly what a negative power means.', m(T`\dfrac{1}{x^{\frac{${p}}{${q}}}} = x^{-\frac{${p}}{${q}}}`)),
+    St(`So ${m('n')} = ${m(nf(n))}.`),
+  ], check: `Try x = ${q === 2 ? 4 : 8}. The question gives ${m(T`\tfrac{1}{${2 ** p}}`)}, and ${m(`${q === 2 ? 4 : 8}^{${nf(n)}}`)} on your calculator gives ${P.n(1 / 2 ** p)}, the same.`, trap: 'Putting the root on top of the fraction. The root is always the bottom number.' }), sol: [m(T`${rootTex} = x^{\frac{${p}}{${q}}}`) + ' (root on the bottom)', 'One over it makes the power negative: ' + m(`x^{${nf(n)}}`)],
         };
       },
       () => {
         const k = R.pick([2, 3, 4]), a = R.int(2, 4), mm = R.int(2, 5), b = R.int(1, 5);
         const c = k * k * mm, p = 2 * a + b;
-        return P.mcq({ prompt: `Simplify ${m(T`(${k}x^{${a}})^2 \times ${mm}x^{${b}}`)}`, sol: [m(T`(${k}x^{${a}})^2 = ${k * k}x^{${2 * a}}`), m(T`${k * k}x^{${2 * a}} \times ${mm}x^{${b}} = ${c}x^{${p}}`)] }, P.uniq([
+        return P.mcq({ prompt: `Simplify ${m(T`(${k}x^{${a}})^2 \times ${mm}x^{${b}}`)}`, more: ({ steps: [
+    St(`Square the bracket first. Everything inside gets squared: the ${k} and the ${m(`x^{${a}}`)}.`, m(T`(${k}x^{${a}})^2 = ${k}^2 \times x^{${a} \times 2} = ${k * k}x^{${2 * a}}`)),
+    St(`Now multiply by ${m(`${mm}x^{${b}}`)}. Multiply the numbers: ${k * k} × ${mm} = ${c}.`),
+    St(`Multiply the powers of x by adding the powers: ${2 * a} + ${b} = ${p}.`, m(T`x^{${2 * a}} \times x^{${b}} = x^{${p}}`)),
+    St('Together:', m(`${c}x^{${p}}`)),
+  ], check: `Put x = 1. The question gives ${m(T`${k}^2 \times ${mm} = ${c}`)}, and so does your answer.`, trap: 'Multiplying the powers when you multiply two terms. Multiply terms: add powers. Only a bracket power multiplies them.' }), sol: [m(T`(${k}x^{${a}})^2 = ${k * k}x^{${2 * a}}`), m(T`${k * k}x^{${2 * a}} \times ${mm}x^{${b}} = ${c}x^{${p}}`)] }, P.uniq([
           { t: m(`${c}x^{${p}}`), ok: true },
           { t: m(`${2 * k * mm}x^{${p}}`), why: `${m(`${k}^2`)} is ${k * k}, not ${2 * k}.` },
           { t: m(`${c}x^{${a * 2 * b}}`), why: 'When you multiply, add the powers. Do not multiply them.' },
@@ -101,7 +184,12 @@
         return {
           kind: 'num', answer: r, prompt: `Solve ${m(T`x^{\frac32} = ${v}`)}`, fmt: 'Give the exact value.',
           wrong: [{ v: v ** (3 / 2), msg: 'Undo the power by raising both sides to the flipped power, ' + m(T`\tfrac23`) + '.' }, { v: v / 1.5, msg: 'You cannot divide by a power. Raise both sides to the power ' + m(T`\tfrac23`) + '.' }],
-          sol: ['Raise both sides to the power ' + m(T`\tfrac23`) + ' (the flip of ' + m(T`\tfrac32`) + ')', m(T`x = ${v}^{\frac23} = \left(\sqrt[3]{${v}}\right)^2 = ${Math.round(Math.cbrt(v))}^2 = ${r}`)],
+          more: ({ steps: [
+    St(`${m(T`x^{\frac32}`)} means: square root x, then cube it. To undo that, raise both sides to the flipped power, ${m(T`\tfrac23`)}.`),
+    St(`That works because ${m(T`\tfrac32 \times \tfrac23 = 1`)}, so the left side becomes plain x.`, m(T`x = ${v}^{\frac23}`)),
+    St(`Do the root first. The cube root of ${v} is ${Math.round(Math.cbrt(v))}.`, m(T`\sqrt[3]{${v}} = ${Math.round(Math.cbrt(v))}`)),
+    St('Then square it.', m(`${Math.round(Math.cbrt(v))}^2 = ${r}`)),
+  ], check: `${m(T`${r}^{\frac32}`)}: the square root of ${r} is ${Math.sqrt(r)}, and ${Math.sqrt(r)} cubed is ${v}.`, trap: `Dividing ${v} by 1.5. A power is undone by the opposite power, not by dividing.` }), sol: ['Raise both sides to the power ' + m(T`\tfrac23`) + ' (the flip of ' + m(T`\tfrac32`) + ')', m(T`x = ${v}^{\frac23} = \left(\sqrt[3]{${v}}\right)^2 = ${Math.round(Math.cbrt(v))}^2 = ${r}`)],
         };
       },
     ],
@@ -118,6 +206,7 @@
   P.addUnit({
     id: 'factorising', title: 'Expanding and factorising', mins: 10,
     blurb: 'Brackets in, brackets out. The skill that unlocks the rest of the paper.',
+    recap: 'Expanding multiplies brackets out: every term in one bracket times every term in the other. Factorising runs it backwards. For x² + bx + c, find two numbers that multiply to c and add to b; they go in the brackets. Always take out a common factor first.',
     scenes: [
       { dur: 11, card: [C(0, '<h2>Expanding: every term times every term.</h2>'), C(3, `<p>Picture ${m('(x+3)(x+2)')} as a rectangle. Its area is the four pieces added up.</p>`), C(8, `<p class="eq">${m('(x+3)(x+2) = x^2 + 5x + 6')}</p>`)],
         draw(a) {
@@ -158,7 +247,7 @@
         scaffold: [`I need two numbers that multiply to ${m(String(c))} and add to ${m(String(b))}.`],
         hint: c < 0 ? 'The product is negative, so one number is positive and one is negative.' : b < 0 ? 'Both numbers are negative.' : 'Both numbers are positive.',
         wrong: [{ v: [-p, -q], msg: 'The signs are the wrong way round. Expand your brackets to check.' }],
-        sol: [m(`${p} \\times ${signed(q)} = ${c}`) + ' and ' + m(`${p} + ${signed(q)} = ${b}`), 'So ' + m(`${poly([[1, 2], [b, 1], [c, 0]])} = (x${sc(p)})(x${sc(q)})`)],
+        more: (moreTri(p, q)), sol: [m(`${p} \\times ${br(q)} = ${c}`) + ' and ' + m(`${p} + ${br(q)} = ${b}`), 'So ' + m(`${poly([[1, 2], [b, 1], [c, 0]])} = (x${sc(p)})(x${sc(q)})`)],
       };
     },
     gens: [
@@ -170,7 +259,7 @@
         for (let d = 1; d <= Math.abs(c); d++) if (c % d === 0) for (const s of [1, -1]) { const u = s * d, w = c / u; if (u !== p && u !== q && u + w !== b && u <= w) alt.push([u, w]); }
         if (alt.length) { const [u, w] = R.pick(alt); choices.push({ t: m(`(x${sc(u)})(x${sc(w)})`), why: `These multiply to ${c}, but add to ${u + w}, not ${b}.` }); }
         choices.push({ t: m(`(x${sc(p)})(x${sc(-q)})`), why: `Expand it: the middle term would be ${m(poly([[p - q, 1]]))}.` });
-        return P.mcq({ prompt: `Factorise ${m(ex)}`, sol: [`Two numbers that multiply to ${c} and add to ${b}: ${p} and ${q}.`, m(`${ex} = (x${sc(p)})(x${sc(q)})`)] }, P.uniq(choices).slice(0, 4));
+        return P.mcq({ prompt: `Factorise ${m(ex)}`, more: (moreTri(p, q)), sol: [`Two numbers that multiply to ${c} and add to ${b}: ${p} and ${q}.`, m(`${ex} = (x${sc(p)})(x${sc(q)})`)] }, P.uniq(choices).slice(0, 4));
       },
       () => {
         const a = R.nz(-8, 8), b = R.nz(-8, 8);
@@ -178,12 +267,23 @@
           kind: 'multi', ordered: true, answer: [a + b, a * b], answerTex: poly([[1, 2], [a + b, 1], [a * b, 0]]),
           prompt: `Expand ${m(`(x${sc(a)})(x${sc(b)})`)} into the form ${m('x^2 + bx + c')}.`, fmt: 'Enter b, then c, separated by a comma. For example: 5, -6',
           wrong: [{ v: [a + b, a + b], msg: 'The last term is the two numbers multiplied together.' }, { v: [a * b, a + b], msg: 'Other way round: b is the x-coefficient (the sum), c is the constant (the product).' }],
-          sol: [m(`x \\times x = x^2`), m(`x \\times ${br(b)} + ${br(a)} \\times x = ${poly([[a + b, 1]])}`), m(`${br(a)} \\times ${br(b)} = ${a * b}`), 'So ' + m(poly([[1, 2], [a + b, 1], [a * b, 0]]))],
+          more: ({ steps: [
+    St('Every term in the first bracket multiplies every term in the second. That makes four products.'),
+    St('First terms:', m(T`x \times x = x^2`)),
+    St('Outside and inside terms. Both give an x term, so add them.', m(T`x \times ${br(b)} + ${br(a)} \times x = ${poly([[a + b, 1]])}`)),
+    St('Last terms:', m(T`${br(a)} \times ${br(b)} = ${a * b}`)),
+    St(`So the answer is ${m(poly([[1, 2], [a + b, 1], [a * b, 0]]))}. That makes b = ${a + b} and c = ${a * b}.`),
+  ], check: `Put x = 1 into both: ${m(T`(1${sc(a)})(1${sc(b)}) = ${(1 + a) * (1 + b)}`)} and ${m(T`1 + ${br(a + b)} + ${br(a * b)} = ${1 + a + b + a * b}`)}.`, trap: 'Forgetting that the middle term comes from two products, not one.' }), sol: [m(`x \\times x = x^2`), m(`x \\times ${br(b)} + ${br(a)} \\times x = ${poly([[a + b, 1]])}`), m(`${br(a)} \\times ${br(b)} = ${a * b}`), 'So ' + m(poly([[1, 2], [a + b, 1], [a * b, 0]]))],
         };
       },
       () => {
         const k = R.int(1, 5), q = R.int(1, 9), ex = `${k * k === 1 ? '' : k * k}x^2 - ${q * q}`, kx = (k === 1 ? '' : k) + 'x';
-        return P.mcq({ prompt: `Factorise ${m(ex)}`, sol: [m(`${ex} = (${kx})^2 - ${q}^2`), m(`= (${kx} - ${q})(${kx} + ${q})`)] }, P.uniq([
+        return P.mcq({ prompt: `Factorise ${m(ex)}`, more: ({ steps: [
+    St('Spot the pattern: two terms, a minus sign between them, and both are perfect squares.'),
+    St('Write each one as something squared.', m(`${ex} = (${kx})^2 - ${q}^2`)),
+    St(`A square minus a square always factorises the same way: ${m(T`A^2 - B^2 = (A - B)(A + B)`)}.`),
+    St('So:', m(`(${kx} - ${q})(${kx} + ${q})`)),
+  ], check: `Expand it. The two middle terms are equal but opposite, so they cancel, leaving ${m(ex)}.`, trap: `Writing a squared bracket like ${m(`(${kx} - ${q})^2`)}. That has a middle term, and this expression does not.` }), sol: [m(`${ex} = (${kx})^2 - ${q}^2`), m(`= (${kx} - ${q})(${kx} + ${q})`)] }, P.uniq([
           { t: m(`(${kx} - ${q})(${kx} + ${q})`), ok: true },
           { t: m(`(${kx} - ${q})^2`), why: `That expands to ${m(`${k * k === 1 ? '' : k * k}x^2 - ${2 * k * q}x + ${q * q}`)}. A difference of two squares needs one plus and one minus.` },
           { t: m(`(${kx} + ${q})^2`), why: 'That gives a plus at the end. You need one plus bracket and one minus bracket.' },
@@ -194,7 +294,14 @@
         const a = R.pick([2, 3, 5]); let p, q; do { p = R.nz(-6, 6); q = R.nz(-6, 6); } while (p % a === 0 || a * q + p === 0);
         // (a x + p)(x + q) = a x^2 + (aq + p) x + pq
         const ex = poly([[a, 2], [a * q + p, 1], [p * q, 0]]);
-        return P.mcq({ prompt: `Factorise ${m(ex)}`, sol: [`Multiply the ends: ${m(`${a} \\times ${signed(p * q)} = ${a * p * q}`)}. Two numbers that multiply to ${a * p * q} and add to ${a * q + p}: ${m(String(a * q))} and ${m(String(p))}.`, m(`${ex} = (${a}x${sc(p)})(x${sc(q)})`), 'Expand to check.'] }, P.uniq([
+        return P.mcq({ prompt: `Factorise ${m(ex)}`, more: ({ steps: [
+    St(`There is a number (${a}) in front of ${m('x^2')}, so use the “multiply the ends” method.`),
+    St('Multiply the first number by the last number.', m(T`${a} \times ${br(p * q)} = ${a * p * q}`)),
+    St(`Find two numbers that multiply to ${a * p * q} and add to the middle number, ${a * q + p}. They are ${a * q} and ${p}.`),
+    St('Split the middle term into those two parts.', m(`${poly([[a, 2], [a * q, 1]])}${cont(poly([[p, 1], [p * q, 0]]))}`)),
+    St(`Factorise the first pair and the second pair. Both leave the same bracket, ${m(`(x${sc(q)})`)}.`, m(`${a}x(x${sc(q)})${cont(String(p))}(x${sc(q)})`)),
+    St('Take out the shared bracket.', m(`(${a}x${sc(p)})(x${sc(q)})`)),
+  ], check: `Expand: ${m(T`${a}x \times x = ${a}x^2`)}, the middle terms give ${m(poly([[a * q + p, 1]]))}, and ${m(T`${br(p)} \times ${br(q)} = ${p * q}`)}.`, trap: `Putting the numbers in the wrong brackets. Always expand to check the middle term.` }), sol: [`Multiply the ends: ${m(`${a} \\times ${signed(p * q)} = ${a * p * q}`)}. Two numbers that multiply to ${a * p * q} and add to ${a * q + p}: ${m(String(a * q))} and ${m(String(p))}.`, m(`${ex} = (${a}x${sc(p)})(x${sc(q)})`), 'Expand to check.'] }, P.uniq([
           { t: m(`(${a}x${sc(p)})(x${sc(q)})`), ok: true },
           { t: m(`(${a}x${sc(q)})(x${sc(p)})`), why: `Expand it: the middle term would be ${m(poly([[a * p + q, 1]]))}, not ${m(poly([[a * q + p, 1]]))}.` },
           { t: m(`(${a}x${sc(-p)})(x${sc(-q)})`), why: 'The signs are flipped. Expand to check.' },
@@ -204,17 +311,27 @@
       () => {
         const a = R.int(2, 5), b = R.nz(-7, 7);
         const ex = `(${a}x${sc(b)})^2`, ans = poly([[a * a, 2], [2 * a * b, 1], [b * b, 0]]);
-        return P.mcq({ prompt: `Expand ${m(ex)}`, sol: [m(`${ex} = (${a}x${sc(b)})(${a}x${sc(b)})`), m(`= ${a * a}x^2 ${b < 0 ? '-' : '+'} ${Math.abs(a * b)}x ${b < 0 ? '-' : '+'} ${Math.abs(a * b)}x + ${b * b}`), m(`= ${ans}`)] }, P.uniq([
+        return P.mcq({ prompt: `Expand ${m(ex)}`, more: ({ steps: [
+    St('Squaring a bracket means multiplying it by itself. Write it out so no term goes missing.', m(`${ex} = (${a}x${sc(b)})(${a}x${sc(b)})`)),
+    St('First terms:', m(T`${a}x \times ${a}x = ${a * a}x^2`)),
+    St('Outside and inside: the same product appears twice.', m(T`${a}x \times ${br(b)} + ${br(b)} \times ${a}x = ${poly([[2 * a * b, 1]])}`)),
+    St('Last terms:', m(T`${br(b)} \times ${br(b)} = ${b * b}`)),
+    St('Add them up.', m(ans)),
+  ], check: `Put x = 1: ${m(`(${a}${sc(b)})^2 = ${(a + b) ** 2}`)}, and ${m(`${a * a}${sc(2 * a * b)}${sc(b * b)} = ${(a + b) ** 2}`)}.`, trap: `Writing ${m(poly([[a * a, 2], [b * b, 0]]))}. The middle term is the one people lose.` }), sol: [m(`${ex} = (${a}x${sc(b)})(${a}x${sc(b)})`), m(`= ${a * a}x^2 ${b < 0 ? '-' : '+'} ${Math.abs(a * b)}x ${b < 0 ? '-' : '+'} ${Math.abs(a * b)}x + ${b * b}`), m(`= ${ans}`)] }, P.uniq([
           { t: m(ans), ok: true },
           { t: m(poly([[a * a, 2], [b * b, 0]])), why: 'You lost the middle term. Write it as two brackets multiplied together.' },
-          { t: m(poly([[a * a, 2], [a * b, 1], [b * b, 0]])), why: 'The middle term appears twice, so it is ' + m(`2 \\times ${a} \\times ${signed(b)}x`) + '.' },
+          { t: m(poly([[a * a, 2], [a * b, 1], [b * b, 0]])), why: 'The middle term appears twice, so it is ' + m(T`2 \times ${a}x \times ${br(b)} = ${poly([[2 * a * b, 1]])}`) + '.' },
           { t: m(poly([[a, 2], [2 * a * b, 1], [b * b, 0]])), why: `The ${a} is squared too: ${m(`(${a}x)^2 = ${a * a}x^2`)}.` },
         ]));
       },
       () => {
         const k = R.pick([2, 3, 5]); let p, q; do { p = R.nz(-6, 6); q = R.nz(-6, 6); } while (p === q || p + q === 0);
         const ex = poly([[k, 2], [k * (p + q), 1], [k * p * q, 0]]);
-        return P.mcq({ prompt: `Fully factorise ${m(ex)}`, sol: [`Take out the common factor ${k}: ${m(`${k}(${poly([[1, 2], [p + q, 1], [p * q, 0]])})`)}`, `Then factorise the bracket: ${m(`${k}(x${sc(p)})(x${sc(q)})`)}`] }, P.uniq([
+        return P.mcq({ prompt: `Fully factorise ${m(ex)}`, more: ({ steps: [
+    St(`Look for a common factor first. Every term divides by ${k}.`, m(`${ex} = ${k}(${poly([[1, 2], [p + q, 1], [p * q, 0]])})`)),
+    St(`Now factorise the bracket. Two numbers that multiply to ${p * q} and add to ${p + q}: ${p} and ${q}.`),
+    St(`Keep the ${k} at the front.`, m(`${k}(x${sc(p)})(x${sc(q)})`)),
+  ], check: `Expand the brackets, then multiply by ${k}. You get ${m(ex)} back.`, trap: `Dropping the ${k}, or stopping before the bracket is factorised.` }), sol: [`Take out the common factor ${k}: ${m(`${k}(${poly([[1, 2], [p + q, 1], [p * q, 0]])})`)}`, `Then factorise the bracket: ${m(`${k}(x${sc(p)})(x${sc(q)})`)}`] }, P.uniq([
           { t: m(`${k}(x${sc(p)})(x${sc(q)})`), ok: true },
           { t: m(`(x${sc(p)})(x${sc(q)})`), why: `Expand it: you get ${m(poly([[1, 2], [p + q, 1], [p * q, 0]]))}. You lost the common factor ${k}.` },
           { t: m(`${k}(${poly([[1, 2], [p + q, 1], [p * q, 0]])})`), why: '"Fully" factorise means the bracket must be factorised too.' },
@@ -234,6 +351,7 @@
   P.addUnit({
     id: 'alg-fractions', title: 'Algebraic fractions', mins: 9,
     blurb: 'Factorise, cancel, combine. Examiners flagged fractions as a weak spot in 2025.',
+    recap: 'Algebraic fractions follow the same rules as number fractions. To simplify, factorise the top and bottom, then cancel brackets that match. To add, give both fractions the same bottom first. You can cancel whole factors, never part of a sum.',
     scenes: [
       { dur: 12, card: [C(0, '<h2>Factorise first, then cancel.</h2>'), C(3, '<p>You can only cancel factors: whole brackets or numbers that multiply the whole top and bottom.</p>'), C(8, `<p>The 2025 examiners said weak algebra, especially with fractions, held students back on all three papers.</p>`)],
         board: [B(0.5, T`\dfrac{x^2 - 9}{x + 3}`, '', { big: true }), B(3.5, T`= \dfrac{(x-3)(x+3)}{x+3}`, 'factorise'), B(6.5, 'x - 3', 'cancel the bracket', { hl: true })] },
@@ -263,14 +381,14 @@
         scaffold: [`Factorise the top: ${m(`${top} = (x${sc(p)})(x${sc(q)})`)}`, m(T`\dfrac{(x${sc(p)})(x${sc(q)})}{x${sc(p)}}`)],
         hint: 'Cancel the bracket that is on the top and the bottom.',
         wrong: [{ v: p, msg: `You kept the bracket that cancels. ${m(`(x${sc(p)})`)} is on top and bottom, so it goes.` }, { v: -q, msg: 'Check the sign.' }],
-        sol: ['Cancel ' + m(`(x${sc(p)})`) + ' from top and bottom', 'Answer: ' + m(`x${sc(q)}`)],
+        more: (moreCancel(p, q, top)), sol: ['Cancel ' + m(`(x${sc(p)})`) + ' from top and bottom', 'Answer: ' + m(`x${sc(q)}`)],
       };
     },
     gens: [
       () => {
         let p, q; do { p = R.nz(-7, 7); q = R.nz(-7, 7); } while (p === q || p + q === 0);
         const top = poly([[1, 2], [p + q, 1], [p * q, 0]]);
-        return P.mcq({ prompt: `Simplify ${m(T`\dfrac{${top}}{x${sc(p)}}`)}`, sol: [m(T`\dfrac{(x${sc(p)})(x${sc(q)})}{x${sc(p)}}`), m(`= x${sc(q)}`)] }, P.uniq([
+        return P.mcq({ prompt: `Simplify ${m(T`\dfrac{${top}}{x${sc(p)}}`)}`, more: (moreCancel(p, q, top)), sol: [m(T`\dfrac{(x${sc(p)})(x${sc(q)})}{x${sc(p)}}`), m(`= x${sc(q)}`)] }, P.uniq([
           { t: m(`x${sc(q)}`), ok: true },
           { t: m(`x${sc(p)}`), why: `That is the bracket that cancels. Factorise the top: ${m(`(x${sc(p)})(x${sc(q)})`)}.` },
           { t: m(`x${sc(-q)}`), why: 'Check the sign by expanding ' + m(`(x${sc(p)})(x${sc(-q)})`) + '.' },
@@ -280,7 +398,12 @@
       () => {
         let k, q; do { k = R.int(1, 7); q = R.nz(-7, 7); } while (q === k || q === -k);
         const top = `x^2 - ${k * k}`, bot = poly([[1, 2], [q - k, 1], [-k * q, 0]]);
-        return P.mcq({ prompt: `Simplify ${m(T`\dfrac{${top}}{${bot}}`)}`, sol: ['Top: ' + m(`${top} = (x-${k})(x+${k})`), 'Bottom: ' + m(`${bot} = (x-${k})(x${sc(q)})`), 'Cancel ' + m(`(x-${k})`) + ': ' + m(T`\dfrac{x+${k}}{x${sc(q)}}`)] }, P.uniq([
+        return P.mcq({ prompt: `Simplify ${m(T`\dfrac{${top}}{${bot}}`)}`, more: ({ steps: [
+    St('Factorise the top and the bottom separately. Then look for a bracket they share.'),
+    St('The top is a square minus a square.', m(`${top} = (x-${k})(x+${k})`)),
+    St(`The bottom: two numbers that multiply to ${-k * q} and add to ${q - k}. They are ${-k} and ${q}.`, m(`${bot} = (x-${k})(x${sc(q)})`)),
+    St(`Both contain ${m(`(x-${k})`)}. Cancel it.`, m(T`\dfrac{\cancel{(x-${k})}\,(x+${k})}{\cancel{(x-${k})}\,(x${sc(q)})} = \dfrac{x+${k}}{x${sc(q)}}`)),
+  ], check: `Put x = 10 into the question and into your answer. Both give ${P.n((10 + k) / (10 + q), 4)}.`, trap: `Cancelling the ${m('x^2')} terms. They are parts of sums, not factors.` }), sol: ['Top: ' + m(`${top} = (x-${k})(x+${k})`), 'Bottom: ' + m(`${bot} = (x-${k})(x${sc(q)})`), 'Cancel ' + m(`(x-${k})`) + ': ' + m(T`\dfrac{x+${k}}{x${sc(q)}}`)] }, P.uniq([
           { t: m(T`\dfrac{x+${k}}{x${sc(q)}}`), ok: true },
           { t: m(T`\dfrac{x-${k}}{x${sc(q)}}`), why: `${m(`(x-${k})`)} is the bracket on both top and bottom, so that is the one that cancels.` },
           { t: m(T`\dfrac{x+${k}}{x${sc(-q)}}`), why: 'Check the sign in the bottom bracket by expanding.' },
@@ -290,11 +413,17 @@
       () => {
         const a = R.int(1, 5), b = R.int(1, 5), c = R.int(1, 4);
         const top = poly([[a + b, 1], [a * c, 0]]);
-        return P.mcq({ prompt: `Write as a single fraction: ${m(T`\dfrac{${a}}{x} + \dfrac{${b}}{x + ${c}}`)}`, sol: ['Common denominator: ' + m(`x(x+${c})`), m(T`\dfrac{${a}(x+${c}) + ${b}x}{x(x+${c})}`), m(T`= \dfrac{${top}}{x(x+${c})}`)] }, P.uniq([
+        return P.mcq({ prompt: `Write as a single fraction: ${m(T`\dfrac{${a}}{x} + \dfrac{${b}}{x + ${c}}`)}`, more: ({ steps: [
+    St(`You can only add fractions with the same bottom. These bottoms are ${m('x')} and ${m(`x+${c}`)}.`),
+    St(`Use ${m(`x(x+${c})`)} as the common bottom, because it contains both.`),
+    St(`The first fraction is missing ${m(`(x+${c})`)}, so multiply its top and bottom by that. The second is missing ${m('x')}.`, m(T`\dfrac{${a}(x+${c})}{x(x+${c})} + \dfrac{${co(b)}}{x(x+${c})}`)),
+    St(`Now add the tops. Expand the bracket first: ${m(`${a}(x+${c}) = ${poly([[a, 1], [a * c, 0]])}`)}.`, m(T`\dfrac{${poly([[a, 1], [a * c, 0]])} + ${co(b)}}{x(x+${c})}`)),
+    St('Collect the x terms.', m(T`\dfrac{${top}}{x(x+${c})}`)),
+  ], check: `Try x = 1: ${m(T`\tfrac{${a}}{1} + \tfrac{${b}}{${1 + c}}`)} = ${P.n(a + b / (1 + c), 4)}, and your answer gives ${m(T`\tfrac{${a + b + a * c}}{${1 + c}}`)}, the same.`, trap: 'Adding the tops and adding the bottoms. That never works with fractions.' }), sol: ['Common denominator: ' + m(`x(x+${c})`), m(T`\dfrac{${a}(x+${c}) + ${co(b)}}{x(x+${c})}`), m(T`= \dfrac{${top}}{x(x+${c})}`)] }, P.uniq([
           { t: m(T`\dfrac{${top}}{x(x+${c})}`), ok: true },
           { t: m(T`\dfrac{${a + b}}{2x + ${c}}`), why: 'You cannot add the tops and add the bottoms. Use a common denominator.' },
-          { t: m(T`\dfrac{${a + b}}{x(x+${c})}`), why: `Each top must be multiplied by what its bottom is missing: ${m(`${a}(x+${c})`)} and ${m(`${b}x`)}.` },
-          { t: m(T`\dfrac{${poly([[a + b, 1], [a, 0]])}}{x(x+${c})}`), why: `Multiply out fully: ${m(`${a}(x+${c}) = ${a}x + ${a * c}`)}.` },
+          { t: m(T`\dfrac{${a + b}}{x(x+${c})}`), why: `Each top must be multiplied by what its bottom is missing: ${m(`${a}(x+${c})`)} and ${m(co(b))}.` },
+          { t: m(T`\dfrac{${poly([[a + b, 1], [a, 0]])}}{x(x+${c})}`), why: `Multiply out fully: ${m(`${a}(x+${c}) = ${poly([[a, 1], [a * c, 0]])}`)}.` },
         ]));
       },
       () => {
@@ -302,7 +431,13 @@
         const L = (a * b) / P.gcd(a, b), t = R.int(1, 6), x = L * t, k = x / a + x / b;
         return {
           kind: 'num', answer: x, prompt: `Solve ${m(T`\dfrac{x}{${a}} + \dfrac{x}{${b}} = ${nf(k)}`)}`,
-          sol: [`Multiply every term by ${L}: ${m(`${L / a}x + ${L / b}x = ${nf(k * L)}`)}`, m(`${L / a + L / b}x = ${nf(k * L)}`), m(`x = ${x}`)],
+          more: ({ steps: [
+    St('Fractions make an equation messy. Clear them by multiplying every term by a number that both bottoms go into.'),
+    St(`The smallest number that ${a} and ${b} both divide into is ${L}.`),
+    St(`Multiply each term by ${L}, including the right side.`, m(`${co(L / a)} + ${co(L / b)} = ${nf(k * L)}`)),
+    St('Collect the x terms.', m(`${co(L / a + L / b)} = ${nf(k * L)}`)),
+    St(`Divide both sides by ${L / a + L / b}.`, m(`x = ${x}`)),
+  ], check: `${m(T`\tfrac{${x}}{${a}} + \tfrac{${x}}{${b}} = ${nf(x / a)} + ${nf(x / b)} = ${nf(k)}`)}.`, trap: `Multiplying the fractions but forgetting the ${nf(k)} on the right.` }), sol: [`Multiply every term by ${L}: ${m(`${co(L / a)} + ${co(L / b)} = ${nf(k * L)}`)}`, m(`${co(L / a + L / b)} = ${nf(k * L)}`), m(`x = ${x}`)],
           hint: `Multiply every term by ${L} to clear the fractions.`,
         };
       },
@@ -312,7 +447,12 @@
         // (x + a)/b = (x - c)/d
         return {
           kind: 'num', answer: x, prompt: `Solve ${m(T`\dfrac{x ${a < 0 ? '-' : '+'} ${Math.abs(a)}}{${b}} = \dfrac{x ${c < 0 ? '+' : '-'} ${Math.abs(c)}}{${d}}`)}`,
-          sol: ['Cross-multiply: ' + m(`${d}(x${sc(a)}) = ${b}(x${sc(-c)})`), m(`${d}x${sc(d * a)} = ${b}x${sc(-b * c)}`), m(`${d - b}x = ${-b * c - d * a}`), m(`x = ${x}`)],
+          more: ({ steps: [
+    St('One fraction equals another, so cross-multiply: each top times the other bottom.', m(`${d}(x${sc(a)}) = ${b}(x${sc(-c)})`)),
+    St('Expand both brackets.', m(`${poly([[d, 1], [d * a, 0]])} = ${poly([[b, 1], [-b * c, 0]])}`)),
+    St(`Take ${m(co(b))} from both sides and move the numbers to the right.`, m(`${co(d - b)} = ${-b * c - d * a}`)),
+    St(`Divide by ${d - b}.`, m(`x = ${x}`)),
+  ], check: `Put x = ${x} into both sides: ${m(T`\tfrac{${x + a}}{${b}}`)} and ${m(T`\tfrac{${x - c}}{${d}}`)} both equal ${nf((x + a) / b)}.`, trap: 'Multiplying only the x inside a bracket and forgetting the number.' }), sol: ['Cross-multiply: ' + m(`${d}(x${sc(a)}) = ${b}(x${sc(-c)})`), m(`${poly([[d, 1], [d * a, 0]])} = ${poly([[b, 1], [-b * c, 0]])}`), m(`${co(d - b)} = ${-b * c - d * a}`), m(`x = ${x}`)],
           hint: 'Cross-multiply, then expand the brackets.',
         };
       },
@@ -329,6 +469,7 @@
   P.addUnit({
     id: 'rearranging', title: 'Rearranging and forming equations', mins: 8,
     blurb: 'Change the subject of a formula, and turn words into an equation you can solve.',
+    recap: 'A formula is built in steps. To change the subject, undo those steps in reverse order, doing the same thing to both sides each time. Squares come off last, with a square root. If the letter you want appears twice, collect those terms and factorise it out.',
     scenes: [
       { dur: 11, card: [C(0, '<h2>Undo it in reverse order.</h2>'), C(3, `<p>To make ${m('t')} the subject, peel off what was done to it, last thing first.</p>`)],
         board: [B(0.5, 'v = u + at', '', { big: true }), B(3, 'v - u = at', 'undo + u'), B(6, T`t = \dfrac{v - u}{a}`, 'undo × a', { hl: true })] },
@@ -353,13 +494,23 @@
         kind: 'num', answer: t, prompt: `Using ${m('v = u + at')}, find ${m('t')} when ${m(`v = ${v}`)}, ${m(`u = ${u}`)} and ${m(`a = ${a}`)}.`,
         scaffold: ['Rearrange first: ' + m('v - u = at'), m(T`t = \dfrac{v - u}{a}`)],
         wrong: [{ v: (v + u) / a, msg: 'Subtract u from v, do not add it.' }, { v: v - u * a, msg: 'Subtract u first, then divide by a.' }],
-        sol: [m(T`t = \dfrac{${v} - ${u}}{${a}} = \dfrac{${v - u}}{${a}} = ${t}`)],
+        more: ({ steps: [
+    St('Look at what was done to t: it was multiplied by a, then u was added.'),
+    St('Undo the last step first: subtract u from both sides.', m('v - u = at')),
+    St('Then undo the multiply: divide both sides by a.', m(T`t = \dfrac{v - u}{a}`)),
+    St('Now put the numbers in.', m(T`t = \dfrac{${v} - ${u}}{${a}} = \dfrac{${v - u}}{${a}} = ${t}`)),
+  ], check: `Put t back in: ${m(T`${u} + ${a} \times ${t} = ${v}`)}, which is v.`, trap: 'Dividing before subtracting. Undo in reverse order, so the + u goes first.' }), sol: [m(T`t = \dfrac{${v} - ${u}}{${a}} = \dfrac{${v - u}}{${a}} = ${t}`)],
       };
     },
     gens: [
       () => {
         const a = R.int(2, 7), b = R.nz(-9, 9), c = R.int(2, 5);
-        return P.mcq({ prompt: `Make ${m('x')} the subject of ${m(T`y = \dfrac{${a}x ${b < 0 ? '-' : '+'} ${Math.abs(b)}}{${c}}`)}`, sol: [m(`${c}y = ${a}x${sc(b)}`), m(`${c}y${sc(-b)} = ${a}x`), m(T`x = \dfrac{${c}y${sc(-b)}}{${a}}`)] }, P.uniq([
+        return P.mcq({ prompt: `Make ${m('x')} the subject of ${m(T`y = \dfrac{${a}x ${b < 0 ? '-' : '+'} ${Math.abs(b)}}{${c}}`)}`, more: ({ steps: [
+    St(`How the formula was built: start with x, multiply by ${a}, ${b < 0 ? 'subtract ' + -b : 'add ' + b}, then divide by ${c}. Undo those in reverse.`),
+    St(`Undo “divide by ${c}”: multiply both sides by ${c}.`, m(`${c}y = ${a}x${sc(b)}`)),
+    St(`Undo “${b < 0 ? 'subtract ' + -b : 'add ' + b}”: ${b < 0 ? 'add ' + -b : 'subtract ' + b} on both sides.`, m(`${c}y${sc(-b)} = ${a}x`)),
+    St(`Undo “multiply by ${a}”: divide both sides by ${a}.`, m(T`x = \dfrac{${c}y${sc(-b)}}{${a}}`)),
+  ], check: `Pick x = 1, so y = ${m(T`\tfrac{${a + b}}{${c}}`)}. Put that y into your answer and you get x = 1 back.`, trap: `Undoing in the wrong order. The divide by ${c} was done last, so it is undone first.` }), sol: [m(`${c}y = ${a}x${sc(b)}`), m(`${c}y${sc(-b)} = ${a}x`), m(T`x = \dfrac{${c}y${sc(-b)}}{${a}}`)] }, P.uniq([
           { t: m(T`x = \dfrac{${c}y${sc(-b)}}{${a}}`), ok: true },
           { t: m(T`x = \dfrac{${c}y${sc(b)}}{${a}}`), why: `To undo ${m(sc(b).trim())}, do the opposite.` },
           { t: m(T`x = \dfrac{y${sc(-b)}}{${a * c}}`), why: `Multiply both sides by ${c} first. Do not divide.` },
@@ -368,9 +519,14 @@
       },
       () => {
         const k = R.pick([['\\pi', 'π'], ['4', '4'], ['2g', '2g'], ['k', 'k']])[0];
-        return P.mcq({ prompt: `Make ${m('r')} the subject of ${m(`A = ${k} r^2`)}, where ${m('r > 0')}.`, sol: [m(T`r^2 = \dfrac{A}{${k}}`), m(T`r = \sqrt{\dfrac{A}{${k}}}`)] }, P.uniq([
+        return P.mcq({ prompt: `Make ${m('r')} the subject of ${m(`A = ${k} r^2`)}, where ${m('r > 0')}.`, more: ({ steps: [
+    St(`r was squared, then multiplied by ${m(k)}. Undo those in reverse.`),
+    St(`Divide both sides by ${m(k)}.`, m(T`r^2 = \dfrac{A}{${k}}`)),
+    St('Undo the square with a square root. It covers the whole right side.', m(T`r = \sqrt{\dfrac{A}{${k}}}`)),
+    St('r is positive here, so you only need the positive root.'),
+  ], check: `Square your answer and multiply by ${m(k)}: you get A back.`, trap: `Taking the square root before dividing, which leaves the ${m(k)} in the wrong place.` }), sol: [m(T`r^2 = \dfrac{A}{${k}}`), m(T`r = \sqrt{\dfrac{A}{${k}}}`)] }, P.uniq([
           { t: m(T`r = \sqrt{\dfrac{A}{${k}}}`), ok: true },
-          { t: m(T`r = \dfrac{A}{2${k}}`), why: 'Halving does not undo a square. Take the square root.' },
+          { t: m(T`r = \dfrac{A}{${k}}`), why: 'That is r squared. You still need to take the square root.' },
           { t: m(T`r = \dfrac{\sqrt{A}}{${k}}`), why: `Divide by ${m(k)} first, then square root everything.` },
           { t: m(T`r = \left(\dfrac{A}{${k}}\right)^2`), why: 'Squaring undoes a square root, not a square. Take the square root.' },
         ]));
@@ -380,12 +536,23 @@
         return {
           kind: 'num', answer: v, dp: 2, prompt: `Using ${m('v^2 = u^2 + 2as')}, find ${m('v')} when ${m(`u = ${u}`)}, ${m(`a = ${a}`)} and ${m(`s = ${s}`)}. Take ${m('v > 0')}.`,
           wrong: [{ v: v2, msg: `That is ${m('v^2')}. Square root it to get ${m('v')}.` }, { v: u + 2 * a * s, msg: `Square u first: ${m(`${u}^2 = ${u * u}`)}.` }],
-          sol: [m(`v^2 = ${u}^2 + 2 \\times ${a} \\times ${s} = ${v2}`), m(T`v = \sqrt{${v2}} = ${P.f(v, 2)}`)],
+          more: ({ steps: [
+    St(`The formula gives v squared, not v. So work out ${m('v^2')} first, then take the square root.`),
+    St('Substitute. Do the squaring and multiplying before the adding.', m(T`v^2 = ${u}^2 + 2 \times ${a} \times ${s} = ${u * u} + ${2 * a * s} = ${v2}`)),
+    St('Take the square root to get v.', m(T`v = \sqrt{${v2}} = ${P.f(v, 2)}`)),
+  ], check: `${P.f(v, 2)} squared is about ${v2}.`, trap: `Stopping at ${v2}. That is v squared, not v.` }), sol: [m(`v^2 = ${u}^2 + 2 \\times ${a} \\times ${s} = ${v2}`), m(T`v = \sqrt{${v2}} = ${P.f(v, 2)}`)],
         };
       },
       () => {
         const a = R.int(1, 6), b = R.int(1, 5);
-        return P.mcq({ prompt: `Make ${m('x')} the subject of ${m(T`y = \dfrac{x + ${a}}{x - ${b}}`)}`, sol: [m(`y(x - ${b}) = x + ${a}`), m(`xy - ${b}y = x + ${a}`), m(`xy - x = ${a} + ${b}y`) + ' (x terms on one side)', m(`x(y - 1) = ${a} + ${b}y`) + ' (factorise)', m(T`x = \dfrac{${a} + ${b}y}{y - 1}`)] }, P.uniq([
+        return P.mcq({ prompt: `Make ${m('x')} the subject of ${m(T`y = \dfrac{x + ${a}}{x - ${b}}`)}`, more: ({ steps: [
+    St('x is in two places, the top and the bottom. The plan: clear the fraction, gather the x terms, then factorise x out.'),
+    St(`Multiply both sides by the bottom, ${m(`(x - ${b})`)}.`, m(`y(x - ${b}) = x + ${a}`)),
+    St('Expand the bracket.', m(`xy - ${co(b, 'y')} = x + ${a}`)),
+    St('Move the x terms to the left and everything else to the right.', m(`xy - x = ${a} + ${co(b, 'y')}`)),
+    St('Both terms on the left contain x. Take it out as a common factor.', m(`x(y - 1) = ${a} + ${co(b, 'y')}`)),
+    St(`Divide by ${m('(y - 1)')}.`, m(T`x = \dfrac{${a} + ${co(b, 'y')}}{y - 1}`)),
+  ], check: `Pick x = ${b + 1}, so y = ${b + 1 + a}. Put y = ${b + 1 + a} into your answer: ${m(T`\tfrac{${a} + ${b} \times ${b + 1 + a}}{${b + a}} = ${b + 1}`)}.`, trap: 'Trying to divide by x while x is still on both sides. Collect and factorise first.' }), sol: [m(`y(x - ${b}) = x + ${a}`), m(`xy - ${b}y = x + ${a}`), m(`xy - x = ${a} + ${b}y`) + ' (x terms on one side)', m(`x(y - 1) = ${a} + ${b}y`) + ' (factorise)', m(T`x = \dfrac{${a} + ${b}y}{y - 1}`)] }, P.uniq([
           { t: m(T`x = \dfrac{${a} + ${b}y}{y - 1}`), ok: true },
           { t: m(T`x = \dfrac{${a} - ${b}y}{y - 1}`), why: `Check the sign when you move ${m(`-${b}y`)} across.` },
           { t: m(T`x = \dfrac{${a} + ${b}y}{1 - y}`), why: 'Collect x terms on the same side you started: ' + m('xy - x') + '.' },
@@ -397,7 +564,13 @@
         return {
           kind: 'num', answer: w, prompt: `A rectangle is ${d} cm longer than it is wide. Its perimeter is ${Pm} cm. Find its width in cm.`,
           wrong: [{ v: w + d, msg: 'That is the length. The question asks for the width.' }, { v: (Pm - d) / 2, msg: 'There are two lengths and two widths in a perimeter.' }],
-          sol: ['Let the width be ' + m('w') + '. Length is ' + m(`w + ${d}`) + '.', m(`2w + 2(w + ${d}) = ${Pm}`), m(`4w + ${2 * d} = ${Pm}`), m(`w = ${w}`) + ' cm'],
+          more: ({ steps: [
+    St(`Give the unknown a letter. Let the width be w cm. The length is ${d} cm more, so it is ${m(`w + ${d}`)}.`),
+    St('A rectangle has two widths and two lengths. Add all four for the perimeter.', m(`w + w + (w + ${d}) + (w + ${d}) = ${Pm}`)),
+    St('Collect like terms.', m(`4w + ${2 * d} = ${Pm}`)),
+    St(`Subtract ${2 * d}, then divide by 4.`, m(T`4w = ${Pm - 2 * d} \;\Rightarrow\; w = ${w}`)),
+    St(`Answer in words: the width is ${w} cm.`),
+  ], check: `Width ${w}, length ${w + d}: ${m(T`2 \times ${w} + 2 \times ${w + d} = ${Pm}`)}.`, trap: 'Counting only one length and one width.' }), sol: ['Let the width be ' + m('w') + '. Length is ' + m(`w + ${d}`) + '.', m(`2w + 2(w + ${d}) = ${Pm}`), m(`4w + ${2 * d} = ${Pm}`), m(`w = ${w}`) + ' cm'],
         };
       },
     ],
@@ -413,6 +586,7 @@
   P.addUnit({
     id: 'quadratics', title: 'Solving quadratic equations', mins: 10,
     blurb: 'Factorise or use the formula. Always two answers to look for.',
+    recap: 'Solving a quadratic means finding where it equals zero. Get everything on one side, then factorise. If two brackets multiply to zero, one of them must be zero, so each bracket gives an answer. If it will not factorise, use the quadratic formula.',
     scenes: [
       { dur: 10, card: [C(0, '<h2>Solving means: where does the curve cross zero?</h2>'), C(4, `<p>${m('x^2 - 2x - 3 = 0')} has two solutions because the parabola cuts the x-axis twice.</p>`)],
         draw(a) {
@@ -449,38 +623,70 @@
         scaffold: [m(`(x${sc(-p)})(x${sc(-q)}) = 0`) + ' (factorised)'],
         hint: 'Set each bracket equal to zero.',
         wrong: [{ v: [-p, -q], msg: `If ${m(`x${sc(-p)} = 0`)} then ${m(`x = ${p}`)}. Flip the sign.` }],
-        sol: [m(`x${sc(-p)} = 0 \\Rightarrow x = ${p}`), m(`x${sc(-q)} = 0 \\Rightarrow x = ${q}`)],
+        more: ({ steps: [
+    St(`It is already factorised for you: ${m(`(x${sc(-p)})(x${sc(-q)}) = 0`)}.`),
+    St('Two things multiply to give zero. That can only happen if one of them is zero.'),
+    St('First bracket equals zero:', m(T`x${sc(-p)} = 0 \;\Rightarrow\; x = ${p}`)),
+    St('Second bracket equals zero:', m(T`x${sc(-q)} = 0 \;\Rightarrow\; x = ${q}`)),
+  ], check: `Put x = ${p} into ${m(ex)}: you get 0. The same happens for x = ${q}.`, trap: `Copying the sign from the bracket. If ${m(`x${sc(-p)} = 0`)}, then x = ${p}, not ${-p}.` }), sol: [m(`x${sc(-p)} = 0 \\Rightarrow x = ${p}`), m(`x${sc(-q)} = 0 \\Rightarrow x = ${q}`)],
       };
     },
     gens: [
       () => {
         let p, q; do { p = R.nz(-9, 9); q = R.nz(-9, 9); } while (p === q);
         const ex = poly([[1, 2], [-(p + q), 1], [p * q, 0]]);
-        return { kind: 'multi', answer: [p, q], prompt: `Solve ${m(ex + ' = 0')}`, wrong: [{ v: [-p, -q], msg: 'Your signs are flipped. If (x − 3) = 0 then x = 3.' }], sol: [m(`(x${sc(-p)})(x${sc(-q)}) = 0`), m(`x = ${p} \\text{ or } x = ${q}`)] };
+        return { kind: 'multi', answer: [p, q], prompt: `Solve ${m(ex + ' = 0')}`, wrong: [{ v: [-p, -q], msg: 'Your signs are flipped. If (x − 3) = 0 then x = 3.' }], more: ({ steps: [
+    St(`Factorise. Find two numbers that multiply to ${p * q} and add to ${-(p + q)}: ${-p} and ${-q}.`, m(`${ex} = (x${sc(-p)})(x${sc(-q)})`)),
+    St('Two brackets multiply to zero, so one of them must be zero.'),
+    St('Solve each bracket.', m(T`x${sc(-p)} = 0 \Rightarrow x = ${p} \qquad x${sc(-q)} = 0 \Rightarrow x = ${q}`)),
+  ], check: `Put each answer back into ${m(ex)}. Both give 0.`, trap: `Copying the sign from the bracket. ${m(`x${sc(-p)} = 0`)} means x = ${p}.` }), sol: [m(`(x${sc(-p)})(x${sc(-q)}) = 0`), m(`x = ${p} \\text{ or } x = ${q}`)] };
       },
       () => {
         let a, b, c, D; do { a = R.int(1, 3); b = R.nz(-7, 7); c = R.nz(-9, 9); D = b * b - 4 * a * c; } while (D <= 0 || Number.isInteger(Math.sqrt(D)));
         const r1 = (-b + Math.sqrt(D)) / (2 * a), r2 = (-b - Math.sqrt(D)) / (2 * a), ex = poly([[a, 2], [b, 1], [c, 0]]);
         return { kind: 'multi', answer: [r1, r2], dp: 2, tol: 0.006, prompt: `Solve ${m(ex + ' = 0')}. Give your answers to 2 decimal places.`,
-          sol: [m(T`x = \dfrac{-(${b}) \pm \sqrt{(${b})^2 - 4(${a})(${c})}}{2(${a})}`), m(T`= \dfrac{${-b} \pm \sqrt{${D}}}{${2 * a}}`), m(`x = ${P.f(r1, 2)} \\text{ or } x = ${P.f(r2, 2)}`)],
+          more: ({ steps: [
+    St(`Will it factorise? You would need two numbers that multiply to ${a * c} and add to ${b}. There are no whole numbers that work, so use the formula.`),
+    St('Write down a, b and c with their signs.', m(T`a = ${a}, \quad b = ${b}, \quad c = ${c}`)),
+    St('Substitute into the formula. Put brackets round negative numbers.', m(T`x = \dfrac{-(${b}) \pm \sqrt{(${b})^2 - 4(${a})(${c})}}{2(${a})}`)),
+    St('Work out the part under the square root first.', m(T`(${b})^2 - 4(${a})(${c}) = ${b * b} - ${br(4 * a * c)} = ${D}`)),
+    St('The ± gives two answers: one with + and one with −.', m(T`x = \dfrac{${-b} + \sqrt{${D}}}{${2 * a}} = ${P.f(r1, 2)} \qquad x = \dfrac{${-b} - \sqrt{${D}}}{${2 * a}} = ${P.f(r2, 2)}`)),
+  ], check: `Put ${P.f(r1, 2)} into ${m(ex)} on your calculator. You should get very close to 0.`, trap: b < 0 ? `Forgetting that ${m(`(${b})^2`)} is positive, ${b * b}, even though b is negative.` : 'Rounding too early. Keep the square root exact until the very last line.' }), sol: [m(T`x = \dfrac{-(${b}) \pm \sqrt{(${b})^2 - 4(${a})(${c})}}{2(${a})}`), m(T`= \dfrac{${-b} \pm \sqrt{${D}}}{${2 * a}}`), m(`x = ${P.f(r1, 2)} \\text{ or } x = ${P.f(r2, 2)}`)],
           wrong: [{ v: [(b + Math.sqrt(D)) / (2 * a), (b - Math.sqrt(D)) / (2 * a)], msg: 'The formula starts with ' + m('-b') + '. Check the sign.' }] };
       },
       () => {
         const k = R.nz(-9, 9);
-        return { kind: 'multi', answer: [0, k], prompt: `Solve ${m(`x^2 = ${k}x`)}`, sol: [m(`x^2 ${k < 0 ? '+' : '-'} ${Math.abs(k)}x = 0`), m(`x(x${sc(-k)}) = 0`), m(`x = 0 \\text{ or } x = ${k}`)], hint: 'Do not divide by x. Move everything to one side and factorise.' };
+        return { kind: 'multi', answer: [0, k], prompt: `Solve ${m(`x^2 = ${co(k)}`)}`, more: ({ steps: [
+    St('It is tempting to divide both sides by x. Do not: if x is 0, dividing throws that answer away.'),
+    St('Instead, get everything on one side so it equals zero.', m(`x^2 ${k < 0 ? '+' : '-'} ${co(Math.abs(k))} = 0`)),
+    St('Both terms contain x. Take it out.', m(`x(x${sc(-k)}) = 0`)),
+    St('Either x = 0, or the bracket is zero.', m(T`x = 0 \quad\text{or}\quad x = ${k}`)),
+  ], check: `x = 0 works because both sides are 0. x = ${k} works because ${m(`(${k})^2 = ${k * k}`)} and ${m(T`${k} \times ${br(k)} = ${k * k}`)}.`, trap: `Dividing by x and giving only x = ${k}.` }), sol: [m(`x^2 ${k < 0 ? '+' : '-'} ${co(Math.abs(k))} = 0`), m(`x(x${sc(-k)}) = 0`), m(`x = 0 \\text{ or } x = ${k}`)], hint: 'Do not divide by x. Move everything to one side and factorise.' };
       },
       () => {
         let p, q; do { p = R.nz(-7, 7); q = R.nz(-7, 7); } while (p === q);
         return { kind: 'multi', ordered: true, answer: [-(p + q), p * q], answerTex: poly([[1, 2], [-(p + q), 1], [p * q, 0]]) + ' = 0',
           prompt: `A quadratic ${m('x^2 + bx + c = 0')} has solutions ${m(`x = ${p}`)} and ${m(`x = ${q}`)}. Find ${m('b')} and ${m('c')}.`, fmt: 'Enter b, then c. For example: -3, 2',
           wrong: [{ v: [p + q, p * q], msg: `Flip the signs into the brackets: ${m(`(x${sc(-p)})(x${sc(-q)})`)}.` }],
-          sol: [m(`(x${sc(-p)})(x${sc(-q)}) = 0`), m(poly([[1, 2], [-(p + q), 1], [p * q, 0]]) + ' = 0'), m(`b = ${-(p + q)}, \\ c = ${p * q}`)] };
+          more: ({ steps: [
+    St(`If x = ${p} is a solution, then ${m(`(x${sc(-p)})`)} is a factor, because that bracket equals zero when x = ${p}.`),
+    St(`In the same way, x = ${q} gives the factor ${m(`(x${sc(-q)})`)}.`),
+    St('Multiply the two factors and set them equal to zero.', m(`(x${sc(-p)})(x${sc(-q)}) = 0`)),
+    St('Expand.', m(poly([[1, 2], [-(p + q), 1], [p * q, 0]]) + ' = 0')),
+    St('Read off b and c.', m(T`b = ${-(p + q)}, \quad c = ${p * q}`)),
+  ], check: `Put x = ${p} into your equation. You get 0.`, trap: `Using the same sign as the solution. For x = ${p}, the bracket is ${m(`(x${sc(-p)})`)}.` }), sol: [m(`(x${sc(-p)})(x${sc(-q)}) = 0`), m(poly([[1, 2], [-(p + q), 1], [p * q, 0]]) + ' = 0'), m(`b = ${-(p + q)}, \\ c = ${p * q}`)] };
       },
       () => {
         const d = R.int(1, 6), w = R.int(2, 12), A = w * (w + d);
         return { kind: 'num', answer: w, prompt: `A rectangle is ${m(`(x + ${d})`)} cm long and ${m('x')} cm wide. Its area is ${A} cm². Find ${m('x')}.`,
           wrong: [{ v: -(w + d), msg: 'A length cannot be negative. Reject that solution.' }],
-          sol: [m(`x(x + ${d}) = ${A}`), m(`${poly([[1, 2], [d, 1], [-A, 0]])} = 0`), m(`(x - ${w})(x + ${w + d}) = 0`), m(`x = ${w}`) + ' (reject ' + m(`-${w + d}`) + ', a width cannot be negative)'] };
+          more: ({ steps: [
+    St('Area = length × width. Write that with the expressions given.', m(`x(x + ${d}) = ${A}`)),
+    St('Expand, then get everything on one side so it equals zero.', m(`${poly([[1, 2], [d, 1], [-A, 0]])} = 0`)),
+    St(`Factorise: two numbers that multiply to ${-A} and add to ${d}. They are ${w + d} and ${-w}.`, m(`(x - ${w})(x + ${w + d}) = 0`)),
+    St(`So x = ${w} or x = ${-(w + d)}.`),
+    St(`x is a width, and a width cannot be negative. Reject ${-(w + d)}.`, m(`x = ${w}`)),
+  ], check: `${w} × ${w + d} = ${A}.`, trap: 'Giving both answers. In context, say which one you reject and why.' }), sol: [m(`x(x + ${d}) = ${A}`), m(`${poly([[1, 2], [d, 1], [-A, 0]])} = 0`), m(`(x - ${w})(x + ${w + d}) = 0`), m(`x = ${w}`) + ' (reject ' + m(`-${w + d}`) + ', a width cannot be negative)'] };
       },
     ],
     tips: [
@@ -495,6 +701,7 @@
   P.addUnit({
     id: 'discriminant', title: 'The discriminant', mins: 8,
     blurb: 'One quick calculation tells you how many solutions there are.',
+    recap: 'In the quadratic formula, the part under the square root, b² − 4ac, is the discriminant. Positive: two solutions. Zero: one repeated solution. Negative: no real solutions, because you cannot square root a negative number.',
     scenes: [
       { dur: 14, card: [C(0, `<h2>${m('b^2 - 4ac')} counts the solutions.</h2>`), C(3, '<p>Watch the curve rise. The discriminant falls, and the crossings disappear.</p>'), C(9, '<p>Positive: two. Zero: one. Negative: none.</p>')],
         draw(a) {
@@ -528,25 +735,55 @@
         scaffold: ['Equal roots, so ' + m('b^2 - 4ac = 0'), m(`k^2 - 4(1)(${c}) = 0`), m(`k^2 = ${4 * c}`)],
         wrong: [{ v: [2 * mm], msg: 'A square root has a positive and a negative answer.' }],
         hint: 'Square root both sides. There are two answers.',
-        sol: [m(T`k = \pm\sqrt{${4 * c}} = \pm ${2 * mm}`)] };
+        more: ({ steps: [
+    St('“Equal roots” means the discriminant is zero.', m('b^2 - 4ac = 0')),
+    St(`Here a = 1, b = k and c = ${c}.`, m(`k^2 - 4(1)(${c}) = 0`)),
+    St('Tidy up.', m(`k^2 = ${4 * c}`)),
+    St('Square root both sides. A square root has two answers, positive and negative.', m(T`k = \pm\sqrt{${4 * c}} = \pm ${2 * mm}`)),
+  ], check: `With k = ${2 * mm}, the equation is ${m(`(x + ${mm})^2 = 0`)}, which has one repeated root.`, trap: `Giving only k = ${2 * mm}. ${m(`(-${2 * mm})^2`)} is also ${4 * c}.` }), sol: [m(T`k = \pm\sqrt{${4 * c}} = \pm ${2 * mm}`)] };
     },
     gens: [
       () => { const a = R.nz(-4, 5), b = R.nz(-9, 9), c = R.nz(-9, 9), D = b * b - 4 * a * c; const ex = poly([[a, 2], [b, 1], [c, 0]]);
-        return { kind: 'num', answer: D, prompt: `Find the discriminant of ${m(ex + ' = 0')}.`, wrong: [{ v: -b * b - 4 * a * c, msg: m(`(${b})^2`) + ' is positive.' }, { v: b * b + 4 * a * c, msg: 'Check the sign of ' + m('4ac') + '.' }], sol: [m(`b^2 - 4ac = (${b})^2 - 4(${a})(${c})`), m(`= ${b * b} ${-4 * a * c < 0 ? '-' : '+'} ${Math.abs(4 * a * c)} = ${D}`)] }; },
+        return { kind: 'num', answer: D, prompt: `Find the discriminant of ${m(ex + ' = 0')}.`, wrong: [{ v: -b * b - 4 * a * c, msg: m(`(${b})^2`) + ' is positive.' }, { v: b * b + 4 * a * c, msg: 'Check the sign of ' + m('4ac') + '.' }], more: ({ steps: [
+    St(`The discriminant is ${m('b^2 - 4ac')}. First write down a, b and c with their signs.`, m(T`a = ${a}, \quad b = ${b}, \quad c = ${c}`)),
+    St('Substitute, with brackets round every number.', m(T`(${b})^2 - 4(${a})(${c})`)),
+    St(`Work out each part. ${m(`(${b})^2 = ${b * b}`)}, which is always positive. ${m(T`4 \times ${br(a)} \times ${br(c)} = ${4 * a * c}`)}.`),
+    St('Now subtract.', m(T`${b * b} - ${br(4 * a * c)} = ${D}`)),
+  ], check: 'Type the whole line into your calculator in one go, brackets included.', trap: 'Losing a minus sign. Subtracting a negative number is the same as adding.' }), sol: [m(`b^2 - 4ac = (${b})^2 - 4(${a})(${c})`), m(`= ${b * b} ${-4 * a * c < 0 ? '-' : '+'} ${Math.abs(4 * a * c)} = ${D}`)] }; },
       () => {
         const type = R.pick([0, 1, 2]); let a, b, c, D;
         do { a = R.int(1, 4); b = R.nz(-9, 9); c = type === 1 ? (b * b) / (4 * a) : R.nz(-9, 9); D = b * b - 4 * a * c; } while (!Number.isInteger(c) || (type === 0 && D <= 0) || (type === 2 && D >= 0) || (type === 1 && D !== 0));
         const ex = poly([[a, 2], [b, 1], [c, 0]]);
         const opts = [{ t: 'Two different real roots', ok: D > 0 }, { t: 'One repeated real root', ok: D === 0 }, { t: 'No real roots', ok: D < 0 }];
         opts.forEach((o) => { if (!o.ok) o.why = `The discriminant is ${m(`(${b})^2 - 4(${a})(${c}) = ${D}`)}, which is ${D > 0 ? 'positive' : D < 0 ? 'negative' : 'zero'}.`; });
-        return P.mcq({ prompt: `Describe the roots of ${m(ex + ' = 0')}.`, sol: [m(`b^2 - 4ac = (${b})^2 - 4(${a})(${c}) = ${D}`), D > 0 ? 'Positive, so two different real roots.' : D === 0 ? 'Zero, so one repeated root.' : 'Negative, so no real roots.'] }, opts);
+        return P.mcq({ prompt: `Describe the roots of ${m(ex + ' = 0')}.`, more: ({ steps: [
+    St(`How many solutions depends on the discriminant, ${m('b^2 - 4ac')}.`),
+    St(`Here a = ${a}, b = ${b} and c = ${c}.`, m(T`(${b})^2 - 4(${a})(${c}) = ${b * b} - ${br(4 * a * c)} = ${D}`)),
+    St(D > 0 ? 'It is positive. The square root in the formula gives a + answer and a − answer, so there are two different real roots.' : D === 0 ? 'It is zero. The ± adds and takes away nothing, so both answers are the same: one repeated root.' : 'It is negative. You cannot square root a negative number, so there are no real roots. The curve never touches the x-axis.'),
+  ], check: D >= 0 ? `Solve it with the formula and you will find ${D > 0 ? 'two different answers' : 'just one answer'}.` : 'Graph it on your calculator: the curve stays above the x-axis.', trap: c < 0 ? `Getting the sign of ${m('4ac')} wrong. c is negative, so ${m('-4ac')} becomes a plus.` : `Forgetting the 4 in ${m('4ac')}.` }), sol: [m(`b^2 - 4ac = (${b})^2 - 4(${a})(${c}) = ${D}`), D > 0 ? 'Positive, so two different real roots.' : D === 0 ? 'Zero, so one repeated root.' : 'Negative, so no real roots.'] }, opts);
       },
       () => { const a = R.pick([1, 4, 9]), mm = R.int(1, 5), c = mm * mm, k = 2 * Math.sqrt(a) * mm;
-        return { kind: 'multi', answer: [k, -k], prompt: `${m(`${a === 1 ? '' : a}x^2 + kx + ${c} = 0`)} has exactly one solution. Find the possible values of ${m('k')}.`, wrong: [{ v: [k], msg: 'There are two values: positive and negative.' }], sol: [m(`k^2 - 4(${a})(${c}) = 0`), m(`k^2 = ${4 * a * c}`), m(T`k = \pm ${k}`)] }; },
+        return { kind: 'multi', answer: [k, -k], prompt: `${m(`${a === 1 ? '' : a}x^2 + kx + ${c} = 0`)} has exactly one solution. Find the possible values of ${m('k')}.`, wrong: [{ v: [k], msg: 'There are two values: positive and negative.' }], more: ({ steps: [
+    St('“Exactly one solution” means the discriminant is zero.'),
+    St(`Here a = ${a}, b = k and c = ${c}.`, m(`k^2 - 4(${a})(${c}) = 0`)),
+    St('Rearrange.', m(`k^2 = ${4 * a * c}`)),
+    St('Square root, keeping both signs.', m(T`k = \pm ${k}`)),
+  ], check: `${m(`${k}^2 = ${k * k}`)} and ${m(T`4 \times ${a} \times ${c} = ${4 * a * c}`)}. They match, so the discriminant is 0.`, trap: 'Forgetting the negative value.' }), sol: [m(`k^2 - 4(${a})(${c}) = 0`), m(`k^2 = ${4 * a * c}`), m(T`k = \pm ${k}`)] }; },
       () => { const b = R.pick([2, 4, 6, 8, 10, 12]), c = R.int(1, 5), k = (b * b) / (4 * c);
-        return { kind: 'num', answer: k, answerTex: nf(k), prompt: `${m(`kx^2 + ${b}x + ${c} = 0`)} has equal roots. Find ${m('k')}.`, sol: [m(`${b}^2 - 4(k)(${c}) = 0`), m(`${b * b} = ${4 * c}k`), m(`k = ${nf(k)}`)] }; },
+        return { kind: 'num', answer: k, answerTex: nf(k), prompt: `${m(`kx^2 + ${b}x + ${c} = 0`)} has equal roots. Find ${m('k')}.`, more: ({ steps: [
+    St(`Equal roots means the discriminant is 0. Here k is in front of ${m('x^2')}, so a = k, b = ${b} and c = ${c}.`),
+    St('Substitute.', m(`${b}^2 - 4(k)(${c}) = 0`)),
+    St('Simplify.', m(`${b * b} - ${4 * c}k = 0`)),
+    St('Solve for k.', m(T`${4 * c}k = ${b * b} \;\Rightarrow\; k = \dfrac{${b * b}}{${4 * c}} = ${nf(k)}`)),
+  ], check: `Put k back in: ${m(T`${b * b} - 4 \times ${nf(k)} \times ${c} = 0`)}.`, trap: 'Mixing up which number is a. The number in front of x² is a, here k.' }), sol: [m(`${b}^2 - 4(k)(${c}) = 0`), m(`${b * b} = ${4 * c}k`), m(`k = ${nf(k)}`)] }; },
       () => { const b = R.pick([2, 4, 6, 8, 10]), v = (b * b) / 4; const s = R.pick([1, -1]);
-        return P.mcq({ prompt: `For which values of ${m('k')} does ${m(`x^2 ${s > 0 ? '+' : '-'} ${b}x + k = 0`)} have no real roots?`, sol: [m(`b^2 - 4ac < 0`), m(`${b * b} - 4k < 0`), m(`k > ${v}`)] }, [
+        return P.mcq({ prompt: `For which values of ${m('k')} does ${m(`x^2 ${s > 0 ? '+' : '-'} ${b}x + k = 0`)} have no real roots?`, more: ({ steps: [
+    St('No real roots means the discriminant is less than zero.', m('b^2 - 4ac < 0')),
+    St(`Here a = 1, b = ${s * b} and c = k.`, m(T`(${s * b})^2 - 4(1)(k) < 0`)),
+    St('Simplify. Squaring makes it positive either way.', m(`${b * b} - 4k < 0`)),
+    St('Add 4k to both sides.', m(`${b * b} < 4k`)),
+    St('Divide by 4.', m(`k > ${v}`)),
+  ], check: `Try k = ${v + 1}: the discriminant is ${m(`${b * b} - ${4 * (v + 1)} = ${b * b - 4 * (v + 1)}`)}, which is negative.`, trap: 'Turning the inequality the wrong way. Move the 4k across rather than dividing by a negative.' }), sol: [m(`b^2 - 4ac < 0`), m(`${b * b} - 4k < 0`), m(`k > ${v}`)] }, [
           { t: m(`k > ${v}`), ok: true }, { t: m(`k < ${v}`), why: `${m(`${b * b} - 4k < 0`)} rearranges to ${m(`4k > ${b * b}`)}.` }, { t: m(`k = ${v}`), why: 'That gives a discriminant of zero: one repeated root.' }, { t: m(`k > ${-v}`), why: m(`${b * b}`) + ' is positive whatever the sign of b.' }]);
       },
     ],
@@ -562,6 +799,7 @@
   P.addUnit({
     id: 'logs', title: 'Logs and exponential equations', mins: 10,
     blurb: 'A log is just a power. Use it to get x down from the exponent.',
+    recap: 'A log answers one question: what power do I need? log₂ 8 = 3 because 2³ = 8. To solve an equation where x is in the power, take the log of both sides. The law log(aⁿ) = n log a brings the power down to the front, so you can divide.',
     scenes: [
       { dur: 10, card: [C(0, '<h2>A log answers one question: what power?</h2>'), C(3.5, `<p>${m(T`\log_2 8`)} asks: what power of 2 gives 8? Answer: 3.</p>`)],
         board: [B(0.5, '2^3 = 8', '', { big: true }), B(3, T`\log_2 8 = 3`, 'same fact', { big: true, hl: true }), B(6.5, T`\log_{10} 1000 = 3, \quad \log_3 \tfrac{1}{9} = -2`)] },
@@ -596,23 +834,47 @@
       return { kind: 'num', answer: x, dp: 2, prompt: `Solve ${m(`${a}^x = ${b}`)}. Give ${m('x')} to 2 decimal places.`,
         scaffold: [m(T`\log ${a}^x = \log ${b}`), m(T`x \log ${a} = \log ${b}`)], hint: 'Divide both sides by log ' + a + '.',
         wrong: [{ v: Math.log(a) / Math.log(b), msg: 'Upside down. It is log ' + b + ' divided by log ' + a + '.' }, { v: b / a, msg: 'You cannot divide by the base. Use logs.' }],
-        sol: [m(T`x = \dfrac{\log ${b}}{\log ${a}} = ${P.f(x, 2)}`)] };
+        more: (moreExp(a, b, x)), sol: [m(T`x = \dfrac{\log ${b}}{\log ${a}} = ${P.f(x, 2)}`)] };
     },
     gens: [
       () => { const [b, val, tex] = R.pick([[2, 5, '32'], [2, -3, '\\tfrac{1}{8}'], [3, 4, '81'], [3, -2, '\\tfrac{1}{9}'], [10, 3, '1000'], [10, -2, '0.01'], [5, 3, '125'], [9, 0.5, '3'], [4, 0.5, '2'], [8, 1 / 3, '2'], [2, 0.5, '\\sqrt{2}'], [7, 0, '1']]);
-        return { kind: 'num', answer: val, answerTex: nf(val), prompt: `Evaluate ${m(`\\log_{${b}} ${tex}`)} without a calculator.`, sol: [`What power of ${b} gives ${m(tex)}?`, m(`${b}^{${nf(val)}} = ${tex}`), 'So the answer is ' + m(nf(val))] }; },
+        return { kind: 'num', answer: val, answerTex: nf(val), prompt: `Evaluate ${m(`\\log_{${b}} ${tex}`)} without a calculator.`, more: ({ steps: [
+    St(`${m(`\\log_{${b}} ${tex}`)} asks one question: what power of ${b} gives ${m(tex)}?`),
+    St(val < 0 ? `A negative power gives a fraction: ${m(T`${b}^{${nf(val)}} = \dfrac{1}{${b}^{${-val}}} = \dfrac{1}{${b ** -val}}`)}.` : val === 0 ? 'Any number to the power 0 is 1.' : !Number.isInteger(val) ? `A fraction power is a root: ${m(T`${b}^{${nf(val)}} = ${Math.round(1 / val) === 2 ? `\\sqrt{${b}}` : `\\sqrt[${Math.round(1 / val)}]{${b}}`}`)}.` : `Count the multiplying: ${m(T`${Array(val).fill(b).join(T` \times `)} = ${b ** val}`)}.`, m(`${b}^{${nf(val)}} = ${tex}`)),
+    St(`So the answer is ${m(nf(val))}.`),
+  ], check: `Write your answer as a power, ${m(`${b}^{${nf(val)}}`)}. It equals ${m(tex)}.`, trap: `Dividing ${m(tex)} by ${b}. A log asks for a power, not a division.` }), sol: [`What power of ${b} gives ${m(tex)}?`, m(`${b}^{${nf(val)}} = ${tex}`), 'So the answer is ' + m(nf(val))] }; },
       () => { const a = R.pick([2, 3, 6, 1.2, 1.05, 0.8]), b = a < 1 ? R.pick([0.5, 0.3, 0.1]) : R.pick([5, 7, 10, 20, 30, 50, 75, 100, 150, 200].filter((v) => v !== a)), x = Math.log(b) / Math.log(a);
-        return { kind: 'num', answer: x, dp: 2, prompt: `Solve ${m(`${a}^x = ${b}`)}. Give ${m('x')} to 2 decimal places.`, wrong: [{ v: Math.log(a) / Math.log(b), msg: 'Upside down: log ' + b + ' ÷ log ' + a + '.' }], sol: [m(T`x\log ${a} = \log ${b}`), m(T`x = \dfrac{\log ${b}}{\log ${a}} = ${P.f(x, 2)}`)] }; },
+        return { kind: 'num', answer: x, dp: 2, prompt: `Solve ${m(`${a}^x = ${b}`)}. Give ${m('x')} to 2 decimal places.`, wrong: [{ v: Math.log(a) / Math.log(b), msg: 'Upside down: log ' + b + ' ÷ log ' + a + '.' }], more: (moreExp(a, b, x)), sol: [m(T`x\log ${a} = \log ${b}`), m(T`x = \dfrac{\log ${b}}{\log ${a}} = ${P.f(x, 2)}`)] }; },
       () => { const b = R.pick([2, 3, 5, 10]), n = R.int(2, b === 10 ? 3 : 5), a = R.nz(-9, 9), x = b ** n - a;
-        return { kind: 'num', answer: x, prompt: `Solve ${m(`\\log_{${b}}(x ${a < 0 ? '-' : '+'} ${Math.abs(a)}) = ${n}`)}`, wrong: [{ v: b * n - a, msg: `${m(`${b}^${n}`)} means ${Array(n).fill(b).join(' × ')}, not ${b} × ${n}.` }], sol: [m(`x${sc(a)} = ${b}^${n} = ${b ** n}`), m(`x = ${x}`)] }; },
+        return { kind: 'num', answer: x, prompt: `Solve ${m(`\\log_{${b}}(x ${a < 0 ? '-' : '+'} ${Math.abs(a)}) = ${n}`)}`, wrong: [{ v: b * n - a, msg: `${m(`${b}^${n}`)} means ${Array(n).fill(b).join(' × ')}, not ${b} × ${n}.` }], more: ({ steps: [
+    St(`Rewrite the log as a power: ${m(T`\log_b y = n`)} means ${m('y = b^n')}.`),
+    St(`Here the base is ${b}, the power is ${n}, and the thing inside the log is ${m(`x${sc(a)}`)}.`, m(`x${sc(a)} = ${b}^{${n}}`)),
+    St('Work out the power.', m(T`${b}^{${n}} = ${Array(n).fill(b).join(T` \times `)} = ${b ** n}`)),
+    St('Solve for x.', m(`x = ${b ** n}${sc(-a)} = ${x}`)),
+  ], check: `${m(`x${sc(a)} = ${x + a}`)}, and ${b} to the power ${n} is ${b ** n}.`, trap: `Working out ${b} × ${n} instead of ${b} to the power ${n}.` }), sol: [m(`x${sc(a)} = ${b}^${n} = ${b ** n}`), m(`x = ${x}`)] }; },
       () => { const P0 = R.pick([2000, 5000, 8000, 12000]), r = R.pick([3, 4, 5, 6, 8]), mult = R.pick([1.5, 2, 2.5]), tgt = P0 * mult, t = Math.log(mult) / Math.log(1 + r / 100);
-        return { kind: 'num', answer: t, dp: 2, prompt: `An investment of ${P.money(P0)} grows by ${r}% each year, so its value is ${m(`V = ${P0} \\times ${nf(1 + r / 100)}^t`)}. Find ${m('t')} when it reaches ${P.money(tgt)}. Give ${m('t')} to 2 decimal places.`,
-          sol: [m(`${P0} \\times ${nf(1 + r / 100)}^t = ${tgt}`), m(`${nf(1 + r / 100)}^t = ${nf(mult)}`), m(T`t = \dfrac{\log ${nf(mult)}}{\log ${nf(1 + r / 100)}} = ${P.f(t, 2)}`), 'In context: it passes ' + P.money(tgt) + ' during year ' + Math.ceil(t) + '.'],
+        return { kind: 'num', answer: t, dp: 2, prompt: `An investment of ${P.money(P0)} grows by ${r}% each year, so its value is ${m(`V = ${P0} \\times ${P.n(1 + r / 100)}^t`)}. Find ${m('t')} when it reaches ${P.money(tgt)}. Give ${m('t')} to 2 decimal places.`,
+          more: ({ steps: [
+    St('Set the formula equal to the target value.', m(T`${P0} \times ${P.n(1 + r / 100)}^t = ${tgt}`)),
+    St(`Get the power on its own first: divide both sides by ${P0}.`, m(`${P.n(1 + r / 100)}^t = ${P.n(mult)}`)),
+    St('Take logs of both sides and bring the power t down to the front.', m(T`t \log ${P.n(1 + r / 100)} = \log ${P.n(mult)}`)),
+    St('Divide.', m(T`t = \dfrac{\log ${P.n(mult)}}{\log ${P.n(1 + r / 100)}} = ${P.f(t, 2)}`)),
+    St(`In context: it reaches ${P.money(tgt)} after ${P.f(t, 2)} years, so during year ${Math.ceil(t)}.`),
+  ], check: `${P0} × ${P.n(1 + r / 100)}^${P.f(t, 2)} on your calculator is about ${tgt}.`, trap: `Taking logs before dividing by ${P0}. Get the power alone first.` }), sol: [m(`${P0} \\times ${P.n(1 + r / 100)}^t = ${tgt}`), m(`${P.n(1 + r / 100)}^t = ${P.n(mult)}`), m(T`t = \dfrac{\log ${P.n(mult)}}{\log ${P.n(1 + r / 100)}} = ${P.f(t, 2)}`), 'In context: it passes ' + P.money(tgt) + ' during year ' + Math.ceil(t) + '.'],
           wrong: [{ v: Math.log(tgt) / Math.log(1 + r / 100), msg: 'Divide both sides by ' + P0 + ' before taking logs.' }] }; },
       () => { const [b, x, y, n] = R.pick([[6, 4, 9, 2], [10, 25, 4, 2], [2, 4, 8, 5], [3, 3, 27, 4], [12, 8, 18, 2], [10, 5, 20, 2], [4, 2, 32, 3]]);
-        return { kind: 'num', answer: n, prompt: `Evaluate ${m(`\\log_{${b}} ${x} + \\log_{${b}} ${y}`)} without a calculator.`, sol: [m(`\\log_{${b}} ${x} + \\log_{${b}} ${y} = \\log_{${b}} (${x} \\times ${y}) = \\log_{${b}} ${x * y}`), m(`${b}^{${n}} = ${x * y}`) + ', so the answer is ' + m(String(n))] }; },
+        return { kind: 'num', answer: n, prompt: `Evaluate ${m(`\\log_{${b}} ${x} + \\log_{${b}} ${y}`)} without a calculator.`, more: ({ steps: [
+    St('Adding logs with the same base is the same as multiplying inside one log.', m(T`\log_{${b}} ${x} + \log_{${b}} ${y} = \log_{${b}}(${x} \times ${y})`)),
+    St('Multiply.', m(T`= \log_{${b}} ${x * y}`)),
+    St(`Now ask: what power of ${b} gives ${x * y}?`, m(`${b}^{${n}} = ${x * y}`)),
+    St(`So the answer is ${n}.`),
+  ], check: `On a calculator: log(${x}) ÷ log(${b}) + log(${y}) ÷ log(${b}) = ${n}.`, trap: `Adding the numbers inside, ${x} + ${y}. The log law multiplies them.` }), sol: [m(`\\log_{${b}} ${x} + \\log_{${b}} ${y} = \\log_{${b}} (${x} \\times ${y}) = \\log_{${b}} ${x * y}`), m(`${b}^{${n}} = ${x * y}`) + ', so the answer is ' + m(String(n))] }; },
       () => { const c = R.int(2, 9), a = R.pick([2, 3, 1.5]), d = c * R.int(5, 60), x = Math.log(d / c) / Math.log(a);
-        return { kind: 'num', answer: x, dp: 2, prompt: `Solve ${m(`${c} \\times ${a}^x = ${d}`)}. Give ${m('x')} to 2 decimal places.`, wrong: [{ v: Math.log(d) / Math.log(c * a), msg: `Divide by ${c} first. ${m(`${c} \\times ${a}^x`)} is not ${m(`${c * a}^x`)}.` }], sol: [m(`${a}^x = ${nf(d / c)}`), m(T`x = \dfrac{\log ${nf(d / c)}}{\log ${a}} = ${P.f(x, 2)}`)] }; },
+        return { kind: 'num', answer: x, dp: 2, prompt: `Solve ${m(`${c} \\times ${a}^x = ${d}`)}. Give ${m('x')} to 2 decimal places.`, wrong: [{ v: Math.log(d) / Math.log(c * a), msg: `Divide by ${c} first. ${m(`${c} \\times ${a}^x`)} is not ${m(`${c * a}^x`)}.` }], more: ({ steps: [
+    St(`The ${c} multiplies the power, so divide it away first. Then the power is on its own.`, m(`${a}^x = ${nf(d / c)}`)),
+    St('Take logs of both sides and bring the power down.', m(T`x \log ${a} = \log ${nf(d / c)}`)),
+    St('Divide.', m(T`x = \dfrac{\log ${nf(d / c)}}{\log ${a}} = ${P.f(x, 2)}`)),
+  ], check: `${c} × ${a}^${P.f(x, 2)} on your calculator is about ${d}.`, trap: `Combining ${c} × ${a} into ${c * a} first. The power belongs only to the ${a}.` }), sol: [m(`${a}^x = ${nf(d / c)}`), m(T`x = \dfrac{\log ${nf(d / c)}}{\log ${a}} = ${P.f(x, 2)}`)] }; },
     ],
     tips: [
       'Get the power on its own before taking logs: divide out any number in front first.',
@@ -626,6 +888,7 @@
   P.addUnit({
     id: 'simultaneous', title: 'Simultaneous equations and modelling', mins: 10,
     blurb: 'Where a line meets a curve, and turning a real situation into equations.',
+    recap: 'Simultaneous equations are both true at the same time. On a graph, the answer is where the lines or curves cross. In algebra, either substitute one equation into the other, or make one letter match and eliminate it.',
     scenes: [
       { dur: 11, card: [C(0, '<h2>Solving together = where the graphs meet.</h2>'), C(4, `<p>The line ${m('y = x + 3')} crosses the curve ${m('y = x^2 - 2x - 1')} twice.</p>`)],
         draw(a) {
@@ -658,20 +921,32 @@
       const b = -(p + q) + mm, c = p * q + k;
       return { kind: 'multi', answer: [p, q], prompt: `Find the x values where ${m(`y = ${poly([[1, 2], [b, 1], [c, 0]])}`)} meets ${m(`y = ${poly([[mm, 1], [k, 0]])}`)}.`,
         scaffold: [m(`${poly([[1, 2], [b, 1], [c, 0]])} = ${poly([[mm, 1], [k, 0]])}`), m(`${poly([[1, 2], [-(p + q), 1], [p * q, 0]])} = 0`)],
-        hint: 'Factorise and set each bracket to zero.', sol: [m(`${P.fac(p)}${P.fac(q)} = 0`), m(`x = ${p} \\text{ or } x = ${q}`)] };
+        hint: 'Factorise and set each bracket to zero.', more: (moreMeet(p, q, mm, k, b, c)), sol: [m(`${P.fac(p)}${P.fac(q)} = 0`), m(`x = ${p} \\text{ or } x = ${q}`)] };
     },
     gens: [
       () => { let x, y; do { x = R.int(-5, 6); y = R.int(-5, 6); } while (x === 0 && y === 0); let a, b, c, d; do { a = R.nz(-4, 5); b = R.nz(-4, 5); c = R.nz(-4, 5); d = R.nz(-4, 5); } while (a * d - b * c === 0);
         const e1 = poly([[a, 1]]) + ' ' + (b < 0 ? '-' : '+') + ' ' + (Math.abs(b) === 1 ? '' : Math.abs(b)) + 'y', e2 = poly([[c, 1]]) + ' ' + (d < 0 ? '-' : '+') + ' ' + (Math.abs(d) === 1 ? '' : Math.abs(d)) + 'y';
-        return { kind: 'multi', ordered: true, answer: [x, y], prompt: `Solve the simultaneous equations ${m(`${e1} = ${a * x + b * y}`)} and ${m(`${e2} = ${c * x + d * y}`)}.`, fmt: 'Enter x, then y. For example: 2, -3', wrong: [{ v: [y, x], msg: 'Right numbers, wrong order. Give x first.' }], sol: ['Eliminate one variable, solve for the other, then substitute back.', m(`x = ${x}, \\ y = ${y}`), 'Check in both equations.'] }; },
+        return { kind: 'multi', ordered: true, answer: [x, y], prompt: `Solve the simultaneous equations ${m(`${e1} = ${a * x + b * y}`)} and ${m(`${e2} = ${c * x + d * y}`)}.`, fmt: 'Enter x, then y. For example: 2, -3', wrong: [{ v: [y, x], msg: 'Right numbers, wrong order. Give x first.' }], more: (moreElim(a, b, c, d, x, y, e1, e2)), sol: ['Eliminate one variable, solve for the other, then substitute back.', m(`x = ${x}, \\ y = ${y}`), 'Check in both equations.'] }; },
       () => { let p, q; do { p = R.int(-4, 5); q = R.int(-4, 5); } while (p === q); const mm = R.nz(-3, 3), k = R.int(-4, 6), b = -(p + q) + mm, c = p * q + k;
-        return { kind: 'multi', answer: [p, q], prompt: `The line ${m(`y = ${poly([[mm, 1], [k, 0]])}`)} meets the curve ${m(`y = ${poly([[1, 2], [b, 1], [c, 0]])}`)}. Find the x values of the meeting points.`, sol: [m(`${poly([[1, 2], [b, 1], [c, 0]])} = ${poly([[mm, 1], [k, 0]])}`), m(`${poly([[1, 2], [-(p + q), 1], [p * q, 0]])} = 0`), m(`x = ${p} \\text{ or } ${q}`)] }; },
+        return { kind: 'multi', answer: [p, q], prompt: `The line ${m(`y = ${poly([[mm, 1], [k, 0]])}`)} meets the curve ${m(`y = ${poly([[1, 2], [b, 1], [c, 0]])}`)}. Find the x values of the meeting points.`, more: (moreMeet(p, q, mm, k, b, c)), sol: [m(`${poly([[1, 2], [b, 1], [c, 0]])} = ${poly([[mm, 1], [k, 0]])}`), m(`${poly([[1, 2], [-(p + q), 1], [p * q, 0]])} = 0`), m(`x = ${p} \\text{ or } ${q}`)] }; },
       () => { const pa = R.pick([12, 15, 18, 20]), pc = R.pick([5, 6, 8, 10]), a = R.int(10, 60), c = R.int(10, 60), n = a + c, tot = pa * a + pc * c;
         return { kind: 'multi', ordered: true, answer: [a, c], prompt: `A school show sold ${n} tickets. Adult tickets cost ${P.money(pa)} and student tickets ${P.money(pc)}. Ticket sales came to ${P.money(tot)}. How many of each were sold?`, fmt: 'Enter adults, then students. For example: 25, 30',
-          wrong: [{ v: [c, a], msg: 'Right numbers, wrong order. Give adults first.' }], sol: [m(`a + s = ${n}`), m(`${pa}a + ${pc}s = ${tot}`), m(`${pa}a + ${pc}(${n} - a) = ${tot}`), m(`${pa - pc}a = ${tot - pc * n}`), m(`a = ${a}, \\ s = ${c}`)] }; },
+          wrong: [{ v: [c, a], msg: 'Right numbers, wrong order. Give adults first.' }], more: ({ steps: [
+    St('Use letters. Let a be the number of adult tickets and s the number of student tickets.'),
+    St('One equation for how many tickets:', m(`a + s = ${n}`)),
+    St(`One equation for how much money. Each adult ticket brings in ${P.money(pa)} and each student ticket ${P.money(pc)}.`, m(`${pa}a + ${pc}s = ${tot}`)),
+    St(`From the first equation, s = ${n} − a. Substitute that into the second.`, m(`${pa}a + ${pc}(${n} - a) = ${tot}`)),
+    St('Expand and collect.', m(T`${pa}a + ${pc * n} - ${pc}a = ${tot} \;\Rightarrow\; ${pa - pc}a = ${tot - pc * n}`)),
+    St('Divide, then find s.', m(T`a = ${a}, \quad s = ${n} - ${a} = ${c}`)),
+  ], check: `${a} + ${c} = ${n} tickets, and ${P.money(pa * a)} + ${P.money(pc * c)} = ${P.money(tot)}.`, trap: 'Giving the numbers in the wrong order. Adults first, as the question asks.' }), sol: [m(`a + s = ${n}`), m(`${pa}a + ${pc}s = ${tot}`), m(`${pa}a + ${pc}(${n} - a) = ${tot}`), m(`${pa - pc}a = ${tot - pc * n}`), m(`a = ${a}, \\ s = ${c}`)] }; },
       () => { const v = R.int(8, 25), h0 = R.pick([0, 1, 1.5, 2, 10, 20]), t = (v + Math.sqrt(v * v + 20 * h0)) / 10;
         return { kind: 'num', answer: t, dp: 2, prompt: `A ball's height in metres is ${m(`h = -5t^2 + ${v}t${h0 ? ' + ' + h0 : ''}`)}, where ${m('t')} is in seconds. When does it hit the ground? Give your answer to 2 decimal places.`,
-          sol: [m(`-5t^2 + ${v}t${h0 ? ' + ' + h0 : ''} = 0`), h0 ? 'Use the formula: ' + m(T`t = \dfrac{-${v} \pm \sqrt{${v}^2 - 4(-5)(${h0})}}{2(-5)}`) : m(`t(-5t + ${v}) = 0`), m(`t = ${P.f(t, 2)}`) + ' s' + (h0 ? ' (the negative solution is before it was thrown, so reject it)' : ' (t = 0 is when it was thrown)')],
+          more: ({ steps: [
+    St('“Hits the ground” means the height is zero. Set h = 0.', m(`-5t^2 + ${v}t${h0 ? ' + ' + h0 : ''} = 0`)),
+    h0 ? St(`This will not factorise neatly, so use the formula with a = −5, b = ${v} and c = ${h0}.`, m(T`t = \dfrac{-${v} \pm \sqrt{${v}^2 - 4(-5)(${h0})}}{2(-5)} = \dfrac{-${v} \pm \sqrt{${v * v + 20 * h0}}}{-10}`)) : St('Take out the common factor t.', m(`t(-5t + ${v}) = 0`)),
+    h0 ? St(`The two answers are ${P.f(t, 2)} and ${P.f((v - Math.sqrt(v * v + 20 * h0)) / 10, 2)}. A negative time is before the ball was thrown, so reject it.`) : St(`So t = 0 or ${m(`-5t + ${v} = 0`)}, which gives ${m(`t = ${nf(v / 5)}`)}. t = 0 is the moment it was thrown, so the answer is the other one.`),
+    St(`The ball hits the ground after ${P.f(t, 2)} seconds.`),
+  ], check: `Put t = ${P.f(t, 2)} into the height formula on your calculator. You get very close to 0.`, trap: `Giving the time of the highest point, ${P.n(v / 10)} s. The ball is at the top then, not on the ground.` }), sol: [m(`-5t^2 + ${v}t${h0 ? ' + ' + h0 : ''} = 0`), h0 ? 'Use the formula: ' + m(T`t = \dfrac{-${v} \pm \sqrt{${v}^2 - 4(-5)(${h0})}}{2(-5)}`) : m(`t(-5t + ${v}) = 0`), m(`t = ${P.f(t, 2)}`) + ' s' + (h0 ? ' (the negative solution is before it was thrown, so reject it)' : ' (t = 0 is when it was thrown)')],
           wrong: [{ v: v / 10, msg: 'That is when it is highest. It hits the ground when h = 0.' }] }; },
     ],
     tips: [

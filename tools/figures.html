@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Figure check</title>
+<link rel="stylesheet" href="../shared/vendor/katex/katex.min.css">
+<link rel="stylesheet" href="../shared/css/base.css"><link rel="stylesheet" href="../shared/css/app.css">
+<style>.cell{display:inline-block;width:440px;vertical-align:top;margin:6px;border:1px solid #ccd} .cell.bad{outline:3px solid red} .cell .fig{width:100%;height:auto} .cap{font:12px monospace}</style>
+</head><body><div id="out"></div>
+<script src="../shared/vendor/katex/katex.min.js"></script><script src="../shared/vendor/katex/auto-render.min.js"></script>
+<script src="../shared/js/core.js"></script><script src="../shared/js/player.js"></script><script src="../shared/js/quiz.js"></script>
+<script src="../maths-l2/js/algebra.js"></script><script src="../maths-l2/js/calculus.js"></script><script src="../maths-l2/js/probability.js"></script>
+<script>
+/* Renders every figure from every generator many times and reports SVG text labels that overlap.
+   Open tools/figures.html?runs=40 in a browser, or run it headless. */
+const runs = +(new URLSearchParams(location.search).get('runs') || 30);
+const out = document.getElementById('out'); const bad = [];
+function overlaps(svg) {
+  const ts = [...svg.querySelectorAll('text')].map((t) => ({ t, b: t.getBBox(), s: t.textContent }));
+  const hits = [];
+  for (let i = 0; i < ts.length; i++) for (let j = i + 1; j < ts.length; j++) {
+    const a = ts[i].b, c = ts[j].b;
+    const ox = Math.min(a.x + a.width, c.x + c.width) - Math.max(a.x, c.x), oy = Math.min(a.y + a.height, c.y + c.height) - Math.max(a.y, c.y);
+    if (ox > 1 && oy > 1) hits.push(ts[i].s + ' ⟂ ' + ts[j].s);
+  }
+  return hits;
+}
+for (const u of NP.units) {
+  const gens = [['faded', u.faded], ...u.gens.map((g, k) => ['gen' + k, g])];
+  for (const [name, g] of gens) for (let r = 0; r < runs; r++) {
+    const q = g(); const figs = [];
+    if (q.fig) figs.push(q.fig);
+    if (q.choices) q.choices.forEach((c) => /<svg/.test(c.t) && figs.push(c.t));
+    for (const f of figs) {
+      if (!/<svg/.test(f)) continue;
+      const cell = document.createElement('div'); cell.className = 'cell'; cell.innerHTML = f.match(/<svg[\s\S]*<\/svg>/)[0]; out.appendChild(cell);
+      const svg = cell.querySelector('svg'); const hits = overlaps(svg);
+      if (hits.length) { cell.classList.add('bad'); cell.insertAdjacentHTML('beforeend', `<div class="cap">${u.id}.${name}: ${hits.join(' | ')}</div>`); bad.push(`${u.id}.${name}: ${hits.slice(0, 3).join(' | ')}`); }
+      else cell.remove();
+    }
+  }
+}
+window.RESULT = { bad };
+document.title = bad.length ? bad.length + ' bad' : 'all clear';
+</script></body></html>

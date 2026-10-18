@@ -169,8 +169,38 @@
 .q-feedback .sol { margin-top: 12px; padding: 12px 16px 12px 8px; background: var(--paper); border-left: 3px solid var(--pen); border-radius: 0 8px 8px 0; }
 .q-feedback .sol ol { margin: 0; padding-left: 2em; }
 .q-feedback .sol li { padding: 2px 0; }
+.q-feedback .sol li .katex-display { text-align: left; margin: .1em 0; }
+.q-feedback .sol li .katex-display > .katex { text-align: left; }
 .q-feedback .warn { color: var(--pen); }
 .q-next { margin-top: 16px; }
+.deepbtn { margin-top: 14px; }
+.deephost { margin-top: 14px; }
+.deep { background: var(--paper); border: 1.5px solid var(--line); border-radius: 12px; padding: 18px 20px 16px; }
+.deep-idea { border-left: 4px solid var(--hl); padding: 2px 0 2px 14px; margin-bottom: 14px; }
+.deep-idea h4, .deep h4 { font: 800 1rem var(--f-head); margin: 0 0 4px; }
+.deep-ask { margin-bottom: 10px; }
+.deep-steps { list-style: none; margin: 0; padding: 0; counter-reset: d; }
+.deep-steps li { position: relative; padding: 10px 0 10px 40px; border-top: 1px dashed var(--line); counter-increment: d; }
+.deep-steps li:first-child { border-top: 0; }
+.deep-steps li::before { content: counter(d); position: absolute; left: 0; top: 10px; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font: 800 .8rem var(--f-head); background: var(--ink); color: var(--paper); }
+.deep-steps .say { margin: 0 0 2px; }
+.deep-steps .m { font-size: 1.08rem; max-width: 100%; }
+.deep-steps .m .katex-display, .q-feedback .sol .katex-display { overflow-x: auto; overflow-y: hidden; padding-bottom: 2px; }
+.deep-steps .m .katex-display { text-align: left; margin: .2em 0; }
+.deep-steps .m .katex-display > .katex { text-align: left; }
+.deep-check, .deep-trap { margin-top: 10px; }
+.deep-trap .pen { font-size: 1.3rem; }
+.deep-try { margin-top: 14px; }
+.nested { margin-top: 12px; }
+.nested .q { box-shadow: none; }
+@media (max-width: 640px) {
+  .deep { padding: 14px 12px 12px; }
+  .deep-idea { padding-left: 10px; }
+  .deep-steps li { padding-left: 32px; }
+  .deep-steps li::before { width: 24px; height: 24px; }
+  .deep-steps .m, .q-feedback .sol li { font-size: .95rem; }
+  .nested .q { padding: 16px 12px; }
+}
 .q-mark { position: absolute; right: 22px; top: 18px; pointer-events: none; }
 .q-mark svg { width: 64px; height: 50px; fill: none; stroke: var(--pen); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
 .q-mark .cross { width: 46px; height: 46px; }

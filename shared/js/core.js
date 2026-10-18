@@ -173,10 +173,23 @@
   P.math = (el) => {
     if (!el || !window.renderMathInElement) return;
     window.renderMathInElement(el, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }], ignoredClasses: ['nomath'], throwOnError: false });
+    P.fit(el);
+  };
+  // a displayed equation still wider than its box (e.g. on a phone) is scaled down to fit, to no less than 68%
+  P.fit = (el) => {
+    if (!el || !el.querySelectorAll) return;
+    el.querySelectorAll('.katex-display').forEach((d) => {
+      d.style.fontSize = '';
+      const k = d.querySelector('.katex'), cw = d.clientWidth;
+      if (!k || !cw) return;
+      if (k.scrollWidth > cw) d.style.fontSize = Math.max(0.68, (cw - 4) / k.scrollWidth) + 'em';
+    });
   };
   // money amounts must not be read as maths delimiters
   P.money = (v) => '<span class="nomath">$' + (typeof v === 'number' ? v.toLocaleString('en-NZ', { minimumFractionDigits: Number.isInteger(v) ? 0 : 2, maximumFractionDigits: 2 }) : v) + '</span>';
   P.h = (html) => { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; };
+  // make a question from a unit's generator, remembering both so "Try one like it" can make another
+  P.gen = (u, g) => { const q = g(); q.unit = u; q.regen = g; return q; };
   // build an MCQ question: choices = [{t, ok, why}], shuffled
   P.mcq = (base, choices) => Object.assign({ kind: 'mcq', choices: R.shuffle(choices) }, base);
   // remove duplicate distractors (same text) keeping the correct one

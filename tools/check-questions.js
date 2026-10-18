@@ -26,9 +26,23 @@ function texIn(s, where) {
   const re = /\$\$([\s\S]+?)\$\$|\$([^$]+?)\$/g; let m;
   while ((m = re.exec(stripped))) { const tex = m[1] || m[2]; try { katex.renderToString(tex, { throwOnError: true, displayMode: !!m[1] }); } catch (e) { err(where, 'TeX: ' + e.message.slice(0, 100) + ' in ' + tex.slice(0, 80)); } }
   if ((stripped.match(/\$/g) || []).length % 2) err(where, 'odd number of $ in: ' + stripped.slice(0, 120));
+  // maths code must sit inside $...$, never in plain text
+  const plain = stripped.replace(/\$\$[\s\S]+?\$\$|\$[^$]+?\$/g, '').replace(/<[^>]+>/g, '');
+  if (/\\[a-zA-Z]+/.test(plain)) err(where, 'maths code outside $...$: ' + plain.match(/.{0,30}\\[a-zA-Z]+.{0,20}/)[0]);
+  // tidy maths: no "1x", no "+ -3" or "- -3", no "x^{1}"
+  const re2 = /\$([^$]+?)\$/g; let mm2;
+  while ((mm2 = re2.exec(stripped))) { const t = mm2[1]; if (/(^|[^\d.{])1x\b/.test(t) || /[+-] -\d/.test(t) || /\^\{1\}/.test(t)) err(where, 'untidy maths: ' + t.slice(0, 80)); }
+}
+function checkMore(q, where) {
+  const d = q.more;
+  if (!d) return err(where, 'no step-by-step walkthrough', q);
+  if (!d.steps || !d.steps.length) return err(where, 'walkthrough has no steps', q);
+  d.steps.forEach((st, k) => { if (!st || (!st.say && !st.m)) err(where, 'empty walkthrough step ' + k); texIn(st && st.say, where + '.more.say'); texIn(st && st.m, where + '.more.m'); });
+  ['ask', 'check', 'trap', 'idea'].forEach((k) => texIn(d[k], where + '.more.' + k));
 }
 function checkQ(q, where) {
   if (!q || !q.prompt) return err(where, 'no prompt');
+  checkMore(q, where);
   ['prompt', 'hint', 'fmt', 'fig'].forEach((k) => k !== 'fig' && texIn(q[k], where + '.' + k));
   (q.scaffold || []).forEach((s) => texIn(s, where + '.scaffold'));
   (q.sol || []).forEach((s) => texIn(s, where + '.sol'));
@@ -58,7 +72,8 @@ const ids = cfg.standards.flatMap((s) => s.units);
 for (const id of ids) {
   const u = P.unitById[id];
   if (!u) { err(id, 'unit missing'); continue; }
-  ['title', 'blurb'].forEach((k) => texIn(u[k], id + '.' + k));
+  ['title', 'blurb', 'recap'].forEach((k) => texIn(u[k], id + '.' + k));
+  if (!u.recap) err(id, 'no big-idea recap');
   if (!u.scenes || !u.scenes.length) err(id, 'no scenes');
   u.scenes.forEach((s, k) => { (s.card || []).forEach((c) => texIn(c.html, `${id}.scene${k}`)); (s.board || []).forEach((b) => { if (b.tex != null) texIn('$$' + b.tex + '$$', `${id}.scene${k}.board`); else texIn(b.html, `${id}.scene${k}.board`); }); if (!s.board && !s.draw) err(id, 'scene ' + k + ' has no visual'); });
   const exs = typeof u.example === 'function' ? Array.from({ length: 20 }, () => u.example()) : [u.example];

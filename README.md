@@ -6,6 +6,9 @@ Short, focused revision for NCEA exams. Each topic is about ten minutes:
 2. **Example**: a worked example revealed one step at a time, with margin notes on where marks are won.
 3. **Your turn**: a "faded" example with the first steps done, two tries.
 4. **Quiz**: five questions with instant, explanatory feedback. Numbers change every time.
+   After a wrong answer, **"Still don't understand? Show me step by step"** opens a slower walkthrough
+   using that question's own numbers: the big idea, each step with the reason for it, how to check,
+   and the common trap. **"Try one like it"** then gives a fresh, unscored question of the same type.
 5. **Exam tips** drawn from the NZQA assessment reports.
 
 Around the topics:
@@ -49,8 +52,15 @@ tools/                checks for question generators
 ```
 npm i katex
 node tools/check-questions.js maths-l2 400    # every generator 400 times: answers accepted, TeX renders, one correct choice
-node tools/sample-questions.js maths-l2 1      # one example of every question, for a read-through
+node tools/sample-questions.js maths-l2 1 --more   # one example of every question and its walkthrough, for a read-through
 ```
+
+Two browser checks (serve the folder, e.g. `python3 -m http.server`):
+
+- `tools/figures.html?runs=100`: renders every graph, tree and histogram and reports labels that overlap.
+- `tools/walkthroughs.html?runs=5`: open at phone width; renders every walkthrough and reports maths errors or equations wider than the screen.
+
+Every question type must have a `more` walkthrough and every unit a `recap`; `check-questions.js` fails without them.
 
 ## Publishing
 

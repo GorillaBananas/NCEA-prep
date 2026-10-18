@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Walkthrough check</title>
+<link rel="stylesheet" href="../shared/vendor/katex/katex.min.css">
+<link rel="stylesheet" href="../shared/css/base.css"><link rel="stylesheet" href="../shared/css/app.css">
+</head><body><div class="page"><div id="out"></div></div>
+<script src="../shared/vendor/katex/katex.min.js"></script><script src="../shared/vendor/katex/auto-render.min.js"></script>
+<script src="../shared/js/core.js"></script><script src="../shared/js/player.js"></script><script src="../shared/js/quiz.js"></script>
+<script src="../maths-l2/js/algebra.js"></script><script src="../maths-l2/js/calculus.js"></script><script src="../maths-l2/js/probability.js"></script>
+<script>
+/* Renders every step-by-step walkthrough (and short solution) at the current screen width and reports
+   KaTeX errors and equations wider than the panel. Open at phone width, e.g. 390 px. ?runs=5 */
+const runs = +(new URLSearchParams(location.search).get('runs') || 5);
+const out = document.getElementById('out'); const bad = []; let count = 0;
+for (const u of NP.units) {
+  const gens = [['faded', u.faded], ...u.gens.map((g, k) => ['gen' + k, g])];
+  for (const [name, g] of gens) for (let r = 0; r < runs; r++) {
+    const q = g(); q.unit = u; count++;
+    const box = document.createElement('div'); box.className = 'q sheet';
+    box.innerHTML = '<div class="q-feedback"><div class="sol"><ol>' + (q.sol || []).map((s) => '<li>' + NP.disp(s) + '</li>').join('') + '</ol></div><div class="deephost">' + NP.deepHtml(q) + '</div></div>';
+    out.appendChild(box); NP.math(box);
+    const errs = box.querySelectorAll('.katex-error').length;
+    const wide = [...box.querySelectorAll('.katex-display')].filter((e) => e.scrollWidth > e.clientWidth + 2);
+    if (errs || wide.length) bad.push(`${u.id}.${name}: ${errs ? errs + ' maths errors ' : ''}${wide.length ? wide.length + ' too wide: ' + wide.map((w) => w.textContent.slice(0, 60)).join(' | ') : ''}`);
+    else box.remove();
+  }
+}
+window.RESULT = { count, bad }; document.title = bad.length ? bad.length + ' problems' : 'all clear';
+</script></body></html>
