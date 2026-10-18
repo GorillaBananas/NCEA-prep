@@ -1,0 +1,100 @@
+/* NCEA Prep — exercise-book design.
+   Squared paper, a red margin, red-pen marking, a highlighter for the step that matters. */
+@font-face { font-family: "Schibsted"; src: url(../vendor/fonts/schibsted-grotesk-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Schibsted"; src: url(../vendor/fonts/schibsted-grotesk-latin-700-normal.woff2) format("woff2"); font-weight: 700; font-display: swap; }
+@font-face { font-family: "Schibsted"; src: url(../vendor/fonts/schibsted-grotesk-latin-800-normal.woff2) format("woff2"); font-weight: 800; font-display: swap; }
+@font-face { font-family: "Atkinson"; src: url(../vendor/fonts/atkinson-hyperlegible-latin-400-normal.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Atkinson"; src: url(../vendor/fonts/atkinson-hyperlegible-latin-700-normal.woff2) format("woff2"); font-weight: 700; font-display: swap; }
+@font-face { font-family: "Pen"; src: url(../vendor/fonts/caveat-latin-500-normal.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Pen"; src: url(../vendor/fonts/caveat-latin-700-normal.woff2) format("woff2"); font-weight: 700; font-display: swap; }
+
+:root {
+  --paper: #FBFCFE; --grid: #E4EBF5; --ink: #1A2540; --muted: #5B6680; --faint: #8E98AE;
+  --pen: #D7303F; --hl: #FFE45E; --hl-ink: #1A2540; --line: #CDD7E6; --sheet: #FFFFFF;
+  --ok: #138A5B; --alg: #2F5FD0; --calc: #0E8468; --prob: #8547CC;
+  --c1: #2F5FD0; --c2: #E06A1B; --c3: #0E8468; --c4: #8547CC;
+  --sq: 24px; --margin: 76px;
+  --f-head: "Schibsted", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Atkinson", "Segoe UI", system-ui, sans-serif;
+  --f-pen: "Pen", "Comic Sans MS", cursive;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #121826; --grid: #1B2436; --ink: #E8EDF6; --muted: #9AA6BD; --faint: #6D7891;
+  --pen: #FF6B78; --hl: rgba(255, 222, 80, .30); --hl-ink: #FFF3BF; --line: #2A3650; --sheet: #172033;
+  --ok: #42C68E; --alg: #7FA2FF; --calc: #3FCBA6; --prob: #B98CFF;
+  --c1: #7FA2FF; --c2: #FF9A55; --c3: #3FCBA6; --c4: #B98CFF; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --paper: #121826; --grid: #1B2436; --ink: #E8EDF6; --muted: #9AA6BD; --faint: #6D7891;
+  --pen: #FF6B78; --hl: rgba(255, 222, 80, .30); --hl-ink: #FFF3BF; --line: #2A3650; --sheet: #172033;
+  --ok: #42C68E; --alg: #7FA2FF; --calc: #3FCBA6; --prob: #B98CFF;
+  --c1: #7FA2FF; --c2: #FF9A55; --c3: #3FCBA6; --c4: #B98CFF; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; color: var(--ink); font: 400 18px/1.6 var(--f-body);
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(90deg, transparent calc(var(--margin) - 2px), var(--pen) calc(var(--margin) - 2px), var(--pen) var(--margin), transparent var(--margin)),
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 100% 100%, var(--sq) var(--sq), var(--sq) var(--sq);
+  background-repeat: no-repeat, repeat, repeat;
+  overflow-x: hidden;
+  background-attachment: local;
+  min-height: 100vh;
+}
+::selection { background: var(--hl); color: var(--hl-ink); }
+a { color: inherit; }
+h1, h2, h3 { font-family: var(--f-head); line-height: 1.12; margin: 0; letter-spacing: -0.015em; text-wrap: balance; }
+h1 { font-weight: 800; font-size: clamp(2.2rem, 5vw, 3.6rem); letter-spacing: -0.03em; }
+h2 { font-weight: 800; font-size: clamp(1.5rem, 3vw, 2rem); }
+h3 { font-weight: 700; font-size: 1.15rem; }
+p { margin: 0; }
+button, input { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--alg); outline-offset: 3px; border-radius: 4px; }
+
+/* page frame: content starts just right of the red margin */
+.page { padding: 28px 20px 96px calc(var(--margin) + 28px); max-width: calc(var(--margin) + 28px + 820px); }
+.page.wide { max-width: calc(var(--margin) + 28px + 1120px); }
+@media (max-width: 640px) { :root { --margin: 34px; } .page { padding-left: calc(var(--margin) + 14px); padding-right: 16px; } .topbar { margin-bottom: 28px; font-size: .95rem; } .topbar .crumbs .home, .topbar .crumbs .home + span { display: none; } }
+
+.topbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin-bottom: 40px; font-family: var(--f-head); font-weight: 700; }
+.topbar a { text-decoration: none; }
+.topbar .crumbs { display: flex; gap: 10px; align-items: center; color: var(--muted); }
+.topbar .crumbs a:hover { color: var(--ink); }
+.topbar .crumbs b { color: var(--ink); }
+.topbar .right { display: flex; gap: 18px; align-items: center; font-weight: 500; color: var(--muted); }
+.topbar .right a:hover { color: var(--ink); }
+
+/* red-pen annotations: the one bold thing */
+.pen { font-family: var(--f-pen); color: var(--pen); font-weight: 700; font-size: 1.35em; line-height: 1.1; }
+.margin-mark { position: absolute; left: calc(-1 * var(--margin) - 28px); width: var(--margin); text-align: center; font-family: var(--f-pen); font-weight: 700; color: var(--pen); font-size: 1.6rem; line-height: 1; }
+@media (max-width: 640px) { .margin-mark { left: calc(-1 * var(--margin) - 14px); font-size: 1.2rem; } }
+.hl { background: linear-gradient(transparent 12%, var(--hl) 12%, var(--hl) 88%, transparent 88%); color: var(--hl-ink); padding: 0 .15em; border-radius: 2px; }
+
+/* buttons */
+.btn { display: inline-flex; align-items: center; gap: .5em; border: 2px solid var(--ink); background: var(--ink); color: var(--paper); font-family: var(--f-head); font-weight: 700; font-size: 1rem; padding: .7em 1.25em; border-radius: 10px; cursor: pointer; text-decoration: none; transition: transform .08s ease; }
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: translateY(1px); }
+.btn.ghost { background: transparent; color: var(--ink); }
+.btn.small { padding: .45em .9em; font-size: .92rem; border-radius: 8px; }
+.btn[disabled] { opacity: .45; cursor: default; transform: none; }
+.linkbtn { background: none; border: 0; padding: 0; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; font-size: .95rem; }
+.linkbtn:hover { color: var(--ink); }
+
+/* sheets of paper laid on the book */
+.sheet { background: var(--sheet); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 1px 0 var(--line), 0 10px 30px -18px rgba(26, 37, 64, .35); }
+
+.muted { color: var(--muted); }
+.small { font-size: .9rem; }
+.stack > * + * { margin-top: 16px; }
+.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.spacer { flex: 1; }
+.visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.katex { font-size: 1.08em; }
+.katex-display { margin: .6em 0; overflow-x: auto; overflow-y: hidden; padding: 2px 0; }
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; } }
