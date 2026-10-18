@@ -7,6 +7,14 @@
 
   P.start = (cfg) => {
     const KEY = 'ncea-prep:' + cfg.id;
+    P.cfg = cfg;
+    // wording that differs between subjects (maths defaults)
+    const W = Object.assign({
+      noun: 'maths', kit: 'Use paper and your calculator.', papers: 'all three papers',
+      mixedTitle: 'Final week: mix all three papers', mixedText: '12 questions across algebra, calculus and probability, in random order, like the real exam. Includes Upgrade questions, and shows your level: Achieved, Merit or Excellence.',
+      how: ['<b>Watch</b> a one-minute animated explainer', '<b>Follow</b> a worked example, step by step', '<b>Finish</b> one yourself, with the start done for you', '<b>Quiz</b>: five quick questions with instant feedback', '<b>Aim higher</b>: one exam question that climbs from Achieved to Merit to Excellence', '<b>Exam tips</b>: what earns the marks'],
+      aimIntro: 'One exam-style question in three parts, like the real paper. Part (a) is Achieved level, (b) is Merit, (c) is Excellence. Work each part on paper, check your answer, then compare your working with the model answer. The red notes say what earns the grade.',
+    }, cfg.words || {});
     const app = document.getElementById('app');
     const units = (std) => std.units.map((id) => P.unitById[id]).filter(Boolean);
     const allUnits = () => cfg.standards.flatMap(units);
@@ -20,6 +28,7 @@
       try { S = JSON.parse(localStorage.getItem(KEY)) || null; } catch (e) { S = null; }
       if (!S || S.v !== 1) S = { v: 1, units: {}, days: [], secs: 0, diag: null, diagAt: 0 };
       S.g = S.g || { A: [0, 0], M: [0, 0], E: [0, 0] }; // right, total at each NCEA level
+      S.wr = S.wr || { n: 0, ai: 0, A: 0, M: 0, E: 0 }; // written answers: how many, how many AI-marked, best grade counts
     }
     function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* storage off: progress lasts this visit only */ } }
     const U = (id) => (S.units[id] = S.units[id] || { s: 0, d: null, b: 0, q: 0, box: 0, due: 0, t: 0, w: 0, e: 0, f: 0, ad: 0, a: 0 }); // ad: Aim higher done, a: level reached there (0–3)
@@ -91,7 +100,7 @@
       const nu = nextUnit();
       const due = dueUnits();
       const started = Object.keys(S.units).length > 0;
-      const head = left > 1 ? `${left} days to the maths exam.` : left === 1 ? 'The maths exam is tomorrow.' : left === 0 ? 'Exam day. You have got this.' : 'The exam is done. Well played.';
+      const head = left > 1 ? `${left} days to the ${W.noun} exam.` : left === 1 ? `The ${W.noun} exam is tomorrow.` : left === 0 ? 'Exam day. You have got this.' : 'The exam is done. Well played.';
       let actions;
       if (!S.diag) {
         actions = `<div class="actions"><a class="btn" href="#/diagnostic">Find my weak spots</a><a class="btn ghost" href="#contents">Choose a topic</a></div>
@@ -116,10 +125,10 @@
           <p class="lede">Exam: ${cfg.exam.text}. ${cfg.lede}</p>
           ${actions}
         </section>
-        ${started ? '' : `<section class="how sheet"><h3>How each topic works</h3><ol class="steps5"><li><b>Watch</b> a one-minute animated explainer</li><li><b>Follow</b> a worked example, step by step</li><li><b>Finish</b> one yourself, with the start done for you</li><li><b>Quiz</b>: five quick questions with instant feedback</li><li><b>Aim higher</b>: one exam question that climbs from Achieved to Merit to Excellence</li><li><b>Exam tips</b>: what earns the marks</li></ol></section>`}
+        ${started ? '' : `<section class="how sheet"><h3>How each topic works</h3><ol class="steps5">${W.how.map((h) => `<li>${h}</li>`).join('')}</ol></section>`}
         <div id="contents">${contents}</div>
-        <section class="mixed sheet"><div><h3>Final week: mix all three papers</h3><p class="muted">12 questions across algebra, calculus and probability, in random order, like the real exam. Includes Upgrade questions, and shows your level: Achieved, Merit or Excellence.</p></div><a class="btn" href="#/practice/all">Start mixed practice</a></section>
-        <footer class="foot muted small"><p>Content follows the NZQA standards ${cfg.standards.map((s) => s.code).join(', ')}. Past papers and marking schedules are on the <a href="${cfg.nzqa}" target="_blank" rel="noopener">NZQA subject page</a>.</p></footer>`, { wide: false });
+        <section class="mixed sheet"><div><h3>${W.mixedTitle}</h3><p class="muted">${W.mixedText}</p></div><a class="btn" href="#/practice/all">Start mixed practice</a></section>
+        <footer class="foot muted small"><p>Content follows the NZQA standards ${cfg.standards.map((s) => s.code).join(', ')}. Past papers and marking schedules are on the <a href="${cfg.nzqa}" target="_blank" rel="noopener">NZQA subject page</a>.</p>${cfg.ai ? `<p>Written answers: ${P.ai && P.ai.ready() ? 'AI marking is on.' : 'AI marking is off, so you mark yourself against model answers.'} <a href="${cfg.home}settings.html">${P.ai && P.ai.ready() ? 'Settings' : 'Turn it on'}</a></p>` : ''}</footer>`, { wide: false });
       const c = m.querySelector('a[href="#contents"]'); if (c) c.onclick = (e) => { e.preventDefault(); document.getElementById('contents').scrollIntoView({ behavior: 'smooth' }); };
     }
 
@@ -221,7 +230,7 @@
       const a = u.aim;
       if (!a) { panel.innerHTML = '<p class="muted">Coming soon for this topic.</p>'; return; }
       panel.innerHTML = `<div class="aim">
-        <p class="muted intro">One exam-style question in three parts, like the real paper. Part (a) is Achieved level, (b) is Merit, (c) is Excellence. Work each part on paper, check your answer, then compare your working with the model answer. The red notes say what earns the grade.</p>
+        <p class="muted intro">${W.aimIntro}</p>
         <div class="aim-ctx sheet"><p>${a.intro}</p>${a.fig ? `<div class="q-fig">${a.fig}</div>` : ''}</div>
         <div class="aim-parts"></div><div class="aim-up"></div><div class="aim-end"></div></div>`;
       P.math(panel.querySelector('.aim-ctx'));
@@ -234,6 +243,13 @@
           <div class="aim-q">${p.q}</div><div class="aim-try"></div><div class="aim-model" hidden></div></section>`);
         parts.appendChild(el); P.math(el.querySelector('.aim-q'));
         if (k) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (p.write) {
+          // a written answer: marked by AI against the model, or self-marked if AI marking is off
+          const wq = { kind: 'write', prompt: '', qtext: p.q, ctx: a.intro, target: g, model: p.model, earns: p.earns, crit: p.crit, words: p.words, rows: p.rows, std: { code: stdOf(u).code, name: stdOf(u).name }, subject: cfg.full };
+          P.ask(el.querySelector('.aim-try'), wq, { mode: 'practice', skip: 'Show me the model answer', noNext: true })
+            .then((r) => { written(r); self[k] = !!r.ok; part(k + 1); });
+          return;
+        }
         const check = Object.assign({ prompt: '' }, p.check);
         if (check.kind === 'mcq') check.choices = P.R.shuffle(check.choices.map((c) => Object.assign({}, c)));
         P.ask(el.querySelector('.aim-try'), check, { mode: 'practice', tries: 2, skip: 'Show me the model answer', noNext: true })
@@ -284,6 +300,13 @@
         end.scrollIntoView({ behavior: 'smooth', block: 'start' });
       };
       part(0);
+    }
+
+    // tally a written answer for the progress report
+    function written(r) {
+      if (r.skipped) return;
+      S.wr.n++; if (r.ai) S.wr.ai++; if (r.grade && S.wr[r.grade] != null) S.wr[r.grade]++;
+      save(); touch();
     }
 
     /* ---------- check-up (diagnostic) ---------- */
@@ -369,7 +392,7 @@
       const slots = P.R.shuffle(items.map((_, i) => i).slice(1)).slice(0, nUp);
       slots.forEach((i, j) => { const u = withAim[j]; items[i] = { u, q: P.upgradeQ(u, j % 2) }; });
       const title = std ? `${std.short} practice` : 'Mixed practice';
-      const m = frame(`<section class="unit-head" style="--sc:${std ? std.col : 'var(--ink)'}"><h1>${title}</h1><p class="lede">${N} questions from ${std ? 'every ' + std.short.toLowerCase() + ' topic' : 'all three papers'}, in random order, like the exam. About ${Math.round(N * 1.5)} minutes. Use paper and your calculator.</p></section><div class="pips">${items.map(() => '<i></i>').join('')}</div><div class="qhost"></div>`, { crumb: title, timing: '*' });
+      const m = frame(`<section class="unit-head" style="--sc:${std ? std.col : 'var(--ink)'}"><h1>${title}</h1><p class="lede">${N} questions from ${std ? 'every ' + std.short.toLowerCase() + ' topic' : W.papers}, in random order, like the exam. About ${Math.round(N * 1.5)} minutes. ${W.kit}</p></section><div class="pips">${items.map(() => '<i></i>').join('')}</div><div class="qhost"></div>`, { crumb: title, timing: '*' });
       const pips = [...m.querySelectorAll('.pips i')]; let k = 0; const missed = new Map(); const t0 = Date.now(); const t = newTally();
       const next = () => {
         if (k >= items.length) {
@@ -400,6 +423,7 @@
     function encode() {
       const u = {}; for (const un of allUnits()) u[un.id] = row(U(un.id));
       const data = { c: cfg.id, at: Date.now(), m: Math.round(S.secs / 60), days: S.days.slice(-30), dg: S.diag ? 1 : 0, g: ['A', 'M', 'E'].map((g) => S.g[g]), u };
+      if (cfg.ai) data.wr = [S.wr.n, S.wr.ai, S.wr.A, S.wr.M, S.wr.E];
       return btoa(unescape(encodeURIComponent(JSON.stringify(data)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     }
     // one topic in the report: status, check-up result, best quiz, quizzes taken, minutes, Aim higher level (−1 = not done)
@@ -421,19 +445,21 @@
       }).join('');
       return `<div class="stats"><div><b>${mins(d.m * 60)}</b><span>learning in total</span></div><div><b>${d.days.length}</b><span>day${d.days.length === 1 ? '' : 's'} active</span></div><div><b>${weekDays}</b><span>of the last 7 days</span></div><div><b>${lastDay ? (lastDay === today() ? 'Today' : lastDay) : '–'}</b><span>last session</span></div></div>
         ${!d.dg ? '<p class="note-box">The check-up has not been done yet, so weak spots are not known.</p>' : ''}
+        ${d.wr && d.wr[0] ? `<p class="note-box"><b>${d.wr[0]} written answer${d.wr[0] === 1 ? '' : 's'}</b>${d.wr[1] ? `, ${d.wr[1]} marked by AI` : ', self-marked'}. Reached: ${['Excellence', 'Merit', 'Achieved'].map((g, i) => `${d.wr[4 - i]} at ${g}`).join(', ')}.</p>` : ''}
         ${d.g ? profileHtml({ A: d.g[0], M: d.g[1], E: d.g[2] }, { title: 'Level profile: every quiz and practice question so far', all: true, cls: 'sheet', empty: '' }) + (d.g.some((x) => x[1]) ? levelKey : '') : ''}
         ${stds}
-        <p class="muted small">Aim higher shows the grade reached on each topic's exam-style question, self-marked against the model answer.</p>
+        <p class="muted small">Aim higher shows the grade reached on each topic's exam-style question, ${cfg.ai ? 'marked by AI where it is turned on, otherwise self-marked against the model answer' : 'self-marked against the model answer'}.</p>
         ${mine ? '' : `<p class="muted small">Snapshot made ${ago(d.at)}. Ask for a fresh link to see newer progress.</p>`}`;
     }
 
     function progress() {
       const d = { c: cfg.id, at: Date.now(), m: Math.round(S.secs / 60), days: S.days, dg: S.diag ? 1 : 0, g: ['A', 'M', 'E'].map((g) => S.g[g]), u: {} };
+      if (cfg.ai) d.wr = [S.wr.n, S.wr.ai, S.wr.A, S.wr.M, S.wr.E];
       for (const un of allUnits()) d.u[un.id] = row(U(un.id));
       const link = location.href.split('#')[0] + '#/dad/' + encode();
       const m = frame(`<section class="unit-head"><h1>Your progress</h1><p class="lede">Saved on this computer. Use the same browser to keep your progress.</p></section>
         <section class="share sheet"><h3>Send your progress to Dad</h3><p class="muted">This makes a link with your topic scores and time spent. Nothing else.</p>
-        <div class="row"><button class="btn copy">Copy link</button><a class="btn ghost" href="mailto:?subject=${encodeURIComponent('My NCEA maths progress')}&body=${encodeURIComponent(link)}">Email it</a><span class="pen copied" hidden>Copied</span></div></section>
+        <div class="row"><button class="btn copy">Copy link</button><a class="btn ghost" href="mailto:?subject=${encodeURIComponent(`My NCEA ${W.noun} progress`)}&body=${encodeURIComponent(link)}">Email it</a><span class="pen copied" hidden>Copied</span></div></section>
         ${report(d, true)}
         <p class="row"><button class="linkbtn reset">Reset all progress on this computer</button></p>`, { crumb: 'Progress', wide: true });
       m.querySelector('.copy').onclick = async () => { try { await navigator.clipboard.writeText(link); } catch (e) { prompt('Copy this link:', link); } m.querySelector('.copied').hidden = false; };

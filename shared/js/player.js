@@ -76,6 +76,30 @@
       },
       box(x, y, w, h, o = {}) { ctx.save(); ctx.globalAlpha = o.alpha == null ? 1 : o.alpha; if (o.fill) { ctx.fillStyle = o.fill; ctx.fillRect(x, y, w, h); } if (o.stroke !== false) { ctx.strokeStyle = o.stroke || C.line; ctx.lineWidth = o.lw || 1.5; ctx.strokeRect(x, y, w, h); } ctx.restore(); },
       alpha(a, fn) { ctx.save(); ctx.globalAlpha = clamp(a); fn(); ctx.restore(); },
+      // shapes for diagrams (biology, economics)
+      ellipse(cx, cy, rx, ry, o = {}) { ctx.save(); ctx.globalAlpha = o.alpha == null ? 1 : o.alpha; ctx.beginPath(); ctx.ellipse(cx, cy, Math.max(0, rx), Math.max(0, ry), o.rot || 0, 0, Math.PI * 2); if (o.fill) { ctx.fillStyle = o.fill; ctx.fill(); } if (o.stroke !== false) { ctx.strokeStyle = o.stroke || C.ink; ctx.lineWidth = o.lw || 2; if (o.dash) ctx.setLineDash(o.dash); ctx.stroke(); } ctx.restore(); },
+      round(x, y, w, h, r, o = {}) { ctx.save(); ctx.globalAlpha = o.alpha == null ? 1 : o.alpha; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); if (o.fill) { ctx.fillStyle = o.fill; ctx.fill(); } if (o.stroke !== false) { ctx.strokeStyle = o.stroke || C.ink; ctx.lineWidth = o.lw || 2; if (o.dash) ctx.setLineDash(o.dash); ctx.stroke(); } ctx.restore(); },
+      arrow(x1, y1, x2, y2, col, w = 2.5, alpha = 1, head = 10) {
+        if (alpha <= 0) return;
+        ctx.save(); ctx.globalAlpha = clamp(alpha); ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = w; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+        const ang = Math.atan2(y2 - y1, x2 - x1);
+        ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - head * Math.cos(ang - 0.45), y2 - head * Math.sin(ang - 0.45)); ctx.lineTo(x2 - head * Math.cos(ang + 0.45), y2 - head * Math.sin(ang + 0.45)); ctx.closePath(); ctx.fill();
+        ctx.restore();
+      },
+      path(pts, o = {}) { if (pts.length < 2) return; ctx.save(); ctx.globalAlpha = o.alpha == null ? 1 : o.alpha; ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]); for (let k = 1; k < pts.length; k++) ctx.lineTo(pts[k][0], pts[k][1]); if (o.close) ctx.closePath(); if (o.fill) { ctx.fillStyle = o.fill; ctx.fill(); } if (o.stroke !== false) { ctx.strokeStyle = o.stroke || C.ink; ctx.lineWidth = o.lw || 2; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; if (o.dash) ctx.setLineDash(o.dash); ctx.stroke(); } ctx.restore(); },
+      // text wrapped to a width; returns the height used
+      wrap(str, x, y, width, o = {}) {
+        const size = fs * (o.size || 1); ctx.save(); ctx.font = `${o.weight || 700} ${size}px ${o.font === 'head' ? 'Schibsted' : 'Atkinson'}, sans-serif`;
+        const words = String(str).split(' '); const lines = []; let cur = '';
+        for (const w of words) { const t = cur ? cur + ' ' + w : w; if (ctx.measureText(t).width > width && cur) { lines.push(cur); cur = w; } else cur = t; }
+        if (cur) lines.push(cur); ctx.restore();
+        const lh = size * 1.25; const y0 = o.middle ? y - ((lines.length - 1) * lh) / 2 : y;
+        lines.forEach((l, k) => api.text(l, x, y0 + k * lh, o));
+        return lines.length * lh;
+      },
+      // a labelled tag with a leader line to a point
+      tag(str, tx, ty, px, py, o = {}) { const al = o.alpha == null ? 1 : o.alpha; if (al <= 0) return; ctx.save(); ctx.globalAlpha = clamp(al); ctx.strokeStyle = C.muted; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(px, py); ctx.stroke(); ctx.fillStyle = C.ink; ctx.beginPath(); ctx.arc(px, py, 3, 0, 7); ctx.fill(); ctx.restore(); api.text(str, tx + (o.align === 'right' ? -4 : 4), ty, { alpha: al, align: o.align || 'left', size: o.size || 0.8, bg: o.bg === false ? null : C.sheet, col: o.col, font: o.font }); },
     };
     return api;
   }

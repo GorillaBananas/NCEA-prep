@@ -114,6 +114,7 @@
   P.tolFor = (q, a) => (q.tol != null ? q.tol : Math.max(0.006, Math.abs(a) * 0.0005));
   // check an answer. returns {ok, invalid, msg}
   P.check = (q, input) => {
+    if (P.kinds && P.kinds[q.kind]) return P.kinds[q.kind].check(q, input);
     if (q.kind === 'mcq') { const ch = q.choices[input]; return { ok: !!(ch && ch.ok), msg: ch && ch.why }; }
     const near = (u, a) => Math.abs(u - a) <= P.tolFor(q, a);
     const wrongMsg = (vals) => { for (const w of q.wrong || []) { const wv = [].concat(w.v); if (wv.length === vals.length && wv.every((x, k) => near(vals[k], x))) return w.msg; } return null; };
@@ -121,6 +122,8 @@
       const v = P.parseNum(input);
       if (Number.isNaN(v)) return { ok: false, invalid: true };
       if (near(v, q.answer)) return { ok: true };
+      // a probability typed as a percentage without the % sign: 25 for 0.25
+      if (q.prob && v > 1 && Math.abs(v / 100 - q.answer) <= P.tolFor(q, q.answer)) return { ok: true };
       // right value, wrong rounding?
       if (q.dp != null && Math.abs(v - q.answer) < 0.05 * Math.max(1, Math.abs(q.answer)) && Math.abs(v - q.answer) > P.tolFor(q, q.answer)) {
         const w = wrongMsg([v]); return { ok: false, msg: w || 'Close. Check your rounding: give the answer to ' + q.dp + ' decimal places.' };

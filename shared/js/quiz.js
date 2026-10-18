@@ -12,6 +12,7 @@
     return 'Fractions like 3/4 are fine.';
   }
   function answerText(q) {
+    const kd = P.kinds && P.kinds[q.kind]; if (kd && kd.answer) return kd.answer(q);
     if (q.answerTex) return '$' + q.answerTex.replace(/</g, '\\lt ') + '$';
     if (q.kind === 'mcq') { const c = q.choices.find((c) => c.ok); return !c ? '' : /<svg/.test(c.t) ? 'the graph marked in green' : c.t; }
     if (q.kind === 'multi') return '$' + q.answer.map((a) => (q.dp != null ? P.f(a, q.dp) : P.nf(a))).join(',\\ ') + '$';
@@ -87,20 +88,26 @@
     const ans = el.querySelector('.q-answer'), fb = el.querySelector('.q-feedback'), mark = el.querySelector('.q-mark');
     let n = 0, finished = false;
 
-    function finish(ok, msg, skipped) {
-      finished = true;
+    let extra = {};
+    function finish(ok, msg, skipped, custom, more) {
+      finished = true; extra = more || {};
       el.classList.add(ok ? 'is-right' : 'is-wrong');
       mark.innerHTML = ok ? TICK : skipped ? '' : CROSS;
-      ans.querySelectorAll('input,button').forEach((b) => (b.disabled = true));
+      ans.querySelectorAll('input,button,select,textarea').forEach((b) => (b.disabled = true));
+      const kd = P.kinds && P.kinds[q.kind]; if (kd && kd.reveal) kd.reveal(ans, q, ok);
+      const skl = ans.querySelector('.skip'); if (skl) skl.remove();
       if (q.kind === 'mcq') { const right = ans.querySelector(`[data-k="${q.choices.findIndex((c) => c.ok)}"]`); if (right) right.classList.add('right'); }
       let html = '';
-      const okWhy = q.kind === 'mcq' ? (q.choices.find((c) => c.ok) || {}).why : null;
-      if (mode === 'diag') {
+      const okWhy = q.kind === 'mcq' ? (q.choices.find((c) => c.ok) || {}).why : q.why || null;
+      const ansLabel = (kd && kd.label) || 'Answer';
+      if (custom != null) {
+        html = custom;
+      } else if (mode === 'diag') {
         html = ok ? '<p class="pen big">Correct</p>' : `<p class="pen big">${skipped ? 'Skipped. That is useful to know.' : 'Not this time. Noted for your plan.'}</p>`;
       } else if (ok) {
         html = `<p class="pen big">${P.R.pick(['Correct', 'Yes', 'Nailed it', 'Correct, nice working'])}</p>${okWhy ? `<p class="why">${minus(okWhy)}</p>` : ''}${q.sol ? '<button class="linkbtn showsol">See the full working</button><div class="sol" hidden></div>' : ''}`;
       } else {
-        html = `<p class="pen big">${skipped ? 'Here is how it goes' : 'Not quite'}</p>${msg ? `<p class="why">${minus(msg)}</p>` : ''}<p class="ansline">Answer: ${answerText(q)}</p>${okWhy ? `<p class="why">${minus(okWhy)}</p>` : ''}${q.sol ? '<div class="sol"></div>' : ''}`;
+        html = `<p class="pen big">${skipped ? 'Here is how it goes' : 'Not quite'}</p>${msg ? `<p class="why">${minus(msg)}</p>` : ''}<div class="ansline">${ansLabel}: ${answerText(q)}</div>${okWhy ? `<p class="why">${minus(okWhy)}</p>` : ''}${q.sol ? '<div class="sol"></div>' : ''}`;
         if (q.more || q.sol) html += `<button class="btn ghost small deepbtn" aria-expanded="false">Still don't understand? Show me step by step</button><div class="deephost" hidden></div>`;
       }
       if (!o.noNext) html += `<div class="row q-next"><button class="btn small nextq">${o.nextLabel || 'Next'}</button></div>`;
@@ -111,7 +118,7 @@
       const db = fb.querySelector('.deepbtn');
       if (db) db.onclick = () => {
         const dh = fb.querySelector('.deephost');
-        dh.innerHTML = deepHtml(q) + (q.regen && (o.depth || 0) < 1 ? '<div class="row deep-try"><button class="btn small tryone">Try one like it</button><span class="muted small">Not scored. Same type, new numbers.</span></div><div class="nested"></div>' : '');
+        dh.innerHTML = deepHtml(q) + (q.regen && (o.depth || 0) < 1 ? `<div class="row deep-try"><button class="btn small tryone">Try one like it</button><span class="muted small">Not scored. Same type, ${/num|multi/.test(q.kind) ? 'new numbers' : 'new question'}.</span></div><div class="nested"></div>` : '');
         dh.hidden = false; db.remove(); P.math(dh);
         dh.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         const tb = dh.querySelector('.tryone');
@@ -125,9 +132,9 @@
       };
       P.math(fb);
       const nx = fb.querySelector('.nextq');
-      if (nx) { nx.onclick = () => resolve({ ok, skipped: !!skipped, tries: n }); nx.focus({ preventScroll: true }); }
+      if (nx) { nx.onclick = () => resolve(Object.assign({ ok, skipped: !!skipped, tries: n }, extra)); nx.focus({ preventScroll: true }); }
       if (o.onAnswer) o.onAnswer(ok);
-      if (o.noNext) resolve({ ok, skipped: !!skipped, tries: n }); // the caller shows what comes next
+      if (o.noNext) resolve(Object.assign({ ok, skipped: !!skipped, tries: n }, extra)); // the caller shows what comes next
     }
 
     function attempt(input) {
@@ -139,6 +146,7 @@
       if (n < tries) {
         fb.innerHTML = `<p class="pen big">Not quite. Have another go.</p>${r.msg ? `<p class="why">${minus(r.msg)}</p>` : q.hint ? `<p class="why">Hint: ${minus(q.hint)}</p>` : ''}`;
         P.math(fb);
+        const kd = P.kinds && P.kinds[q.kind]; if (kd && kd.retry) kd.retry(ans, q, input);
         const inp = ans.querySelector('input'); if (inp) { inp.select(); }
         ans.querySelectorAll('.choice.picked').forEach((b) => { b.disabled = true; b.classList.add('struck'); });
         return;
@@ -150,6 +158,8 @@
       const pics = q.choices.some((c) => /<svg/.test(c.t));
       ans.innerHTML = '<div class="choices' + (pics ? ' pics' : '') + '">' + q.choices.map((c, k) => `<button class="choice" data-k="${k}"><span class="key">${'ABCD'[k]}</span><span>${c.t}</span></button>`).join('') + '</div>';
       ans.querySelectorAll('.choice').forEach((b) => (b.onclick = () => { ans.querySelectorAll('.choice').forEach((x) => x.classList.remove('picked')); b.classList.add('picked'); attempt(+b.dataset.k); }));
+    } else if (P.kinds && P.kinds[q.kind]) {
+      P.kinds[q.kind].render(ans, q, { attempt, finish, fb, el, o, done: () => finished });
     } else {
       const id = 'qa' + ++qid;
       ans.innerHTML = `<form class="numform" autocomplete="off"><label class="visually-hidden" for="${id}">Your answer</label><input id="${id}" class="numin" inputmode="decimal" spellcheck="false" placeholder="Your answer"><button class="btn" type="submit">Check</button></form><p class="fmt">${minus(fmtHint(q))}</p>`;
@@ -164,6 +174,18 @@
     }
     P.math(el);
   });
+
+  /* ---------- build an "Upgrade this answer" question from a ladder ---------- */
+  const NAME = P.gradeName;
+  // bare: leave out the shared context (when it is already on the page, in the Aim higher step)
+  P.upgradeQ = (u, k, bare) => {
+    const a = u.aim, x = a.up[k], part = a.parts[x.part], to = 'AME'[x.part];
+    return P.mcq({
+      grade: to, upgrade: true, unit: u,
+      prompt: `${bare ? `<p class="up-head">Part (${'abc'[x.part]}): ${part.q}</p>` : `<p class="up-head"><b>Upgrade this answer.</b> ${a.intro}</p>${a.fig ? `<div class="q-fig">${a.fig}</div>` : ''}<p>${part.q}</p>`}<div class="stuans"><span class="pen">A student wrote:</span>${x.shown.map((l) => `<div class="sl">${l}</div>`).join('')}</div><p class="up-ask"><b>${x.ask || `What does this answer need to reach ${NAME[to]}?`}</b></p>`,
+      more: { idea: part.earns, ask: `The full ${NAME[to]} answer, line by line. Lines marked "Earns the grade" are the ones that matter most.`, steps: part.model.map((s) => ({ say: (s.key ? '<b>Earns the grade:</b> ' : '') + (s.note ? s.note + '.' : ''), m: s.m })) },
+    }, x.choices.map((c) => Object.assign({}, c)));
+  };
 
   /* ---------- tiny SVG figure builders for questions ---------- */
   const S = (P.svg = { n: 0 });

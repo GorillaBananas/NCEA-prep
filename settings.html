@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en-NZ">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI marking | NCEA Prep</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23FBFCFE'/%3E%3Cpath d='M14 0v64' stroke='%23D7303F' stroke-width='4'/%3E%3Cpath d='M22 34l9 10 19-24' fill='none' stroke='%23D7303F' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="shared/css/base.css">
+<link rel="stylesheet" href="shared/css/app.css">
+</head>
+<body>
+<div class="page">
+  <header class="topbar"><nav class="crumbs"><a class="home" href="./">NCEA Prep</a><span aria-hidden="true">/</span><b>AI marking</b></nav></header>
+  <main>
+    <section class="unit-head"><h1>AI marking</h1>
+      <p class="lede">Biology and economics answers are written in sentences. With AI marking on, each written answer is graded Not Achieved, Achieved, Merit or Excellence, with feedback on what to add. Without it, the student marks themselves against a model answer.</p></section>
+    <form class="settings sheet" autocomplete="off">
+      <p class="status" aria-live="polite"></p>
+      <label>Claude API key
+        <input type="password" name="key" placeholder="sk-ant-…" spellcheck="false">
+      </label>
+      <label>Marking model
+        <select name="model"></select>
+      </label>
+      <details><summary>Advanced: use a proxy instead of a key</summary>
+        <p class="muted small" style="margin:8px 0">If you run the small proxy in <code>tools/marker-proxy/</code>, put its address here and leave the key empty. The key then stays on the proxy and never reaches this browser.</p>
+        <label>Proxy address <input type="url" name="proxy" placeholder="https://ncea-marker.example.workers.dev"></label>
+      </details>
+      <div class="row"><button class="btn" type="submit">Save and test</button><button class="btn ghost" type="button" data-act="off">Turn off</button><button class="linkbtn" type="button" data-act="forget">Remove the key from this computer</button></div>
+      <div class="muted small">
+        <p><b>Setting it up (parent):</b></p>
+        <ol>
+          <li>Sign in at <a href="https://platform.claude.com/" target="_blank" rel="noopener">platform.claude.com</a> and add some credit. US$5 covers several hundred marked answers.</li>
+          <li>Create an API key just for this site. Set a low monthly spend limit on it.</li>
+          <li>Paste the key here, on the computer your child uses, and press <b>Save and test</b>.</li>
+        </ol>
+        <p style="margin-top:8px">The key is saved only in this browser on this computer. Anyone who uses this browser could find it, so use a key with a spend limit, and remove it when exams are over. Written answers are sent to Anthropic's API for marking and are not stored by this site.</p>
+      </div>
+    </form>
+    <p class="row after"><a class="btn ghost" href="./">Back to subjects</a></p>
+  </main>
+</div>
+<script src="shared/js/core.js"></script>
+<script src="shared/js/ai.js"></script>
+<script>
+(function () {
+  var P = NP, f = document.querySelector('form'), st = f.querySelector('.status');
+  var sel = f.model;
+  Object.keys(P.ai.MODELS).forEach(function (id) { var o = document.createElement('option'); o.value = id; o.textContent = P.ai.MODELS[id]; sel.appendChild(o); });
+  function show() {
+    var s = P.ai.get();
+    f.key.value = s.key || ''; f.proxy.value = s.proxy || ''; sel.value = s.model || 'claude-sonnet-5-5';
+    st.textContent = P.ai.ready() ? 'AI marking is on.' + (s.n ? ' ' + s.n + ' answers marked on this computer so far.' : '') : (s.key || s.proxy) ? 'AI marking is turned off.' : 'AI marking is not set up on this computer.';
+  }
+  f.onsubmit = function (e) {
+    e.preventDefault();
+    var s = P.ai.get(); s.key = f.key.value.trim(); s.proxy = f.proxy.value.trim(); s.model = sel.value; s.off = false;
+    if (!s.key && !s.proxy) { st.textContent = 'Paste an API key first.'; return; }
+    if (!P.ai.set(s)) { st.textContent = 'This browser will not save settings (private window?).'; return; }
+    st.textContent = 'Testing…';
+    P.ai.test().then(function () { show(); st.textContent = 'Connected. ' + st.textContent; })
+      .catch(function (err) { st.textContent = 'Saved, but the test failed: ' + err.message + '.'; });
+  };
+  f.querySelector('[data-act=off]').onclick = function () { var s = P.ai.get(); s.off = true; P.ai.set(s); show(); };
+  f.querySelector('[data-act=forget]').onclick = function () { var s = P.ai.get(); delete s.key; s.off = true; P.ai.set(s); show(); };
+  show();
+})();
+</script>
+</body>
+</html>

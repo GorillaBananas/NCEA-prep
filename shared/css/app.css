@@ -332,3 +332,102 @@
   .twoway th, .twoway td { padding: 6px 7px; font-size: .88rem; }
   .twoway thead th { white-space: normal; }
 }
+
+/* ---------- written subjects: new question kinds ---------- */
+.defn { margin-top: 8px; padding: 8px 12px; border-left: 3px solid var(--hl); background: var(--paper); border-radius: 0 8px 8px 0; }
+/* order the chain */
+.chain-built { list-style: none; margin: 0 0 12px; padding: 0; counter-reset: c; display: grid; gap: 8px; }
+.chain-built li { counter-increment: c; display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: center; }
+.chain-built li::before { content: counter(c); width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font: 800 .8rem var(--f-head); background: var(--ink); color: var(--paper); }
+.chain-built li.slot { min-height: 46px; }
+.chain-built li.slot::after { content: ""; display: block; height: 44px; border: 2px dashed var(--line); border-radius: 10px; }
+.chain-pool { display: grid; gap: 8px; margin: 6px 0 14px; padding-top: 12px; border-top: 1px dashed var(--line); }
+.chip { display: block; width: 100%; text-align: left; padding: 10px 14px; border: 2px solid var(--line); border-radius: 10px; background: var(--paper); cursor: pointer; font-size: 1rem; line-height: 1.4; }
+.chip:hover:not([disabled]) { border-color: var(--ink); }
+.chip.placed { background: var(--sheet); border-color: var(--muted); }
+.chip.fixed { border-style: dashed; color: var(--muted); cursor: default; }
+.chip.good { border-color: var(--ok); }
+.chip.bad { border-color: var(--pen); }
+.chip[disabled] { cursor: default; }
+.chain-help { margin: 0 0 4px; }
+.chain-ans { margin: 6px 0 0; padding-left: 1.4em; font-weight: 400; }
+.chain-ans li { padding: 2px 0; }
+/* match */
+.match { display: grid; gap: 8px; max-width: 560px; }
+.mrow { display: grid; grid-template-columns: 2.4em 1fr; gap: 10px; align-items: center; padding: 4px 8px; border: 2px solid transparent; border-radius: 10px; }
+.mrow .mk { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--ink); color: var(--paper); font: 800 .85rem var(--f-head); }
+.mrow select { width: 100%; padding: .55em .7em; font: inherit; font-size: 1rem; border: 2px solid var(--line); border-radius: 10px; background: var(--paper); color: var(--ink); }
+.mrow.good { border-color: var(--ok); }
+.mrow.bad { border-color: var(--pen); }
+.match .row { margin-top: 6px; }
+.match-ans { margin: 6px 0 0; padding-left: 1.1em; font-weight: 400; }
+/* shift the curve */
+.shift-fig { margin-top: 4px; }
+.shift-ctl { display: grid; gap: 10px; margin: 8px 0 14px; }
+.sc-row { display: grid; grid-template-columns: minmax(5.5em, auto) 1fr; gap: 12px; align-items: center; }
+.sc-name { font: 700 1rem var(--f-head); }
+.seg { display: inline-flex; flex-wrap: wrap; border: 2px solid var(--line); border-radius: 10px; overflow: hidden; justify-self: start; }
+.seg button { border: 0; background: var(--paper); padding: .5em .9em; cursor: pointer; font-size: .95rem; border-left: 1px solid var(--line); }
+.seg button:first-child { border-left: 0; }
+.seg button.on { background: var(--ink); color: var(--paper); font-weight: 700; }
+.seg button[disabled] { cursor: default; }
+.seg.again { border-color: var(--pen); }
+@media (max-width: 560px) { .sc-row { grid-template-columns: 1fr; gap: 4px; } .seg button { padding: .5em .7em; } }
+/* economic model figures */
+.fig .mc { fill: none; stroke-width: 3; stroke-linecap: round; }
+.fig .mc.old { opacity: .35; }
+.fig .mc.new { stroke-dasharray: 9 6; }
+.fig .ml { font: 800 14px var(--f-head); }
+.fig .gd { stroke: var(--faint); stroke-width: 1.4; stroke-dasharray: 4 4; }
+.fig .eq { fill: var(--ink); }
+.fig .al { fill: var(--muted); font: 700 12.5px var(--f-body); }
+.fig .gap { stroke: var(--pen); stroke-width: 2.4; }
+.fig .gl2 { fill: var(--pen); font: 700 16px var(--f-pen); }
+.fig .box { fill: var(--paper); stroke: var(--ink); stroke-width: 1.8; }
+.fig .bt { fill: var(--ink); font: 800 13px var(--f-head); }
+.fig .fl { fill: none; stroke: var(--muted); stroke-width: 1.8; }
+.fig .flt { fill: var(--ink); font: 700 11.5px var(--f-body); }
+.fig .bio { stroke: var(--ink); stroke-width: 2; }
+.fig .lead { stroke: var(--muted); stroke-width: 1.2; }
+.fig .tag { fill: var(--sheet); stroke: var(--ink); stroke-width: 1.5; }
+.fig .tagt { fill: var(--ink); font: 800 13px var(--f-head); }
+/* written answers */
+.write textarea { width: 100%; min-height: 9em; padding: 12px 14px; font: inherit; font-size: 1.05rem; line-height: 1.55; border: 2px solid var(--line); border-radius: 12px; background: var(--paper); color: var(--ink); resize: vertical; }
+.write textarea:focus { outline: none; border-color: var(--sc, var(--alg)); }
+.write .row { margin-top: 10px; }
+.wnote { margin-top: 8px; }
+.marking { display: flex; align-items: center; gap: 10px; }
+.dots { display: inline-flex; gap: 5px; }
+.dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--pen); animation: blink 1.2s infinite ease-in-out; }
+.dots i:nth-child(2) { animation-delay: .2s; } .dots i:nth-child(3) { animation-delay: .4s; }
+@keyframes blink { 0%, 80%, 100% { opacity: .2; } 40% { opacity: 1; } }
+.ai-res { border-left: 4px solid var(--pen); padding: 2px 0 2px 16px; margin: 4px 0 14px; max-width: 70ch; }
+.ai-res .ai-grade { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+.ai-res h4 { font: 800 1rem var(--f-head); margin: 12px 0 4px; }
+.ai-res ul { margin: 0; padding-left: 1.2em; }
+.ai-res ul.good li::marker { color: var(--ok); }
+.ai-res ul.errs li::marker, .ai-res ul.next li::marker { color: var(--pen); }
+.ai-res .better { margin-top: 12px; padding: 10px 14px; background: var(--paper); border-radius: 10px; }
+.ai-res > .muted { margin-top: 10px; }
+.model-box { margin: 8px 0 4px; }
+.model-box summary { cursor: pointer; font: 800 1rem var(--f-head); padding: 6px 0; }
+.model-box .aim-steps { margin-top: 6px; }
+.aim-steps .m p { margin: 0; }
+/* settings */
+.settings { padding: 24px 28px; max-width: 680px; display: grid; gap: 16px; }
+.settings label { display: grid; gap: 6px; font-weight: 700; }
+.settings input[type=password], .settings input[type=url], .settings select { padding: .6em .8em; font: inherit; font-size: 1rem; border: 2px solid var(--line); border-radius: 10px; background: var(--paper); color: var(--ink); width: 100%; }
+.settings .status { font-family: var(--f-head); font-weight: 700; }
+.settings details summary { cursor: pointer; font-weight: 700; }
+.settings ol { margin: 0; padding-left: 1.3em; }
+/* biology */
+.seq { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; margin: 6px 0; }
+.seq .seql { font: 700 .9rem var(--f-head); color: var(--muted); min-width: 7.5em; }
+.seq code { font: 600 1.05rem/1.4 ui-monospace, "SF Mono", Menlo, Consolas, monospace; letter-spacing: .06em; word-spacing: .3em; }
+.punnett td { text-align: center; font-weight: 700; min-width: 3.2em; }
+.punnett thead th, .punnett tbody th { text-align: center; color: var(--pen); }
+.ctable { border-collapse: collapse; font-size: .92rem; margin: 6px 0; }
+.ctable th, .ctable td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; }
+.ctable th { background: var(--paper); font-family: var(--f-head); }
+.resource { padding: 12px 16px; border-left: 3px solid var(--sc, var(--muted)); background: var(--paper); border-radius: 0 10px 10px 0; margin: 8px 0; }
+.aim-ctx .resource { margin: 0; padding: 0 0 0 14px; background: none; border-radius: 0; }

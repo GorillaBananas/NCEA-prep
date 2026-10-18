@@ -11,7 +11,8 @@ const root = path.join(__dirname, '..');
 const ctx = { console, Math, JSON, Number, String, Object, Array, Set, Promise, isFinite, parseFloat, encodeURIComponent, decodeURIComponent };
 ctx.window = ctx; vm.createContext(ctx);
 const load = (f) => vm.runInContext(fs.readFileSync(path.join(root, f), 'utf8'), ctx, { filename: f });
-['shared/js/core.js', 'shared/js/player.js', 'shared/js/quiz.js'].forEach(load);
+["shared/js/core.js", "shared/js/player.js", "shared/js/quiz.js", "shared/js/kinds.js"].forEach(load);
+if (fs.existsSync(path.join(root, 'shared/js/econ.js'))) load('shared/js/econ.js');
 const cfgSrc = fs.readFileSync(path.join(root, subject, 'js/config.js'), 'utf8');
 const unitFiles = [...fs.readFileSync(path.join(root, subject, 'index.html'), 'utf8').matchAll(/src="js\/([\w-]+)\.js"/g)].map((m) => m[1]).filter((f) => f !== 'config');
 unitFiles.forEach((f) => load(path.join(subject, 'js', f + '.js')));
@@ -66,6 +67,26 @@ function checkQ(q, where) {
     const s = q.answer.map((a) => (q.dp != null ? P.f(a, q.dp) : String(a))).join(', ');
     if (!P.check(q, s).ok) err(where, 'answer rejected: ' + s, q);
     if (!q.ordered && new Set(q.answer.map((a) => P.round(a, 6))).size !== q.answer.length) err(where, 'repeated values in unordered answer: ' + s, q);
+  } else if (q.kind === 'order') {
+    if (!Array.isArray(q.items) || q.items.length < 3) return err(where, 'order needs at least 3 items', q);
+    q.items.forEach((t) => texIn(t, where + '.item'));
+    if (new Set(q.items).size !== q.items.length) err(where, 'repeated items in order question', q);
+    if ((q.given || 0) >= q.items.length - 1) err(where, 'too many items given', q);
+    if (!P.check(q, q.items.map((_, k) => k)).ok) err(where, 'right order rejected', q);
+    if (P.check(q, q.items.map((_, k) => k).reverse()).ok) err(where, 'reversed order accepted', q);
+  } else if (q.kind === 'match') {
+    if (!Array.isArray(q.pairs) || q.pairs.length < 2) return err(where, 'match needs at least 2 pairs', q);
+    if (new Set(q.pairs.map((p) => p.a)).size !== q.pairs.length) err(where, 'two rows share an answer', q);
+    (q.extra || []).forEach((x) => { if (q.pairs.some((p) => p.a === x)) err(where, 'distractor is also an answer: ' + x); });
+    if (!P.check(q, q.pairs.map((p) => p.a)).ok) err(where, 'right labels rejected', q);
+    if (!q.fig) err(where, 'match question without a figure', q);
+  } else if (q.kind === 'shift') {
+    if (!P.econ) return err(where, 'shift question but shared/js/econ.js not loaded', q);
+    if (!P.check(q, Object.assign({}, q.answer)).ok) err(where, 'right shift rejected', q);
+    const ids = q.model.curves.filter((c) => c.move !== false).map((c) => c.id);
+    if (P.check(q, {}).ok && ids.some((id) => q.answer[id])) err(where, 'no change accepted', q);
+    try { const s1 = P.econ.svg(q.model, q.answer); if (/NaN|undefined/.test(s1)) err(where, 'bad figure', q); } catch (e) { err(where, 'figure threw ' + e.message, q); }
+    texIn(q.why, where + '.why');
   } else err(where, 'unknown kind ' + q.kind, q);
 }
 
@@ -83,6 +104,7 @@ function checkAim(u, id) {
     if (!p.model || !p.model.length) return err(w, 'no model answer');
     if (!p.model.some((st) => st.key)) err(w, 'no key line in the model answer');
     p.model.forEach((st) => { texIn(st.m, w + '.model'); texIn(st.note, w + '.note'); });
+    if (p.write) { if (p.crit) Object.values(p.crit).forEach((c) => texIn(c, w + '.crit')); if (p.model.length < 2) err(w, 'written model answer is too short'); return; }
     if (!p.check) return err(w, 'no answer check');
     const q = Object.assign({ prompt: p.q, more: { steps: [{ say: 'x' }] } }, p.check);
     checkQ(q, w + '.check');

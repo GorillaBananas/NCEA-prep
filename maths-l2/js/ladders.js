@@ -654,15 +654,5 @@
     ],
   });
 
-  /* ---------- build an "Upgrade this answer" question from a ladder ---------- */
-  const NAME = P.gradeName;
-  // bare: leave out the shared context (when it is already on the page, in the Aim higher step)
-  P.upgradeQ = (u, k, bare) => {
-    const a = u.aim, x = a.up[k], part = a.parts[x.part], to = 'AME'[x.part];
-    return P.mcq({
-      grade: to, upgrade: true, unit: u,
-      prompt: `${bare ? `<p class="up-head">Part (${'abc'[x.part]}): ${part.q}</p>` : `<p class="up-head"><b>Upgrade this answer.</b> ${a.intro}</p>${a.fig ? `<div class="q-fig">${a.fig}</div>` : ''}<p>${part.q}</p>`}<div class="stuans"><span class="pen">A student wrote:</span>${x.shown.map((l) => `<div class="sl">${l}</div>`).join('')}</div><p class="up-ask"><b>${x.ask || `What does this answer need to reach ${NAME[to]}?`}</b></p>`,
-      more: { idea: part.earns, ask: `The full ${NAME[to]} answer, line by line. Lines marked "Earns the grade" are the ones that matter most.`, steps: part.model.map((s) => ({ say: (s.key ? '<b>Earns the grade:</b> ' : '') + (s.note ? s.note + '.' : ''), m: s.m })) },
-    }, x.choices.map((c) => Object.assign({}, c)));
-  };
+  // P.upgradeQ (Upgrade this answer questions) is in shared/js/quiz.js
 })();
