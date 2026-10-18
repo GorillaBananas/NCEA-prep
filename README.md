@@ -32,6 +32,25 @@ Around the topics:
 | Folder | Subject | Exam |
 | --- | --- | --- |
 | `maths-l2/` | NCEA Level 2 Mathematics and Statistics: AS 91261 algebra, 91262 calculus, 91267 probability | Thu 19 Nov 2026, morning |
+| `biology-l2/` | NCEA Level 2 Biology: AS 91156 cells, 91157 genetic variation and change, 91159 gene expression | Fri 20 Nov 2026, morning |
+| `economics-l2/` | NCEA Level 2 Economics: AS 91222 inflation, 91223 international trade, 91224 economic growth | Fri 27 Nov 2026, morning |
+
+## Written subjects and AI marking
+
+Biology and economics are assessed by written answers, so they add four question kinds (`shared/js/kinds.js`):
+
+- **order**: build a chain of reasoning by tapping statements in order (the Merit skill).
+- **match**: label a diagram, one drop-down per letter.
+- **shift**: move the curves on an economic model (`shared/js/econ.js` draws the models).
+- **write**: a written answer. Aim higher parts with `write: true` use it.
+
+Written answers are marked by the Claude API when AI marking is set up on that computer (`settings.html`).
+The marker gets the question, the resource, the marking points (`crit`), the model answer with its key lines,
+and the NZQA grade descriptors for the subject, and returns a grade (N, A, M or E) with feedback as structured JSON
+(`shared/js/ai.js`). Without a key, the student marks themselves against the model answer.
+
+The key is kept only in that browser. To keep it out of the browser, deploy the small proxy in `tools/marker-proxy/`
+and put its address in the settings page instead.
 
 ## How it is built
 

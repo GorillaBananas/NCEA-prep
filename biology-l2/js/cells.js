@@ -125,7 +125,7 @@
         draw(a) {
           const { W, H, C: c } = a; const y = H * 0.5;
           for (let i = 0; i < 4; i++) a.round(W * 0.12, y - H * 0.18 + i * H * 0.1, W * 0.3, H * 0.07, 6, { fill: c.c3, stroke: false, alpha: 0.6 });
-          a.text('thylakoids', W * 0.27, y + H * 0.28, { align: 'center', font: 'pen', col: c.c3 });
+          a.text('thylakoids', W * 0.04, y + H * 0.3, { font: 'pen', col: c.c3 });
           a.arrow(W * 0.08, H * 0.06, W * 0.2, y - H * 0.2, c.c2, 3, a.seg(a.p, 0.05, 0.15)); a.text('light', W * 0.05, H * 0.05, { font: 'pen', col: c.c2, alpha: a.seg(a.p, 0.05, 0.15) });
           a.arrow(W * 0.27, H * 0.95, W * 0.27, y + H * 0.2, c.c1, 2.5, a.seg(a.p, 0.25, 0.35)); a.text('H₂O', W * 0.3, H * 0.92, { font: 'head', col: c.c1, alpha: a.seg(a.p, 0.25, 0.35) });
           a.arrow(W * 0.44, y - H * 0.12, W * 0.62, H * 0.12, c.muted, 2.5, a.seg(a.p, 0.4, 0.5)); a.text('O₂ out', W * 0.64, H * 0.1, { font: 'head', col: c.muted, alpha: a.seg(a.p, 0.4, 0.5) });
@@ -627,7 +627,7 @@
         } },
       { dur: 12, card: [C(0, '<h2>Denatured: the shape is gone.</h2>'), C(3, '<p>The substrate no longer fits, so no complex can form. Cooling it down does not fix it.</p>'), C(8, '<p>Cold is different: the enzyme is just slow, and works again when warmed.</p>')],
         draw(a) {
-          const { W, H, C: c } = a, s = Math.min(W, H) * 0.36;
+          const { W, H, C: c } = a, s = Math.min(W * 0.24, H * 0.36);
           Bio.cv.enzyme(a, W * 0.28, H * 0.66, s, { fill: c.c1 }); Bio.cv.substrate(a, W * 0.28, H * 0.66 - 0.5 * s, s);
           a.text('active', W * 0.28, H * 0.92, { align: 'center', font: 'pen', col: c.ok });
           const b = a.seg(a.p, 0.2, 0.5);
@@ -836,7 +836,7 @@
           a.box(0, my - 10, W, 20, { fill: c.c1, stroke: false, alpha: 0.25 });
           a.round(W * 0.47, my - 22, W * 0.06, 44, 6, { fill: c.c4, stroke: false, alpha: 0.8 });
           const n = 14;
-          for (let k = 0; k < n; k++) { const sx = (k * 97) % W, sy = H * 0.08 + ((k * 53) % (H * 0.32)); const goes = k % 3 === 0; const t = a.seg(a.p, 0.2 + (k % 5) * 0.08, 0.5 + (k % 5) * 0.08); const x = goes ? sx + (W * 0.5 - sx) * Math.min(1, t * 1.2) : sx; const y = goes ? sy + (H * 0.75 - sy) * t : sy; a.ellipse(x, y, 6, 6, { fill: c.c2, stroke: false }); }
+          for (let k = 0; k < n; k++) { const sx = W * 0.05 + ((k * 97) % (W * 0.9)), sy = H * 0.08 + ((k * 53) % (H * 0.32)); const goes = k % 3 === 0; const t = a.seg(a.p, 0.2 + (k % 5) * 0.08, 0.5 + (k % 5) * 0.08); const x = goes ? sx + (W * 0.5 - sx) * Math.min(1, t * 1.2) : sx; const y = goes ? sy + (H * 0.75 - sy) * t : sy; a.ellipse(x, y, 6, 6, { fill: c.c2, stroke: false }); }
           a.text('high concentration', W * 0.04, H * 0.06, { size: 0.8, col: c.muted }); a.text('low concentration', W * 0.04, H * 0.94, { size: 0.8, col: c.muted });
         } },
       { dur: 12, card: [C(0, '<h2>Osmosis is about water.</h2>'), C(3, '<p>Water diffuses across a partially permeable membrane from where there is more free water (dilute) to less (concentrated).</p>'), C(8, '<p>Plant cells in pure water swell and go turgid. In salty water they lose water and wilt.</p>')],

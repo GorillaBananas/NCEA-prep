@@ -431,3 +431,13 @@
 .ctable th { background: var(--paper); font-family: var(--f-head); }
 .resource { padding: 12px 16px; border-left: 3px solid var(--sc, var(--muted)); background: var(--paper); border-radius: 0 10px 10px 0; margin: 8px 0; }
 .aim-ctx .resource { margin: 0; padding: 0 0 0 14px; background: none; border-radius: 0; }
+/* text boards in explainers (biology, economics) */
+.bline .bq { font-size: clamp(1rem, 1.7vw, 1.25rem); line-height: 1.35; display: block; }
+.bline .bq code { font-size: .95em; }
+@media (max-width: 820px) {
+  .player.is-board .board { padding: 14px 18px; justify-content: flex-start; padding-top: 22px; }
+  .bline:has(.bq) { grid-template-columns: 1fr; gap: 0; }
+  .bline:has(.bq) .note { font-size: 1.1rem; justify-self: end; }
+  .bline .bq { font-size: .95rem; }
+  .bline:has(.bq) + .bline:has(.bq) { margin-top: 4px; }
+}
