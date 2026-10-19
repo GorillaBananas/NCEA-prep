@@ -148,7 +148,7 @@
           P.uniq([{ t: `<code>${tri(coding)}</code>`, ok: true }, { t: `<code>${tri(m.split('').map((b) => mrnaToTmpl[b]).join(''))}</code>`, why: 'That is the template strand.' }, { t: `<code>${tri(m)}</code>`, why: 'DNA has T, not U.' }])); },
       P.terms([['transcription', 'Making an mRNA copy of a gene, in the nucleus.'], ['RNA polymerase', 'The enzyme that joins RNA nucleotides to make mRNA.'], ['template strand', 'The DNA strand that is read to make mRNA.'], ['coding strand', 'The DNA strand with the same sequence as the mRNA (T instead of U).'], ['nuclear pore', 'A gap in the nuclear envelope that mRNA passes through.'], ['complementary base pairing', 'In transcription: A–U, T–A, G–C, C–G.']]),
       P.bank([
-        { q: 'Why is only one strand of DNA used as a template in transcription?', a: 'Only one strand carries the sequence that codes for the protein; its partner is the complement', why: 'The template is read to build mRNA that matches the coding strand.', w: [['Both strands are always read at once', 'Only the template is read for a given gene.'], ['The other strand is damaged', 'It is not damaged.'], ['RNA polymerase is too small for two', 'Not the reason.']] },
+        { q: 'Why is only one strand of DNA used as a template in transcription?', a: 'RNA polymerase reads only the template strand of a gene, so the mRNA matches the other (coding) strand; reading both would give two different mRNAs', why: 'The template is read to build mRNA that matches the coding strand.', w: [['Both strands are always read at once', 'Only the template is read for a given gene.'], ['The other strand is damaged', 'It is not damaged.'], ['RNA polymerase is too small for two', 'Not the reason.']] },
         { q: 'Why does transcription happen in the nucleus?', a: 'The DNA is in the nucleus and cannot leave it', why: 'The copy is made where the DNA is.', w: [['Ribosomes are in the nucleus', 'Ribosomes are in the cytoplasm.'], ['RNA polymerase only works in the dark', 'Not a thing.'], ['mRNA is too big for the cytoplasm', 'mRNA leaves the nucleus.']] },
         { q: 'A cell transcribes one gene thousands of times. Why is this useful?', a: 'Many mRNA copies let many ribosomes make the protein at the same time', why: 'This multiplies protein output without risking the DNA.', w: [['It makes more DNA', 'Transcription makes RNA.'], ['It removes mutations', 'Copying does not remove mutations.'], ['It slows protein production', 'It speeds it up.']] },
       ]),
@@ -234,8 +234,8 @@
         return P.mcq({ prompt: `Translate the mRNA <code>${tri(m)}</code> using the table.`, fig: chart(codonsOf(m).concat(codonsOf(m.slice(1) + 'A'))), more: { steps: [St('Read the mRNA in threes from the start codon AUG.'), St(codonsOf(m).map((c) => `${c} = ${CODE[c]}`).join(', ')), St(`Stop codons add no amino acid. So: ${right}.`)], trap: 'Reading from the wrong base, or including the stop codon as an amino acid.' } },
           P.uniq([{ t: right, ok: true }, { t: right + '–Stop', why: 'A stop codon does not code for an amino acid.' }, { t: wrong1 || 'none', why: 'That reads the codons one base out of step.' }, { t: aa.slice().reverse().join('–'), why: 'Right amino acids, wrong order: read from the start codon.' }])); },
       () => { const c = R.pick(SENSE); const ac = c.split('').map((b) => anti[b]).join('');
-        return P.mcq({ prompt: `What is the anticodon of the tRNA that pairs with the mRNA codon <code>${c}</code>?`, more: { steps: [St('The anticodon is complementary to the codon: A–U, U–A, G–C, C–G.'), St(`${c} → ${ac}.`)], trap: 'Using T. tRNA is RNA, so it has U.' } },
-          P.uniq([{ t: ac, ok: true }, { t: ac.replace(/U/g, 'T'), why: 'tRNA is RNA: it has U, not T.' }, { t: c, why: 'That is the codon itself.' }, { t: ac.split('').reverse().join(''), why: 'Pair each base in place, without reversing.' }])); },
+        return P.mcq({ prompt: `What is the anticodon of the tRNA that pairs with the mRNA codon <code>${c}</code>? Write it base by base under the codon.`, more: { steps: [St('The anticodon is complementary to the codon: A–U, U–A, G–C, C–G.'), St(`${c} → ${ac}.`)], trap: 'Using T. tRNA is RNA, so it has U.' } },
+          P.uniq([{ t: ac, ok: true }, { t: ac.replace(/U/g, 'T'), why: 'tRNA is RNA: it has U, not T.' }, { t: c, why: 'That is the codon itself.' }, { t: ac.split('').reverse().join(''), why: 'Here, pair each base in place, without reversing.' }])); },
       P.terms([['codon', 'A sequence of three mRNA bases that codes for one amino acid (or stop).'], ['anticodon', 'Three bases on a tRNA, complementary to a codon.'], ['peptide bond', 'The bond that joins two amino acids.'], ['start codon', 'AUG: begins translation and codes for methionine.'], ['stop codon', 'UAA, UAG or UGA: ends translation; codes for no amino acid.'], ['redundant (degenerate) code', 'Most amino acids are coded for by more than one codon.'], ['universal code', 'The same codons code for the same amino acids in almost all organisms.']]),
       P.bank([
         { q: 'Why is the genetic code described as redundant (degenerate)?', a: 'Most amino acids are coded for by more than one codon', why: 'There are 64 codons but only 20 amino acids. This is why some mutations are silent.', w: [['Some codons code for two amino acids', 'Each codon codes for only one.'], ['Some DNA is never used', 'Not what redundant means here.'], ['The code is the same in all organisms', 'That is “universal”.']] },
@@ -299,7 +299,7 @@
     if (type === 'insertion') return { mm: m.slice(0, pos) + R.pick('UCAG'.split('')) + m.slice(pos), pos, i };
     return { mm: m.slice(0, pos) + m.slice(pos + 1), pos, i }; // deletion
   }
-  const MUTNAME = { silent: 'substitution: silent (same-sense)', missense: 'substitution: missense', nonsense: 'substitution: nonsense', insertion: 'insertion: frameshift', deletion: 'deletion: frameshift' };
+  const MUTNAME = { silent: 'substitution: silent', missense: 'substitution: missense', nonsense: 'substitution: nonsense', insertion: 'insertion: frameshift', deletion: 'deletion: frameshift' };
   P.addUnit({
     id: 'mutations', title: 'Mutations and protein function', mins: 12,
     blurb: 'Silent, missense, nonsense, frameshift. Follow the change from base to amino acid to shape to symptom.',
@@ -353,7 +353,7 @@
       intro: `<div class="resource">Part of a normal mRNA for an enzyme reads <code>AUG UUU GGA UGG CAA</code> (Met–Phe–Gly–Trp–Gln). Two mutations are found in different people:<br>Mutation 1: <code>AUG UUU GGC UGG CAA</code><br>Mutation 2: <code>AUG UUU GGA UGA CAA</code><br>Codon table: ${chart(['AUG', 'UUU', 'GGA', 'GGC', 'UGG', 'UGA', 'CAA'])}</div>`,
       parts: [
         { q: 'Identify the type of each mutation, and describe what a substitution is.', write: true, words: '30–50',
-          model: [S('Both are substitutions: one base has been replaced by another.', 'definition', true), S('Mutation 1 is a silent (same-sense) substitution: GGA and GGC both code for glycine.', 'mutation 1', true), S('Mutation 2 is a nonsense substitution: UGG (Trp) has become UGA, a stop codon.', 'mutation 2', true)],
+          model: [S('Both are substitutions: one base has been replaced by another.', 'definition', true), S('Mutation 1 is a silent substitution: GGA and GGC both code for glycine.', 'mutation 1', true), S('Mutation 2 is a nonsense substitution: UGG (Trp) has become UGA, a stop codon.', 'mutation 2', true)],
           earns: 'Achieved: a correct definition and both mutations identified.',
           crit: { A: 'Substitution = one base replaced; mutation 1 silent; mutation 2 nonsense (stop codon).' } },
         { q: 'Explain how each mutation affects the amino acid sequence.', write: true, words: '60–90',
@@ -427,7 +427,7 @@
         { m: 'A mutation in gene 1 changes the base sequence, so enzyme 1 has the wrong amino acid sequence.', note: 'gene → enzyme' },
         { m: 'Enzyme 1 folds into the wrong shape, so its active site no longer fits the precursor.', note: 'shape' },
         { m: 'The precursor is not converted to the intermediate, so enzyme 2 has no substrate.', note: 'blocks the pathway' },
-        { m: 'No chlorophyll is made, so the leaves are yellow (chlorosis).', note: 'phenotype' },
+        { m: 'No chlorophyll is made, so the leaves are pale or yellowish (chlorosis): other pigments show without the green.', note: 'phenotype' },
       ],
     },
     faded() { return pathGen()(); },
@@ -495,7 +495,7 @@
   P.addUnit({
     id: 'gene-env', title: 'Genes and the environment', mins: 9,
     blurb: 'Phenotype = genotype + environment. Temperature-sensitive enzymes, nutrition, soil pH.',
-    recap: 'An organism’s phenotype depends on its genotype and its environment interacting. Genes set the range of what is possible; the environment affects where in that range the organism ends up. Example: Himalayan rabbits have an allele for an enzyme that makes dark pigment but is inactive (denatured) above about 35 °C, so only the cold extremities (ears, nose, paws) are dark. Other examples: hydrangea flower colour depends on soil pH; plant height depends on light and nutrients; identical twins can differ because of their environments.',
+    recap: 'An organism’s phenotype depends on its genotype and its environment interacting. Genes set the range of what is possible; the environment affects where in that range the organism ends up. Example: Himalayan rabbits have an allele for an enzyme that makes dark pigment but is inactive above about 35 °C (its shape is altered at that temperature), so only the cold extremities (ears, nose, paws) are dark. Other examples: hydrangea flower colour depends on soil pH; plant height depends on light and nutrients; identical twins can differ because of their environments.',
     scenes: [
       { dur: 14, card: [C(0, '<h2>The Himalayan rabbit</h2>'), C(3, '<p>Its pigment enzyme only works below about 35 °C.</p>'), C(7.5, '<p>Ears, nose, feet and tail are cooler, so they are dark. The warm body is white.</p>'), C(11, '<p>Shave a patch and put an ice pack on it: the fur grows back dark.</p>')],
         draw(a) {
@@ -516,7 +516,7 @@
       problem: 'Explain why a Himalayan rabbit has dark ears but a white body.',
       steps: [
         { m: 'The rabbit has an allele for an enzyme that makes dark pigment (melanin).', note: 'genotype' },
-        { m: 'This enzyme is temperature-sensitive: it works below about 35 °C but is inactive (denatured) at body-core temperature.', note: 'enzyme property' },
+        { m: 'This enzyme is temperature-sensitive: it works below about 35 °C but its shape is altered and it is inactive at body-core temperature. New enzyme made in cooler skin works.', note: 'enzyme property' },
         { m: 'The ears lose heat and are cooler than the body, so the enzyme works there and makes pigment.', note: 'environment' },
         { m: 'So the phenotype depends on the genotype and the environment (temperature) interacting.', note: 'interaction' },
       ],
