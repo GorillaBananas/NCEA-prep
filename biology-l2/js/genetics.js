@@ -323,7 +323,7 @@
       { dur: 13, card: [C(0, '<h2>Codominance: both show.</h2>'), C(3, '<p>Cattle: CᴿCᴿ red, CᵂCᵂ white, CᴿCᵂ roan, with red and white hairs mixed.</p>'), C(8, '<p>Neither allele is hidden. That is the difference from complete dominance.</p>')],
         draw(a) {
           const { W, H, C: c } = a; const s = W * 0.13, cs = (2 * s) / 6;
-          const cow = (x, cols, lab, al) => { a.box(x - s - 3, H * 0.34 - 3, 2 * s + 4, 4 * cs + 4, { stroke: c.line, alpha: al }); for (let i = 0; i < 6; i++) for (let j = 0; j < 4; j++) a.box(x - s + i * cs, H * 0.34 + j * cs, cs - 2, cs - 2, { fill: cols[(i + j) % cols.length], stroke: false, alpha: al }); a.text(lab, x, H * 0.34 + 4 * cs + 22, { align: 'center', font: 'head', alpha: al }); };
+          const cow = (x, cols, lab, al) => { a.box(x - s - 3, H * 0.34 - 3, 2 * s + 4, 4 * cs + 4, { stroke: c.line, alpha: al }); for (let i = 0; i < 6; i++) for (let j = 0; j < 4; j++) a.box(x - s + i * cs, H * 0.34 + j * cs, cs - 2, cs - 2, { fill: cols[(i + j) % cols.length], stroke: c.faint, lw: 1, alpha: al }); a.text(lab, x, H * 0.34 + 4 * cs + 22, { align: 'center', font: 'head', alpha: al }); };
           cow(W * 0.18, [c.pen], 'red', a.seg(a.p, 0.05, 0.15)); cow(W * 0.5, [c.pen, c.paper], 'roan', a.seg(a.p, 0.35, 0.45)); cow(W * 0.82, [c.paper], 'white', a.seg(a.p, 0.15, 0.25));
         } },
       { dur: 13, card: [C(0, '<h2>Multiple alleles: ABO blood groups</h2>'), C(3, '<p>Three alleles in the population: Iᴬ, Iᴮ and i. Each person has two of them.</p>'), C(8, '<p>Iᴬ and Iᴮ are codominant. Both are dominant to i.</p>')],

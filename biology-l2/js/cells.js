@@ -344,7 +344,7 @@
           a.text('+2 ATP', W * 0.07, H * 0.38, { col: c.pen, size: 0.85, alpha: a.seg(a.p, 0.18, 0.28) });
           Bio.cv.mito(a, W * 0.62, H * 0.6, W * 0.62, H * 0.5, a.seg(a.p, 0.25, 0.35));
           a.arrow(W * 0.24, H * 0.42, W * 0.36, H * 0.55, c.ink, 2.5, a.seg(a.p, 0.35, 0.45));
-          a.text('Krebs: matrix → CO₂', W * 0.62, H * 0.6, { align: 'center', font: 'head', size: 0.8, alpha: a.seg(a.p, 0.5, 0.6) });
+          a.text('Krebs: matrix → CO₂', W * 0.62, H * 0.6, { align: 'center', font: 'head', size: 0.8, bg: c.sheet, alpha: a.seg(a.p, 0.5, 0.6) });
           a.text('ETC on cristae: O₂ → H₂O, ~34 ATP', W * 0.62, H * 0.92, { align: 'center', font: 'head', size: 0.78, col: c.pen, alpha: a.seg(a.p, 0.75, 0.85) });
         } },
       { dur: 12, card: [C(0, '<h2>Why the folds matter</h2>'), C(3, '<p>The inner membrane is folded into cristae. That gives a large surface area for the electron transport chain.</p>'), C(8, '<p>More membrane, more ATP made. Very active cells, like muscle and sperm, have many mitochondria with many cristae.</p>')],
