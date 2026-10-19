@@ -175,8 +175,10 @@
         btn.onclick = step;
       }
       if (tab === 'turn') {
-        panel.innerHTML = `<p class="muted intro">The first steps are done for you. Finish it off. You get two tries.</p><div class="qhost"></div>`;
-        const run = () => P.ask(panel.querySelector('.qhost'), P.gen(u, u.faded), { mode: 'practice', tries: 2, nextLabel: 'Start the quiz' }).then(() => { x.f = 1; save(); go('quiz'); });
+        const fq = P.gen(u, u.faded);
+        const started = fq.scaffold || fq.given;
+        panel.innerHTML = `<p class="muted intro">${started ? 'The first steps are done for you. Finish it off.' : 'Have a go yourself before the quiz.'} You get two tries.</p><div class="qhost"></div>`;
+        const run = () => P.ask(panel.querySelector('.qhost'), fq, { mode: 'practice', tries: 2, nextLabel: 'Start the quiz' }).then(() => { x.f = 1; save(); go('quiz'); });
         run();
       }
       if (tab === 'quiz') quiz(u, panel, x);

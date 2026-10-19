@@ -83,7 +83,7 @@ function checkQ(q, where) {
   } else if (q.kind === 'shift') {
     if (!P.econ) return err(where, 'shift question but shared/js/econ.js not loaded', q);
     if (!P.check(q, Object.assign({}, q.answer)).ok) err(where, 'right shift rejected', q);
-    const ids = q.model.curves.filter((c) => c.move !== false).map((c) => c.id);
+    const ids = (q.model.curves || q.model.panels.flatMap((p) => p.curves)).filter((c) => c.move !== false).map((c) => c.id);
     if (P.check(q, {}).ok && ids.some((id) => q.answer[id])) err(where, 'no change accepted', q);
     try { const s1 = P.econ.svg(q.model, q.answer); if (/NaN|undefined/.test(s1)) err(where, 'bad figure', q); } catch (e) { err(where, 'figure threw ' + e.message, q); }
     texIn(q.why, where + '.why');

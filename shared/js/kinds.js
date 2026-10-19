@@ -80,7 +80,7 @@
 
   /* ---------- shift: move the curves on a model ---------- */
   // q = { kind: 'shift', prompt, model: econ model spec, answer: { curveId: -1 | 0 | 1 }, wrong?: [{ v: {…}, msg }] }
-  const movable = (q) => q.model.curves.filter((c) => c.move !== false);
+  const movable = (q) => (q.model.curves || q.model.panels.flatMap((p) => p.curves)).filter((c) => c.move !== false);
   K.shift = {
     label: 'The right diagram',
     check(q, st) {
@@ -94,7 +94,7 @@
     answer(q) { return `<div class="q-fig">${P.econ.svg(q.model, q.answer)}</div>`; },
     render(ans, q, api) {
       const st = (q._st = {});
-      const dir = (c) => (c.kind === 'flat' ? ['↓ Down', 'Up ↑'] : ['← Left', 'Right →']);
+      const dir = (c) => (c.kind === 'flat' ? ['↓ Down', 'Up ↑'] : c.kind === 'ppf' ? ['← In', 'Out →'] : ['← Left', 'Right →']);
       ans.innerHTML = `<div class="shift"><div class="shift-fig q-fig"></div><div class="shift-ctl">${movable(q).map((c) => `<div class="sc-row"><span class="sc-name">${c.name || c.label}</span><div class="seg" role="group" aria-label="${esc(c.name || c.label)}" data-id="${c.id}"><button data-v="-1">${dir(c)[0]}</button><button data-v="0" class="on">No change</button><button data-v="1">${dir(c)[1]}</button></div></div>`).join('')}</div><div class="row"><button class="btn chk">Check</button></div></div>`;
       const fig = ans.querySelector('.shift-fig');
       const draw = () => { fig.innerHTML = P.econ.svg(q.model, st); };

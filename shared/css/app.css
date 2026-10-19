@@ -441,3 +441,7 @@
   .bline .bq { font-size: .95rem; }
   .bline:has(.bq) + .bline:has(.bq) { margin-top: 4px; }
 }
+.board .fig { width: 100%; max-width: 440px; height: auto; display: block; }
+.bline:has(.fig) { grid-template-columns: 1fr; width: 100%; }
+.bline:has(.fig) .m { width: 100%; }
+.q-fig .fig.tall { max-width: 360px; }

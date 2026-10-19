@@ -1,0 +1,15 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Model check</title>
+<link rel="stylesheet" href="../shared/css/base.css"><link rel="stylesheet" href="../shared/css/app.css">
+<style>.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:12px;padding:12px}.grid div{background:var(--sheet);padding:6px;border:1px solid var(--line)}</style></head>
+<body><div class="grid" id="g"></div>
+<script src="../shared/js/core.js"></script><script src="../shared/js/quiz.js"></script><script src="../shared/js/econ.js"></script>
+<script>
+/* Renders every economic model in each shift state, for a visual check. Open with ?only=asad to filter. */
+var M = NP.econ.models, out = [];
+var cases = [['asad', M.asad(), [{}, {AD:1}, {AD:-1}, {AS:-1}, {AS:1}]], ['asadLR', M.asadLR(), [{}, {AS:1, LRAS:1}, {AD:1}]], ['fx', M.fx(), [{}, {D:1}, {S:1}]],
+  ['taker-x', M.taker(true), [{}, {Pw:1}, {Pw:-1}, {S:1}]], ['taker-m', M.taker(false), [{}, {Pw:1}, {D:1}]], ['two', M.two(), [{}, {Dos:1}, {Snz:1}, {Dnz:1}]], ['ppf', M.ppf({points:[{q:0.3,p:0.3,label:'A'},{q:0.42,p:0.48,label:'B'}]}), [{}, {PPF:1}, {PPF:-1}]]];
+cases.forEach(function (c) { c[2].forEach(function (st) { out.push('<div><b>' + c[0] + ' ' + JSON.stringify(st) + '</b>' + NP.econ.svg(c[1], st) + '</div>'); }); });
+out.push('<div><b>flow names</b>' + NP.econ.flow({income:true,spending:true,taxes:true,govspend:true,savings:true,investment:true,exports:true,imports:true}) + '</div>');
+out.push('<div><b>flow tags</b>' + NP.econ.flow({income:'A',spending:'B',taxes:'C',govspend:'D',savings:'E',investment:'F',exports:'G',imports:'H'}) + '</div>');
+document.getElementById('g').innerHTML = out.join('');
+</script></body></html>
