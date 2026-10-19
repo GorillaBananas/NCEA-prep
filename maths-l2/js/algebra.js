@@ -67,7 +67,7 @@
     blurb: 'Simplify powers, roots and negative indices without the classic slips.',
     recap: 'Powers are shorthand for repeated multiplying. Three rules do most of the work: when you multiply, add the powers; when you divide, subtract them; a power of a power, multiply them. A negative power means “one over”. A fraction power is a root: the bottom number is the root and the top number is the power.',
     scenes: [
-      { dur: 10, card: [C(0, '<h2>A power hits everything inside the bracket.</h2>'), C(3, `<p>Examiners flagged this slip in last year's exam: writing ${m('(2y)^3')} as ${m('2y^3')}.</p>`), C(6.5, '<p>Write it out once and you will not make that mistake again.</p>')],
+      { dur: 10, card: [C(0, '<h2>A power hits everything inside the bracket.</h2>'), C(3, `<p>A common slip: writing ${m('(2y)^3')} as ${m('2y^3')}.</p>`), C(6.5, '<p>Write it out once and you will not make that mistake again.</p>')],
         board: [B(0.4, '(2y)^3', '', { big: true }), B(2.4, '= 2y^3', 'not this', { wrong: true }), B(4.6, T`= 2y \times 2y \times 2y`), B(6.6, '= 8y^3', 'cube every factor', { hl: true })] },
       { dur: 13, card: [C(0, '<h2>Three laws do nearly everything.</h2>'), C(5, '<p>Numbers in front are ordinary numbers. Multiply or divide them as usual.</p>'), C(8.5, '<p>Put it together and big expressions collapse fast.</p>')],
         board: [B(0.5, T`x^a \times x^b = x^{a+b}`, 'multiply: add'), B(2.2, T`\dfrac{x^a}{x^b} = x^{a-b}`, 'divide: subtract'), B(3.9, T`(x^a)^b = x^{ab}`, 'bracket: multiply'), B(8.5, T`\dfrac{(3x^2)^2 \times x}{x^3} = \dfrac{9x^5}{x^3} = 9x^2`, '', { hl: true })] },
@@ -279,7 +279,7 @@
         };
       },
       () => {
-        const k = R.int(1, 5), q = R.int(1, 9), ex = `${k * k === 1 ? '' : k * k}x^2 - ${q * q}`, kx = (k === 1 ? '' : k) + 'x';
+        let k, q; do { k = R.int(1, 5); q = R.int(1, 9); } while (k > 1 && P.gcd(k, q) > 1); const ex = `${k * k === 1 ? '' : k * k}x^2 - ${q * q}`, kx = (k === 1 ? '' : k) + 'x';
         return P.mcq({ prompt: `Factorise ${m(ex)}`, more: ({ steps: [
     St('Spot the pattern: two terms, a minus sign between them, and both are perfect squares.'),
     St('Write each one as something squared.', m(`${ex} = (${kx})^2 - ${q}^2`)),
@@ -355,7 +355,7 @@
     blurb: 'Factorise, cancel, combine. Examiners flagged fractions as a weak spot in 2025.',
     recap: 'Algebraic fractions follow the same rules as number fractions. To simplify, factorise the top and bottom, then cancel brackets that match. To add, give both fractions the same bottom first. You can cancel whole factors, never part of a sum.',
     scenes: [
-      { dur: 12, card: [C(0, '<h2>Factorise first, then cancel.</h2>'), C(3, '<p>You can only cancel factors: whole brackets or numbers that multiply the whole top and bottom.</p>'), C(8, `<p>The 2025 examiners said weak algebra, especially with fractions, held students back on all three papers.</p>`)],
+      { dur: 12, card: [C(0, '<h2>Factorise first, then cancel.</h2>'), C(3, '<p>You can only cancel factors: whole brackets or numbers that multiply the whole top and bottom.</p>'), C(8, `<p>Examiners’ reports regularly say that weak algebra, especially with fractions, holds students back.</p>`)],
         board: [B(0.5, T`\dfrac{x^2 - 9}{x + 3}`, '', { big: true }), B(3.5, T`= \dfrac{(x-3)(x+3)}{x+3}`, 'factorise'), B(6.5, 'x - 3', 'cancel the bracket', { hl: true })] },
       { dur: 10, card: [C(0, '<h2>The two illegal cancels.</h2>'), C(2.5, '<p>A plus sign glues terms together. You cannot cancel part of a sum.</p>'), C(7, '<p>If in doubt, test with a number. Put x = 2 in both sides.</p>')],
         board: [B(0.5, T`\dfrac{x^2 + 5}{x} = x + 5`, 'illegal', { wrong: true }), B(3.5, T`\dfrac{x + 6}{3} = x + 2`, 'illegal', { wrong: true }), B(6.5, T`\dfrac{x + 6}{3} = \dfrac{x}{3} + 2`, 'fine', { hl: true })] },
@@ -559,7 +559,7 @@
   ], check: `Pick x = ${b + 1}, so y = ${b + 1 + a}. Put y = ${b + 1 + a} into your answer: ${m(T`\tfrac{${a} + ${b} \times ${b + 1 + a}}{${b + a}} = ${b + 1}`)}.`, trap: 'Trying to divide by x while x is still on both sides. Collect and factorise first.' }), sol: [m(`y(x - ${b}) = x + ${a}`), m(`xy - ${b}y = x + ${a}`), m(`xy - x = ${a} + ${b}y`) + ' (x terms on one side)', m(`x(y - 1) = ${a} + ${b}y`) + ' (factorise)', m(T`x = \dfrac{${a} + ${b}y}{y - 1}`)] }, P.uniq([
           { t: m(T`x = \dfrac{${a} + ${b}y}{y - 1}`), ok: true },
           { t: m(T`x = \dfrac{${a} - ${b}y}{y - 1}`), why: `Check the sign when you move ${m(`-${b}y`)} across.` },
-          { t: m(T`x = \dfrac{${a} + ${b}y}{1 - y}`), why: 'Collect x terms on the same side you started: ' + m('xy - x') + '.' },
+          { t: m(T`x = \dfrac{${a} + ${b}y}{1 - y}`), why: 'Check the sign when you factorise: ' + m('xy - x = x(y - 1)') + ', not ' + m('x(1 - y)') + '.' },
           { t: m(T`x = y(x - ${b}) - ${a}`), why: 'x is still on both sides. Collect the x terms and factorise.' },
         ]));
       },
@@ -886,7 +886,7 @@
     tips: [
       'Get the power on its own before taking logs: divide out any number in front first.',
       'Write the log line, ' + m(T`x\log 3 = \log 50`) + '. A calculator answer alone is not enough for Merit.',
-      'In context, answer the question asked. If they ask "how many whole years", round up and say why.',
+      'In context, answer the question asked. For “how many whole years”, test the whole numbers either side in the model, then say which one meets the condition and why.',
       m(T`\log_b y = n`) + ' means ' + m('y = b^n') + '. <span class="pen">Rewrite, then solve.</span>',
     ],
   });

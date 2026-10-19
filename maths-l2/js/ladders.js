@@ -159,8 +159,8 @@
       { q: 'The lawn and path together cover 140 m². Find the width of the path.', check: num(1, { fmt: 'Give the width in m.' }),
         model: [S(T`$(12 + 2x)(8 + 2x) = 140$`, 'The path adds x on each side: 2x per dimension', true), S(T`$4x^2 + 40x + 96 = 140$`), S(T`$x^2 + 10x - 11 = 0$`, 'Divide by 4'), S(T`$(x + 11)(x - 1) = 0$, so $x = 1$ or $x = -11$`), S('A width cannot be negative, so the path is 1 m wide.', 'Relates the answer to the context', true)],
         earns: 'Merit: you formed the model from the picture, solved it, and related the solution to the context.' },
-      { q: 'The path must have an area of at least 60 m², and the whole thing must fit in a space 20 m long. Find the range of possible path widths.', check: multi([-5 + Math.sqrt(40), 4], { ordered: true, dp: 2, fmt: 'Give the smallest and largest widths, separated by a comma.' }),
-        model: [S(T`Path area $= (12 + 2x)(8 + 2x) - 96 = 4x^2 + 40x$`, 'Area of the path alone', true), S(T`$4x^2 + 40x = 60 \Rightarrow x^2 + 10x - 15 = 0$`), S(T`$x = \dfrac{-10 \pm \sqrt{160}}{2} = 1.32$ (reject the negative)`), S(T`Length: $12 + 2x \le 20$, so $x \le 4$`, 'The second condition', true), S(T`So $1.32 \le x \le 4$ m. Since 1.32 m gives just under 60 m², a builder would use at least 1.33 m.`, 'Combined, with insight', true)],
+      { q: 'The path must have an area of at least 60 m², and the whole thing must fit in a space 20 m long. Find the range of possible path widths.', check: multi([1.33, 4], { ordered: true, dp: 2, fmt: 'Give the smallest and largest widths to 2 decimal places, separated by a comma. Round the smallest width so the area really is at least 60 m².' }),
+        model: [S(T`Path area $= (12 + 2x)(8 + 2x) - 96 = 4x^2 + 40x$`, 'Area of the path alone', true), S(T`$4x^2 + 40x = 60 \Rightarrow x^2 + 10x - 15 = 0$`), S(T`$x = \dfrac{-10 \pm \sqrt{160}}{2} = 1.3246$ (reject the negative)`), S(T`Length: $12 + 2x \le 20$, so $x \le 4$`, 'The second condition', true), S(T`So $1.33 \le x \le 4$ m: the width must be at least 1.3246 m, so to 2 d.p. round up to 1.33 m (1.32 m gives just under 60 m²).`, 'Combined, with insight', true)],
         earns: 'Excellence: you devised a strategy using two conditions, combined them into one range, and commented on the rounding in context.' },
     ],
     up: [
@@ -169,9 +169,9 @@
         ['Check both solutions in the equation', 0, 'Both do satisfy the equation. The point is that only one makes sense here.'],
         ['Use the quadratic formula instead', 0, 'The method is fine. What is missing is choosing the solution that fits the context.'],
         ['Give the solutions to 2 decimal places', 0, 'They are exact. What is missing is rejecting −11 with a reason.']]),
-      up(2, [T`$4x^2 + 40x = 60$`, T`$x = 1.32$ m`], [
-        ['Use the second condition too (12 + 2x ≤ 20, so x ≤ 4) and give the range 1.32 ≤ x ≤ 4', 1, 'Right. The question asks for a range from two conditions. Excellence needs both, combined.'],
-        ['Round 1.32 to 1.3', 0, 'Less accuracy does not help. The missing part is the second condition.'],
+      up(2, [T`$4x^2 + 40x = 60$`, T`$x = 1.3246$ m`], [
+        ['Use the second condition too (12 + 2x ≤ 20, so x ≤ 4) and give the range 1.33 ≤ x ≤ 4', 1, 'Right. The question asks for a range from two conditions. Excellence needs both, combined.'],
+        ['Round 1.3246 to 1.3', 0, 'Less accuracy does not help. The missing part is the second condition.'],
         ['Show the negative solution too', 0, 'The negative solution is rightly rejected. The missing part is the upper limit from the 20 m space.'],
         ['Find the area of the lawn', 0, 'That is 96 m², already used. The missing part is the upper limit.']]),
     ],
@@ -462,21 +462,21 @@
       { q: 'Find the probability that a student bikes and is late.', check: num(0.15),
         model: [S(T`$0.6 \times 0.25 = 0.15$`, 'Multiply along the branches', true)],
         earns: 'Achieved: multiply along a path correctly.' },
-      { q: 'A student is late. Find the probability that they bike.', check: num(0.15 / 0.19, { dp: 2 }),
-        model: [S(T`$P(\text{late})$ $= 0.6 \times 0.25 + 0.4 \times 0.1 = 0.19$`, 'Add both late paths'), S(T`$P(\text{bike} \mid \text{late})$ $= \dfrac{0.15}{0.19} = 0.79$`, 'Conditional: divide by P(late)', true)],
+      { q: 'A student is late. Find the probability that they bike.', check: num(0.15 / 0.19, { dp: 4 }),
+        model: [S(T`$P(\text{late})$ $= 0.6 \times 0.25 + 0.4 \times 0.1 = 0.19$`, 'Add both late paths'), S(T`$P(\text{bike} \mid \text{late})$ $= \dfrac{0.15}{0.19} = 0.7895$`, 'Conditional: divide by P(late)', true)],
         earns: 'Merit: you recognised a conditional probability and linked two calculations to find it.' },
-      { q: 'The school wants the overall rate of late students down to 15%. If the rate for students who do not bike stays at 10%, what must the late rate for bikers fall to?', check: num(0.11 / 0.6, { dp: 3, fmt: 'Give it as a probability to 3 decimal places.' }),
-        model: [S(T`Let the bikers' late rate be $p$: $0.6p + 0.4 \times 0.1 = 0.15$`, 'Builds an equation from the tree', true), S(T`$0.6p = 0.11$, so $p = 0.183$`), S('The bikers’ late rate must fall from 25% to about 18.3%.', 'Answer in context', true), S('Check: 0.6 × 0.183 + 0.04 = 0.15 ✓')],
+      { q: 'The school wants the overall rate of late students down to 15%. If the rate for students who do not bike stays at 10%, what must the late rate for bikers fall to?', check: num(0.11 / 0.6, { dp: 4, fmt: 'Give it as a probability to 4 decimal places.' }),
+        model: [S(T`Let the bikers' late rate be $p$: $0.6p + 0.4 \times 0.1 = 0.15$`, 'Builds an equation from the tree', true), S(T`$0.6p = 0.11$, so $p = 0.1833$`), S('The bikers’ late rate must fall from 25% to about 18.3%.', 'Answer in context', true), S('Check: 0.6 × 0.183 + 0.04 = 0.15 ✓')],
         earns: 'Excellence: you turned the tree into a general equation with an unknown (a strategy) and answered in context.' },
     ],
     up: [
       up(1, [T`$P(\text{bike and late}) = 0.6 \times 0.25 = 0.15$`], [
-        [T`It is conditional ("a student is late"): divide by $P(\text{late}) = 0.19$ to get 0.79`, 1, 'Right. 0.15 answers a different question. Spotting "given late" and dividing is the Merit step.'],
+        [T`It is conditional ("a student is late"): divide by $P(\text{late}) = 0.19$ to get 0.7895`, 1, 'Right. 0.15 answers a different question. Spotting "given late" and dividing is the Merit step.'],
         ['Multiply by 0.4 as well', 0, 'That has no meaning here. Divide by P(late) instead.'],
         ['Add 0.25 and 0.1', 0, 'Those are from different groups. Divide 0.15 by P(late) = 0.19.'],
         ['Write it as a percentage', 0, 'The form is fine. The calculation answers the wrong question.']]),
       up(2, ['Try 20%: 0.6 × 0.2 + 0.04 = 0.16.', 'Try 18%: 0.6 × 0.18 + 0.04 = 0.148.', 'So between 18% and 20%.'], [
-        ['An equation: 0.6p + 0.04 = 0.15, so p = 0.183 (18.3%), stated in context', 1, 'Right. Trial and error narrows it down. Excellence needs a strategy that gives the exact answer.'],
+        ['An equation: 0.6p + 0.04 = 0.15, so p = 0.1833 (18.3%), stated in context', 1, 'Right. Trial and error narrows it down. Excellence needs a strategy that gives the exact answer.'],
         ['Try 19% as well', 0, 'More trials still only estimate. Form an equation.'],
         ['Round to 20%', 0, 'That gives 16% overall, too high. Solve the equation exactly.'],
         ['Draw a bigger tree', 0, 'The tree is fine. Use it to form an equation with p.']]),
@@ -495,7 +495,7 @@
         model: [S(T`With a phone: $\dfrac{98}{150} = 0.65$`, 'Out of the phone row only', true), S(T`Without: $\dfrac{20}{50} = 0.40$`), S('Students with a phone in the bedroom were more likely to get less than 8 hours of sleep (65% vs 40%).', 'Comparison in context', true)],
         earns: 'Merit: conditional probabilities from the right rows, and a comparison in context.' },
       { q: 'A parent says: "Most students who get 8+ hours keep a phone in their room, so phones don’t hurt sleep." Find the probability behind their claim, then evaluate the claim.', check: num(52 / 82, { dp: 2, fmt: 'Give P(phone | 8+ hours) to 2 dp.' }),
-        model: [S(T`$P(\text{phone} \mid 8+) = \dfrac{52}{82} = 0.63$, so the "most" is true.`, 'Checks the claim’s number'), S('But 150 of the 200 students (75%) keep a phone, so most of any group will have one.', 'Explains why the number misleads', true), S(T`Compare the groups instead: 8+ hours for $\tfrac{52}{150} = 35\%$ with a phone vs $\tfrac{30}{50} = 60\%$ without.`, 'The right comparison', true), S('So the data does not support the claim: it shows an association between phones and less sleep. It cannot prove phones cause it (other factors, one sample).', 'Justified, qualified conclusion', true)],
+        model: [S(T`$P(\text{phone} \mid 8+) = \dfrac{52}{82} = 0.6341$, so the "most" is true.`, 'Checks the claim’s number'), S('But 150 of the 200 students (75%) keep a phone, so most of any group will have one.', 'Explains why the number misleads', true), S(T`Compare the groups instead: 8+ hours for $\tfrac{52}{150} = 35\%$ with a phone vs $\tfrac{30}{50} = 60\%$ without.`, 'The right comparison', true), S('So the data does not support the claim: it shows an association between phones and less sleep. It cannot prove phones cause it (other factors, one sample).', 'Justified, qualified conclusion', true)],
         earns: 'Excellence: you evaluated a claim with the right conditional probabilities, explained why the claim’s figure misleads, and qualified the conclusion.' },
     ],
     up: [
@@ -504,9 +504,9 @@
         ['Divide by 118 instead', 0, 'That would be "given less than 8 hours", the wrong way round. Divide by the phone total, 150.'],
         ['Add the no-phone students', 0, 'That mixes the groups. Work out each group separately, then compare.'],
         ['Write it as a percentage', 0, 'The form is fine. The total used is wrong for "students with a phone".']]),
-      up(2, [T`$\dfrac{52}{82} = 0.63$, so 63% of students who sleep well have a phone.`, 'The parent is right.'], [
+      up(2, [T`$\dfrac{52}{82} = 0.6341$, so 63% of students who sleep well have a phone.`, 'The parent is right.'], [
         ['Compare the groups the right way round (35% with a phone get 8+ hours vs 60% without), note 75% have phones, and qualify: association, not cause', 1, 'Right. The 63% mostly reflects how many students have phones. Excellence needs the right comparison and a qualified conclusion.'],
-        ['Round 0.63 to 0.6', 0, 'The number is right. The reasoning about it is what is missing.'],
+        ['Round 0.6341 to 0.6', 0, 'The number is right. The reasoning about it is what is missing.'],
         ['Find the probability of no phone', 0, 'That alone does not evaluate the claim. Compare sleep within each group.'],
         ['Survey more students', 0, 'More data could help later, but this data already contradicts the claim. Show how.']]),
     ],
@@ -578,7 +578,7 @@
         model: [S(T`$P(95 < X < 120) = 0.8640$`), S(T`Expected number $= 30 \times 0.8640 = 25.9$`, 'Multiply by the number in the tray', true), S('About 26 premium kiwifruit in a tray of 30.', 'Answer in context', true)],
         earns: 'Merit: you linked the probability to an expected number and answered in context.' },
       { q: 'A packer claims "1 in 20 kiwifruit weighs over 120 g." Evaluate this using the model. Then the grower weighs 500 kiwifruit and finds 22 over 120 g. What does this suggest about the model?', check: num(1 - P.Phi(1.875), { dp: 4, fmt: 'Give P(X > 120) to 4 dp.' }),
-        model: [S(T`$P(X > 120) = 0.0304$, about 1 in 33`, 'The model’s figure'), S('1 in 20 is 0.05, so by the model the claim overstates it.', 'Evaluates the claim with numbers', true), S(T`Data: $\dfrac{22}{500} = 0.044$, which is more than the model’s 0.030.`), S('The real data has more heavy kiwifruit than the model predicts. The upper tail may be longer, or the standard deviation larger, so the model may underestimate heavy fruit.', 'Compares the model with the data', true)],
+        model: [S(T`$P(X > 120) = 0.0304$, about 1 in 33`, 'The model’s figure'), S('1 in 20 is 0.05, so by the model the claim overstates it.', 'Evaluates the claim with numbers', true), S(T`Data: $\dfrac{22}{500} = 0.044$, which is more than the model’s 0.030.`), S('The real data has more heavy kiwifruit than the model predicts. The upper tail may be longer, or the standard deviation larger, so the model may underestimate heavy fruit. But one sample of 500 can differ by chance (the model expects about 15), so more data would be needed to be sure.', 'Compares the model with the data, with caution', true)],
         earns: 'Excellence: you evaluated a claim with the model, compared the model with real data, and drew a reasoned conclusion about the model itself.' },
     ],
     up: [
@@ -637,7 +637,7 @@
         ['The mean, because it uses every value', 0, 'The mean is pulled up by Group B’s long right tail (mean 162 vs median 150), so it overstates typical use.'],
         ['The mode, because it is the most common value', 0, 'The mode is not shown and is unreliable for data like this. The median resists the skew.'],
         ['The range, because it shows the extremes', 0, 'The range measures spread, not centre.']),
-        model: [S('Shape: A is roughly symmetric (mean 112 ≈ median 110). B is skewed to the right (mean 162 > median 150, long tail to 330).', 'Shape, backed by numbers', true), S('So compare centres with the median: B is typically 40 minutes higher.', 'Justifies the choice of measure', true), S('Spread: B is more variable (IQR 75 vs 45; range 280 vs 170).'), S('In context: students with app limits tended to use their phones less, and more consistently. This is an observational comparison, so the limits may not be the cause.', 'Conclusion in context, qualified', true)],
+        model: [S('Shape (from the box plots): A is roughly symmetric, with the median near the middle of the box and similar whiskers; its mean 112 ≈ median 110 agrees. B is skewed to the right, with a long upper whisker to 330, which is also why its mean (162) is above its median (150).', 'Shape read from the graph, backed by numbers', true), S('So compare centres with the median: B is typically 40 minutes higher.', 'Justifies the choice of measure', true), S('Spread: B is more variable (IQR 75 vs 45; range 280 vs 170).'), S('In context: students with app limits tended to use their phones less, and more consistently. This is an observational comparison, so the limits may not be the cause.', 'Conclusion in context, qualified', true)],
         earns: 'Excellence: all three features (shape, centre, spread) compared with numbers, a justified choice of measure, and a qualified conclusion in context.' },
     ],
     up: [

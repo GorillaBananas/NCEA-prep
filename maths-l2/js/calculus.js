@@ -250,7 +250,7 @@
   P.addUnit({
     id: 'turning-points', title: 'Turning points', mins: 10,
     blurb: 'Gradient zero means a turning point. Then prove whether it is a max or a min.',
-    recap: 'At a turning point the curve is flat, so the derivative equals zero. Solve f′(x) = 0 to get x, then put x into f(x) to get y. The second derivative gives the type: positive means a minimum, negative means a maximum.',
+    recap: 'At a turning point the curve is flat, so the derivative equals zero. Solve f′(x) = 0 to get x, then put x into f(x) to get y. To show the type, check the gradient just either side: negative then positive is a minimum, positive then negative is a maximum. The second derivative is another accepted way (positive: minimum; negative: maximum), but gradient either side is the Level 2 method.',
     scenes: [
       { dur: 12, card: [C(0, '<h2>At a turning point the tangent is flat.</h2>'), C(3.5, '<p>Watch the gradient as the tangent slides. It hits zero twice: at the top of the hill and the bottom of the valley.</p>')],
         draw(a) { const v = a.view(-2.6, 2.6, -4, 4); a.axes(v); const f = (x) => x * x * x - 3 * x, df = (x) => 3 * x * x - 3; a.plot(v, f, a.C.c1);
@@ -260,10 +260,10 @@
           if (a.p > 0.62) { a.dot(v, 1, -2, a.C.pen, 7); a.text('min (1, −2)', v.X(1), v.Y(-2) + 26, { align: 'center', font: 'pen', col: a.C.pen }); } } },
       { dur: 12, card: [C(0, '<h2>Set the derivative to zero.</h2>'), C(8, '<p>Then put each x back into the original to get the y value.</p>')],
         board: [B(0.5, 'y = x^3 - 3x', '', { big: true }), B(2.5, "y' = 3x^2 - 3 = 0", 'f′ = 0'), B(5, T`x^2 = 1 \;\Rightarrow\; x = \pm 1`), B(8, T`(1, -2) \text{ and } (-1, 2)`, 'y too', { hl: true })] },
-      { dur: 13, card: [C(0, '<h2>Prove max or min: second derivative.</h2>'), C(3, `<p>Differentiate again. Positive means it curves up like a smile: a minimum.</p>`), C(8.5, '<p>Excellence answers justify the type, even when the question does not ask.</p>')],
-        board: [B(0.5, "y'' = 6x"), B(3, "x = 1: \\ y'' = 6 > 0", 'min ∪'), B(6, "x = -1: \\ y'' = -6 < 0", 'max ∩')] },
-      { dur: 11, card: [C(0, '<h2>Or check the gradient either side.</h2>'), C(3, '<p>Down then up: minimum. Up then down: maximum.</p>')],
+      { dur: 11, card: [C(0, '<h2>Prove max or min: gradient either side.</h2>'), C(3, '<p>Down then up: minimum. Up then down: maximum.</p>'), C(7, '<p>Excellence answers justify the type, even when the question does not ask.</p>')],
         board: [B(0.5, "x = 0.9: \\ y' = -0.57", 'going down'), B(3, "x = 1: \\ y' = 0", 'flat'), B(5.5, "x = 1.1: \\ y' = 0.63", 'going up'), B(8, T`\therefore\ \text{minimum at } (1, -2)`, '', { hl: true })] },
+      { dur: 13, card: [C(0, '<h2>Also accepted: the second derivative.</h2>'), C(3, `<p>Differentiate again. Positive means it curves up like a smile: a minimum.</p>`), C(8.5, '<p>This is a Level 3 idea. Use it only if you are sure of it; gradient either side is enough.</p>')],
+        board: [B(0.5, "y'' = 6x"), B(3, "x = 1: \\ y'' = 6 > 0", 'min ∪'), B(6, "x = -1: \\ y'' = -6 < 0", 'max ∩')] },
       { dur: 11, card: [C(0, '<h2>Increasing or decreasing?</h2>'), C(3, `<p>Increasing where the gradient is positive: ${m("f'(x) > 0")}.</p>`)],
         board: [B(0.5, 'f(x) = x^2 - 6x'), B(2.5, "f'(x) = 2x - 6 > 0"), B(5, 'x > 3', 'increasing', { hl: true })] },
     ],
@@ -273,9 +273,8 @@
         { m: m("f'(x) = 6x^2 - 18x + 12 = 0") },
         { m: m('6(x - 1)(x - 2) = 0 \\Rightarrow x = 1, 2') },
         { m: m('f(1) = 6, \\quad f(2) = 5'), note: 'y values' },
-        { m: m("f''(x) = 12x - 18") },
-        { m: m("f''(1) = -6 < 0") + ' so ' + m('(1, 6)') + ' is a maximum', note: 'justify' },
-        { m: m("f''(2) = 6 > 0") + ' so ' + m('(2, 5)') + ' is a minimum' },
+        { m: m("f'(0.9) = 0.66 > 0, \\quad f'(1.1) = -0.54 < 0") + ' (up then down), so ' + m('(1, 6)') + ' is a maximum', note: 'justify: gradient either side' },
+        { m: m("f'(1.9) = -0.54 < 0, \\quad f'(2.1) = 0.66 > 0") + ' (down then up), so ' + m('(2, 5)') + ' is a minimum' },
       ],
     },
     faded() {
@@ -299,14 +298,14 @@
       () => { let p, q; do { p = R.int(-4, 4); q = R.int(-4, 4); } while (p === q || (p + q) % 2 !== 0); const b = (-3 * (p + q)) / 2, c = 3 * p * q; const t = [[1, 3], [b, 2], [c, 1], [R.int(-5, 5), 0]];
         const x0 = R.pick([p, q]), f2 = 6 * x0 + 2 * b, isMax = f2 < 0;
         return P.mcq({ prompt: `${m(`y = ${poly(t)}`)} has a turning point at ${m(`x = ${x0}`)}. What type is it?`, more: ({ steps: [
-    St('To decide max or min, look at how the gradient is changing. The second derivative tells you.'),
-    St('Differentiate twice.', m(T`y' = ${poly(d(t))} \qquad y'' = ${poly([[6, 1], [2 * b, 0]])}`)),
-    St(`Substitute x = ${x0}.`, m(`y''(${x0}) = ${f2}`)),
-    St(isMax ? 'It is negative, so the gradient is decreasing: going up, flat, then down. That is the top of a hill, a maximum.' : 'It is positive, so the gradient is increasing: going down, flat, then up. That is the bottom of a valley, a minimum.'),
-  ], check: `Check the gradient either side. At x = ${x0 - 0.5}, y′ = ${P.n(ev(d(t), x0 - 0.5), 2)}. At x = ${x0 + 0.5}, y′ = ${P.n(ev(d(t), x0 + 0.5), 2)}. ${isMax ? 'Plus then minus: a maximum.' : 'Minus then plus: a minimum.'}`, trap: 'Mixing up the signs. A positive second derivative curves up like a smile: a minimum.' }), sol: [m(`y'' = ${poly([[6, 1], [2 * b, 0]])}`), m(`y''(${x0}) = ${f2}`) + (isMax ? ' < 0, so a maximum' : ' > 0, so a minimum')] }, [
+    St('To decide max or min, check the gradient just either side of the turning point.', m(`y' = ${poly(d(t))}`)),
+    St(`Just before: x = ${x0 - 0.5}.`, m(`y'(${x0 - 0.5}) = ${P.n(ev(d(t), x0 - 0.5), 2)}`)),
+    St(`Just after: x = ${x0 + 0.5}.`, m(`y'(${x0 + 0.5}) = ${P.n(ev(d(t), x0 + 0.5), 2)}`)),
+    St(isMax ? 'Positive then negative: going up, flat, then down. That is the top of a hill, a maximum.' : 'Negative then positive: going down, flat, then up. That is the bottom of a valley, a minimum.'),
+  ], check: `Also accepted: the second derivative, y″(${x0}) = ${f2}, ${isMax ? 'negative, so a maximum' : 'positive, so a minimum'}.`, trap: 'Checking points too far away: stay closer than the other turning point.' }), sol: [m(`y'' = ${poly([[6, 1], [2 * b, 0]])}`), m(`y''(${x0}) = ${f2}`) + (isMax ? ' < 0, so a maximum' : ' > 0, so a minimum')] }, [
           { t: 'A maximum', ok: isMax, why: isMax ? '' : `${m(`y''(${x0}) = ${f2}`)} is positive, so it curves up: a minimum.` },
           { t: 'A minimum', ok: !isMax, why: !isMax ? '' : `${m(`y''(${x0}) = ${f2}`)} is negative, so it curves down: a maximum.` },
-          { t: 'You cannot tell without a graph', why: 'You can: use the second derivative, or check the gradient either side.' },
+          { t: 'You cannot tell without a graph', why: 'You can: check the gradient either side (or use the second derivative).' },
         ]);
       },
       () => { const a = R.pick([1, 2, -1, -2]), h = R.nz(-5, 5); const t = [[a, 2], [-2 * a * h, 1], [R.int(-5, 5), 0]]; const inc = a > 0 ? `x > ${h}` : `x < ${h}`, dec = a > 0 ? `x < ${h}` : `x > ${h}`;
@@ -322,10 +321,10 @@
         const y = ev(t, q), f2 = 6 * q + 2 * b;
         return P.mcq({ prompt: `${m(`f(x) = ${poly(t)}`)}. Which statement fully proves that ${m(`(${q}, ${y})`)} is a minimum?`, more: ({ steps: [
     St('A full proof has two parts. Part one: it is a turning point, because the gradient is zero there.', m(T`f'(x) = ${poly(d(t))}, \quad f'(${q}) = 0`)),
-    St('Part two: what type it is. Use the second derivative.', m(T`f''(x) = ${poly([[6, 1], [2 * b, 0]])}, \quad f''(${q}) = ${f2}`)),
-    St(`${f2} > 0, so the curve bends upwards there: a minimum. The two facts together make the proof.`),
+    St('Part two: what type it is. Check the gradient just either side.', m(T`f'(${q} - 0.1) = ${P.n(ev(d(t), q - 0.1), 3)}, \quad f'(${q} + 0.1) = ${P.n(ev(d(t), q + 0.1), 3)}`)),
+    St('Negative then positive: down, flat, up. A minimum. The two facts together make the proof. (The second derivative, f″ > 0, is also accepted.)'),
   ], check: `Also, f(${q}) = ${y}, so the point really is on the curve.`, trap: 'Giving only one of the two facts. Markers want both.' }), sol: ['Show the gradient is zero there AND show the type, with a second derivative or gradients either side.'] }, [
-          { t: `${m(`f'(${q}) = 0`)} and ${m(`f''(${q}) = ${f2} > 0`)}`, ok: true },
+          { t: `${m(`f'(${q}) = 0`)}, with ${m("f'")} negative just before and positive just after`, ok: true },
           { t: `${m(`f'(${q}) = 0`)}`, why: 'That proves it is a turning point, but not which type.' },
           { t: `${m(`f(${q}) = ${y}`)}`, why: 'That only shows the point is on the curve.' },
           { t: `${m(`f''(${q}) = ${f2} > 0`)}`, why: 'You also need to show the gradient is zero there.' },
@@ -334,7 +333,7 @@
     ],
     tips: [
       'Turning point: ' + m("f'(x) = 0") + '. Then substitute into f(x) for the y value. A point needs both.',
-      '<span class="pen">Always justify max or min.</span> Second derivative, or gradient either side. Excellence answers do it unasked.',
+      '<span class="pen">Always justify max or min.</span> Gradient either side is the Level 2 method; the second derivative is also accepted. Excellence answers do it unasked.',
       'Increasing: ' + m("f'(x) > 0") + '. Decreasing: ' + m("f'(x) < 0") + '.',
       'In context, check the turning point makes sense (a time cannot be negative, a length cannot be zero).',
     ],
