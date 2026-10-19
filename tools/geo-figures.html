@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en-NZ"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Geography figures | NCEA Prep tools</title>
+<link rel="stylesheet" href="../shared/css/base.css"><link rel="stylesheet" href="../shared/css/app.css">
+<style>body{padding:16px} .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:18px} .grid > div{background:var(--sheet);padding:10px;border:1px solid var(--line);border-radius:10px} .fig{width:100%;height:auto}</style>
+</head><body><h1>Geography figures</h1><div class="grid" id="g"></div>
+<script src="../shared/js/core.js"></script><script src="../geography-l2/js/mapdata.js"></script><script src="../geography-l2/js/figures.js"></script>
+<script>
+const G = NP.geo, m = G.newMap();
+const figs = [
+  ['Practice map', G.mapSvg(m, { letters: true })], ['Climate graph', G.climate()],
+  ['Layers', G.layers({ emergent: 'Emergent', canopy: 'Canopy', understorey: 'Understorey', shrub: 'Shrub layer', floor: 'Forest floor', buttress: 'Buttress roots' })],
+  ['Nutrient cycle', G.nutrient({ fall: 'A', decomp: 'B', uptake: 'C', rain: 'D', weathering: 'E', leaching: 'F', runoff: 'G' })],
+  ['Nutrient cycle cleared', G.nutrient({}, { cleared: true })],
+  ['Convection', G.convection({ sun: 'A', et: 'B', rising: 'C', condense: 'D', cloud: 'E', rain: 'F' })],
+  ['Amazon map', G.amazonMap({ andes: 'Andes', basin: 'Amazon basin', river: 'Amazon River', mouth: 'River mouth', negro: 'Rio Negro' })],
+  ['Flood pulse', G.flood()],
+  ['World', G.worldMap()], ['Laos map', G.laosMap({ mekong: 'Mekong River', rail: 'Laos–China Railway', mountains: 'Annamite mountains', landlocked: 'No coastline' })],
+  ['Précis (no key)', G.precis('key')],
+  ['Timeline', G.timeline([{ y: 1893, t: 'French rule' }, { y: 1954, t: 'Independence' }, { y: 1964, t: 'US bombing' }, { y: 1975, t: 'Lao PDR' }, { y: 1986, t: 'Reforms' }, { y: 2021, t: 'Railway' }], { y0: 1880, y1: 2030, step: 30, title: 'Timeline of key events in Laos, 1893–2021' })],
+  ['Line', G.line([{ name: 'A', pts: [[1980, 1.2], [1990, 1.9], [2000, 3.1], [2010, 4.2], [2020, 4.4]] }], { x0: 1980, x1: 2020, y0: 0, y1: 5, xstep: 10, ystep: 1, ylab: 'Population (millions)', title: 'Population, 1980–2020' })],
+];
+document.getElementById('g').innerHTML = figs.map(([t, s]) => `<div><h3>${t}</h3>${s}</div>`).join('');
+</script></body></html>

@@ -87,6 +87,17 @@ function checkQ(q, where) {
     if (P.check(q, {}).ok && ids.some((id) => q.answer[id])) err(where, 'no change accepted', q);
     try { const s1 = P.econ.svg(q.model, q.answer); if (/NaN|undefined/.test(s1)) err(where, 'bad figure', q); } catch (e) { err(where, 'figure threw ' + e.message, q); }
     texIn(q.why, where + '.why');
+  } else if (q.kind === 'sort') {
+    if (!Array.isArray(q.cats) || q.cats.length < 2 || !Array.isArray(q.items) || q.items.length < 2) return err(where, 'sort needs 2+ categories and 2+ items', q);
+    q.items.forEach((it) => { texIn(it.t, where + '.item'); if (!(it.c >= 0 && it.c < q.cats.length)) err(where, 'item category out of range: ' + it.t); });
+    if (new Set(q.items.map((it) => it.t)).size !== q.items.length) err(where, 'repeated items in sort question', q);
+    if (!P.check(q, q.items.map((it) => it.c)).ok) err(where, 'right categories rejected', q);
+  } else if (q.kind === 'gridref') {
+    if (!/^(\d{4}|\d{6})$/.test(q.answer)) return err(where, 'grid reference answer must be 4 or 6 digits: ' + q.answer, q);
+    if (!P.check(q, q.answer).ok) err(where, 'right grid reference rejected', q);
+    const h = q.answer.length / 2, sw = q.answer.slice(h) + q.answer.slice(0, h);
+    if (sw !== q.answer && P.check(q, sw).ok && Math.abs(+q.answer.slice(0, h) - +q.answer.slice(h)) > (h === 3 ? 1 : 0)) err(where, 'swapped grid reference accepted', q);
+    if (!q.fig) err(where, 'grid reference question without a map', q);
   } else err(where, 'unknown kind ' + q.kind, q);
 }
 

@@ -109,6 +109,61 @@
     retry(ans) { ans.querySelectorAll('.seg').forEach((g) => g.classList.add('again')); },
   };
 
+  /* ---------- sort: put each item in a category (categories may repeat) ---------- */
+  // q = { kind: 'sort', prompt, cats: ['Natural', 'Cultural'], items: [{ t, c: index of the right category, why? }] }
+  K.sort = {
+    label: 'Answers',
+    check(q, sel) {
+      const right = q.items.filter((it, k) => sel[k] === it.c).length, ok = right === q.items.length;
+      const bad = q.items.find((it, k) => sel[k] !== it.c && it.why);
+      return { ok, msg: ok ? null : `${right} of ${q.items.length} right.${bad && right >= q.items.length - 1 ? ' ' + bad.why : ''}` };
+    },
+    answer(q) { return `<ul class="match-ans">${q.items.map((it) => `<li>${it.t}: <b>${q.cats[it.c]}</b></li>`).join('')}</ul>`; },
+    render(ans, q, api) {
+      const sel = (q._sel = q.items.map(() => -1));
+      ans.innerHTML = `<div class="sort">${q.items.map((it, k) => `<div class="srow" data-k="${k}"><span class="st">${it.t}</span><div class="seg" role="group" aria-label="Category">${q.cats.map((c, j) => `<button data-j="${j}">${c}</button>`).join('')}</div></div>`).join('')}<div class="row"><button class="btn chk" disabled>Check</button></div></div>`;
+      const btn = ans.querySelector('.chk');
+      ans.querySelectorAll('.srow').forEach((row) => row.querySelectorAll('button').forEach((b) => (b.onclick = () => {
+        if (api.done() || row.classList.contains('good')) return;
+        const k = +row.dataset.k; sel[k] = +b.dataset.j; row.classList.remove('bad');
+        row.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
+        btn.disabled = sel.some((v) => v < 0);
+      })));
+      btn.onclick = () => api.attempt(sel.slice());
+    },
+    retry(ans, q) {
+      ans.querySelectorAll('.srow').forEach((row, k) => { if (q._sel[k] === q.items[k].c) row.classList.add('good'); else { row.classList.add('bad'); q._sel[k] = -1; row.querySelectorAll('button').forEach((x) => x.classList.remove('on')); } });
+      ans.querySelector('.chk').disabled = true;
+    },
+    reveal(ans, q) { ans.querySelectorAll('.srow').forEach((row, k) => row.classList.add(q._sel[k] === q.items[k].c ? 'good' : 'bad')); },
+  };
+
+  /* ---------- gridref: type a 4- or 6-figure grid reference ---------- */
+  // q = { kind: 'gridref', prompt, fig, answer: '2341' or '233418' }. A 6-figure answer may be 1 tenth out each way.
+  const digits = (s) => String(s).replace(/[^0-9]/g, '');
+  K.gridref = {
+    label: 'Grid reference',
+    check(q, input) {
+      const a = q.answer, s = digits(input);
+      if (s.length !== a.length) return { ok: false, msg: a.length === 4 ? 'A 4-figure reference has 4 digits: 2 for the easting, then 2 for the northing.' : 'A 6-figure reference has 6 digits: 3 for the easting (with tenths), then 3 for the northing.' };
+      const h = a.length / 2, E = +a.slice(0, h), N = +a.slice(h), e = +s.slice(0, h), n = +s.slice(h);
+      const tol = h === 3 ? 1 : 0;
+      if (Math.abs(e - E) <= tol && Math.abs(n - N) <= tol) return { ok: true };
+      if (Math.abs(n - E) <= tol && Math.abs(e - N) <= tol) return { ok: false, msg: 'You gave the northing first. Easting first: “along the corridor, then up the stairs”.' };
+      if (h === 3 && Math.floor(e / 10) === Math.floor(E / 10) && Math.floor(n / 10) === Math.floor(N / 10)) return { ok: false, msg: 'Right square. Now estimate the tenths more carefully: how far across, and how far up, the square is the feature?' };
+      if (h === 3 && Math.abs(Math.floor(e / 10) - Math.floor(E / 10)) <= 1 && Math.abs(Math.floor(n / 10) - Math.floor(N / 10)) <= 1) return { ok: false, msg: 'One square out. A square is named by the lines on its left (west) and bottom (south) edges.' };
+      return { ok: false, msg: null };
+    },
+    answer(q) { return `<b>${q.answer}</b>${q.answer.length === 6 ? ' (one tenth either way is accepted)' : ''}`; },
+    render(ans, q, api) {
+      const id = 'gr' + (K.gridref.n = (K.gridref.n || 0) + 1);
+      ans.innerHTML = `<form class="numform" autocomplete="off"><label class="visually-hidden" for="${id}">Grid reference</label><input id="${id}" class="numin" inputmode="numeric" spellcheck="false" placeholder="${q.answer.length === 6 ? 'e.g. 233418' : 'e.g. 2341'}" maxlength="9"><button class="btn" type="submit">Check</button></form><p class="fmt">${q.answer.length === 6 ? '6 figures: easting (3), then northing (3).' : '4 figures: easting (2), then northing (2).'}</p>`;
+      const f = ans.querySelector('form'), inp = f.querySelector('input');
+      f.onsubmit = (e) => { e.preventDefault(); if (digits(inp.value)) api.attempt(inp.value); };
+      setTimeout(() => inp.focus({ preventScroll: true }), 50);
+    },
+  };
+
   /* ---------- write: a written answer ---------- */
   // q = { kind: 'write', prompt, qtext (the question, for the marker), ctx? (resource), target: 'A'|'M'|'E',
   //       model: [{ m, note, key }], earns, crit?: { A, M, E } marking points, std: { code, name }, subject }

@@ -16,17 +16,18 @@
     <h1>Short lessons. Quick quizzes. Better marks.</h1>
     <p class="lede" style="margin-top:16px">Each topic takes about ten minutes: a one-minute animation, a worked example, then five quick questions with instant feedback. Built around the NZQA standards and what the examiners' reports say costs marks.</p>
     <ul class="subjects">
+      <li><a href="geography-l2/"><span class="t">Level 2 Geography</span><span class="d">The Amazon rainforest, development in Laos and the USA, and map and graph skills: the three external standards (91240, 91242, 91243). 20 topics, with real maps and AI-marked written answers. Exam Tuesday 10 November: the first exam.</span><span class="w" id="w-geography-l2"></span></a></li>
       <li><a href="maths-l2/"><span class="t">Level 2 Maths</span><span class="d">Algebra, calculus and probability: the three external standards (91261, 91262, 91267). 22 topics. Exam Thursday 19 November.</span><span class="w" id="w-maths-l2"></span></a></li>
       <li><a href="biology-l2/"><span class="t">Level 2 Biology</span><span class="d">Cells, genetic variation and gene expression: the three external standards (91156, 91157, 91159). 23 topics, with AI-marked written answers. Exam Friday 20 November.</span><span class="w" id="w-biology-l2"></span></a></li>
       <li id="econ-li"><a href="economics-l2/"><span class="t">Level 2 Economics</span><span class="d">Inflation, international trade and economic growth: the three external standards (91222, 91223, 91224), with interactive model diagrams and AI-marked written answers. Exam Friday 27 November.</span><span class="w" id="w-economics-l2"></span></a></li>
     </ul>
-    <p class="muted small" style="margin-top:28px">Biology and economics answers are written in sentences. <a href="settings.html">Set up AI marking</a> on this computer to have them graded Achieved, Merit or Excellence, with feedback.</p>
+    <p class="muted small" style="margin-top:28px">Biology, economics and geography answers are written in sentences. <a href="settings.html">Set up AI marking</a> on this computer to have them graded Achieved, Merit or Excellence, with feedback.</p>
   </main>
 </div>
 <script>
   // show the countdown and how many topics are done, from progress saved on this computer
   (function () {
-    var subs = [['maths-l2', '2026-11-19T09:30:00+13:00', 22], ['biology-l2', '2026-11-20T09:30:00+13:00', 23], ['economics-l2', '2026-11-27T09:30:00+13:00', 18]];
+    var subs = [['geography-l2', '2026-11-10T09:30:00+13:00', 20], ['maths-l2', '2026-11-19T09:30:00+13:00', 22], ['biology-l2', '2026-11-20T09:30:00+13:00', 23], ['economics-l2', '2026-11-27T09:30:00+13:00', 18]];
     subs.forEach(function (x) {
       var el = document.getElementById('w-' + x[0]); if (!el) return;
       var days = Math.ceil((new Date(x[1]) - new Date()) / 86400000), done = 0;

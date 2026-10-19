@@ -34,14 +34,17 @@ Around the topics:
 | `maths-l2/` | NCEA Level 2 Mathematics and Statistics: AS 91261 algebra, 91262 calculus, 91267 probability | Thu 19 Nov 2026, morning |
 | `biology-l2/` | NCEA Level 2 Biology: AS 91156 cells, 91157 genetic variation and change, 91159 gene expression | Fri 20 Nov 2026, morning |
 | `economics-l2/` | NCEA Level 2 Economics: AS 91222 inflation, 91223 international trade, 91224 economic growth | Fri 27 Nov 2026, morning |
+| `geography-l2/` | NCEA Level 2 Geography: AS 91240 large natural environment (the Amazon), 91242 differences in development (Laos and the USA), 91243 geographic skills | Tue 10 Nov 2026, morning |
 
 ## Written subjects and AI marking
 
-Biology and economics are assessed by written answers, so they add four question kinds (`shared/js/kinds.js`):
+Biology, economics and geography are assessed by written answers, so they add these question kinds (`shared/js/kinds.js`):
 
 - **order**: build a chain of reasoning by tapping statements in order (the Merit skill).
 - **match**: label a diagram, one drop-down per letter.
 - **shift**: move the curves on an economic model (`shared/js/econ.js` draws the models).
+- **sort**: put each statement in a category (natural or cultural; social, economic or environmental).
+- **gridref**: type a 4- or 6-figure grid reference (one tenth either way is accepted).
 - **write**: a written answer. Aim higher parts with `write: true` use it.
 
 Written answers are marked by the Claude API when AI marking is set up on that computer (`settings.html`).
@@ -65,7 +68,7 @@ shared/js/quiz.js     question renderer and small SVG figure builders
 shared/js/app.js      the subject app: home, check-up, units, review, progress, parent report
 shared/vendor/        KaTeX (maths typesetting) and fonts, self-hosted
 maths-l2/             a subject: index.html, config.js, one file of units per standard, and ladders.js (Aim higher)
-tools/                checks for question generators
+tools/                checks for question generators; build-maps.py makes geography's real maps
 ```
 
 ### Adding a subject
@@ -96,3 +99,10 @@ Every question type must have a `more` walkthrough and a level, and every unit a
 
 GitHub repo settings → **Pages** → Source: **Deploy from a branch** → Branch: `main`, folder `/ (root)`.
 The site then appears at `https://gorillabananas.github.io/NCEA-prep/`.
+
+## Geography maps
+
+The Amazon, Laos and world maps use real coastlines, borders, rivers and regions from
+[Natural Earth](https://www.naturalearthdata.com/) (public domain). `tools/build-maps.py` clips, simplifies and projects them
+into SVG paths in `geography-l2/js/mapdata.js`; rerun it to change a map. The grid-reference practice maps are invented
+and generated afresh for each question. Port Avela, used in the skills practice, is an invented place.

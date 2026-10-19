@@ -113,7 +113,7 @@
         const us = units(std);
         const done = us.filter((u) => status(u.id) === 'done').length;
         return `<section class="std" style="--sc:${std.col}">
-          <div class="std-head"><h2>${std.short}</h2><p class="muted">AS ${std.code}, ${std.credits} credits. ${std.name}. <a class="practise" href="#/practice/${std.code}">Practise all of ${std.short.toLowerCase()}</a></p><p class="std-count"><b>${done}</b> of ${us.length} done</p></div>
+          <div class="std-head"><h2>${std.short}</h2><p class="muted">AS ${std.code}, ${std.credits} credits. ${std.name}. <a class="practise" href="#/practice/${std.code}">Practise all of ${std.lower || std.short.toLowerCase()}</a></p><p class="std-count"><b>${done}</b> of ${us.length} done</p></div>
           <ol class="units">${us.map((u) => { const st = status(u.id); return `<li class="unit-row is-${st}">
             ${st === 'done' ? '<span class="margin-mark" aria-hidden="true">✓</span>' : st === 'weak' ? '<span class="margin-mark" aria-hidden="true">!</span>' : ''}
             <a href="#/u/${u.id}"><span class="ut">${u.title}</span><span class="ub">${u.blurb}</span></a>
