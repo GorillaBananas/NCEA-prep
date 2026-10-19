@@ -65,7 +65,7 @@
       'Inflation rate: <span class="pen">divide by the old CPI</span>. Show the working: (new − old) ÷ old × 100.',
       'Define inflation as a <b>sustained</b> increase in the <b>general</b> price level, not one price going up.',
       'Achieved in 2025: describing the CPI as a basket of goods and services. Not Achieved: not being able to describe how it is calculated.',
-      'The Reserve Bank’s target is 1–3% annual CPI inflation. Use it to judge whether a figure is high.',
+      'The Reserve Bank’s target is 1–3% annual CPI inflation, aiming at the 2% midpoint. Use it to judge whether a figure is high.',
     ],
     aim: {
       intro: `<div class="resource">Annual CPI inflation in New Zealand: 2022: 7.2%. 2023: 4.7%. 2024: 2.2%. A household’s weekly basket cost ${$(1250)} in the base period and ${$(1590)} in 2024.</div>`,
@@ -118,7 +118,7 @@
         board: [L(0.5, '<b>target</b>: 1–3% a year (Reserve Bank)'), L(3, '<b>high</b>: savings lose value, uncertainty'), L(5.5, '<b>deflation</b>: spending delayed, debts harder to repay', '', { hl: true })] },
     ],
     example: {
-      problem: 'Annual inflation was 6.0% in 2023 and 3.5% in 2024. A student says prices fell in 2024. Explain why the student is wrong.',
+      problem: 'In an imaginary economy, annual inflation was 6.0% in one year and 3.5% the next. A student says prices fell in the second year. Explain why the student is wrong.',
       steps: [
         { m: 'An inflation rate of 3.5% is positive, so the general price level still rose in 2024.', note: 'read the sign' },
         { m: 'It rose more slowly than in 2023, because the rate fell from 6.0% to 3.5%.', note: 'compare' },
@@ -133,7 +133,7 @@
       P.terms([['inflation', 'A sustained increase in the general price level.'], ['disinflation', 'A fall in the inflation rate while it stays positive: prices still rise, more slowly.'], ['deflation', 'A sustained decrease in the general price level: a negative inflation rate.'], ['hyperinflation', 'Extremely rapid inflation, often hundreds of per cent a year.'], ['price stability', 'Low, stable inflation: the Reserve Bank aims for 1–3% a year.']]),
       P.bank([
         { q: 'Why can deflation be harmful to an economy?', a: 'People delay spending, expecting lower prices, so demand and output fall', why: 'Falling prices can also make debts harder to repay in real terms.', w: [['It makes everything cheaper, so it is always good', 'Delayed spending can cause a downturn.'], ['It raises interest rates automatically', 'Not automatic.'], ['It increases exports to zero', 'Not a thing.']] },
-        { q: 'Why does the Reserve Bank aim for low positive inflation rather than zero?', a: 'A small buffer avoids the risk of deflation, and measured inflation tends to overstate true price rises', why: '1–3% keeps the economy away from deflation while keeping prices stable.', w: [['Zero inflation is illegal', 'It is not.'], ['Inflation makes everyone richer', 'It does not.'], ['To raise government revenue', 'Not the stated aim.']] },
+        { q: 'Why does the Reserve Bank aim for low positive inflation rather than zero?', a: 'A small positive rate keeps a buffer against deflation and leaves room to cut interest rates in a downturn', why: '1–3% keeps the economy away from deflation while keeping prices stable.', w: [['Zero inflation is illegal', 'It is not.'], ['Inflation makes everyone richer', 'It does not.'], ['To raise government revenue', 'Not the stated aim.']] },
       ]),
       P.chain([
         { q: 'Put the steps in order: why deflation can slow the economy.', steps: ['The general price level starts to fall', 'Households expect prices to fall further', 'They delay buying, so consumption falls', 'Firms sell less and cut production and jobs', 'Incomes fall, so spending falls further'] },
@@ -143,7 +143,7 @@
       'Check the sign: <span class="pen">positive but falling = disinflation; negative = deflation.</span>',
       'The 2025 report: Not Achieved candidates mixed up disinflation and deflation. Merit candidates distinguished them using the data.',
       'Quote the data you use, with the year and the figure.',
-      'Use the Reserve Bank’s 1–3% target to judge whether inflation is high or low.',
+      'Use the Reserve Bank’s 1–3% target (2% midpoint) to judge whether inflation is high or low.',
     ],
     aim: {
       intro: '<div class="resource">Annual CPI inflation in an economy: Year 1: 5.8%. Year 2: 3.1%. Year 3: 0.9%. Year 4: −0.6%.</div>',
@@ -185,7 +185,7 @@
   const DPULL = [
     ['The Reserve Bank lowers the Official Cash Rate, so interest rates fall', 'Cheaper borrowing raises consumption (C) and investment (I)'],
     ['Income tax rates are cut', 'Households have more disposable income, so consumption (C) rises'],
-    ['World dairy prices rise sharply', 'Export receipts rise, so net exports (X − M) and farm incomes rise'],
+    ['World dairy prices rise sharply', 'Export receipts rise, so net exports (X − M) rise directly; higher farm incomes then raise consumption (C) too'],
     ['The government spends more on roads and hospitals', 'Government spending (G) rises'],
     ['Consumer confidence rises as house prices climb', 'Households spend more, so consumption (C) rises'],
   ];
@@ -224,8 +224,9 @@
       () => { const [ev, why] = R.pick(DPULL); return shift(`<b>${ev}.</b> Show the effect on the AS/AD model.`, MD.asad(), { AD: 1 }, [why + '.', 'AD shifts right to AD₁.', 'The price level rises from PL to PL₁: demand-pull inflation.'], { why, wrong: [{ v: { AS: -1 }, msg: 'That would be cost-push. This event changes spending.' }, { v: { AD: -1 }, msg: 'Spending rises, so AD shifts right.' }, { v: { AS: 1 }, msg: 'AS shifts when costs or capacity change. This is about spending.' }] }); },
       () => { const ev = R.pick([['The Reserve Bank raises the Official Cash Rate', 'Higher interest rates reduce borrowing, so C and I fall'], ['The government cuts spending sharply', 'Government spending (G) falls'], ['A recession in China cuts demand for NZ exports', 'Exports (X) fall'], ['Consumers lose confidence and save more', 'Consumption (C) falls']]);
         return shift(`<b>${ev[0]}.</b> Show the effect on the AS/AD model.`, MD.asad(), { AD: -1 }, [ev[1] + '.', 'AD shifts left to AD₁.', 'The price level falls from PL to PL₁ (or rises more slowly), and real output falls.'], { why: ev[1], wrong: [{ v: { AD: 1 }, msg: 'Spending falls, so AD shifts left.' }, { v: { AS: 1 }, msg: 'This changes spending, not production costs.' }] }); },
-      () => { const [ev, why] = R.pick(DPULL); const comp = /\(C\)/.test(why) ? 'Consumption (C)' : /\(I\)/.test(why) ? 'Consumption (C) and investment (I)' : /\(G\)/.test(why) ? 'Government spending (G)' : 'Net exports (X − M)';
-        return P.mcq({ prompt: `${ev}. Which component of AD is affected first?`, more: { steps: [St(why + '.'), St('Name the component: examiners want the link from the event to C, I, G or (X − M).')] } }, P.uniq([{ t: comp, ok: true }].concat(['Consumption (C)', 'Government spending (G)', 'Net exports (X − M)', 'Consumption (C) and investment (I)'].filter((x) => x !== comp).slice(0, 3).map((t) => ({ t, why: `Not first. ${why}.` }))))); },
+      () => { const [ev, why] = R.pick(DPULL); const comp = /\(C\) and investment \(I\)/.test(why) ? 'Consumption (C) and investment (I)' : /\(X − M\)/.test(why) ? 'Net exports (X − M)' : /\(G\)/.test(why) ? 'Government spending (G)' : 'Consumption (C)';
+        const skip = comp === 'Net exports (X − M)' ? ['Consumption (C)', 'Consumption (C) and investment (I)'] : comp === 'Consumption (C) and investment (I)' ? ['Consumption (C)'] : comp === 'Consumption (C)' ? ['Consumption (C) and investment (I)'] : [];
+        return P.mcq({ prompt: `${ev}. Which component of AD does this change directly?`, more: { steps: [St(why + '.'), St('Name the component: examiners want the link from the event to C, I, G or (X − M).')] } }, P.uniq([{ t: comp, ok: true }].concat(['Consumption (C)', 'Government spending (G)', 'Net exports (X − M)', 'Consumption (C) and investment (I)'].filter((x) => x !== comp && !skip.includes(x)).concat(['Investment (I) only', 'Imports (M) only']).slice(0, 3).map((t) => ({ t, why: `Not the direct effect here. ${why}.` }))))); },
       P.chain([
         { q: 'Put the chain in order: how a cut in the OCR can cause demand-pull inflation.', steps: ['The Reserve Bank cuts the Official Cash Rate', 'Banks lower interest rates on loans', 'Households and firms borrow and spend more: C and I rise', 'AD shifts right from AD to AD1', 'Excess demand pushes the price level up from PL to PL1'] },
         { q: 'Put the chain in order: how higher dairy prices can cause inflation.', steps: ['World dairy prices rise', 'NZ export receipts and farm incomes rise', 'Exports (X) and farmers’ spending (C) rise', 'AD shifts right to AD1', 'The price level rises from PL to PL1'] },
@@ -271,7 +272,7 @@
   P.addUnit({
     id: 'cost-push', title: 'Cost-push inflation', mins: 10,
     blurb: 'Costs of production rise, AS shifts left, prices up and output down. Compare it with demand-pull.',
-    recap: 'Cost-push inflation happens when firms’ costs of production rise, such as wages, oil, imported raw materials or power. Firms pass the higher costs on in higher prices and produce less at each price level. On the AS/AD model, AS shifts left to AS1: the price level rises from PL to PL1, but real output falls from Y to Y1. That makes cost-push worse than demand-pull: higher prices and less output, so unemployment can rise too.',
+    recap: 'Cost-push inflation happens when firms’ costs of production rise, such as wages, oil, imported raw materials or power. Firms pass the higher costs on in higher prices and produce less at each price level. On the AS/AD model, AS shifts left to AS1: the price level rises from PL to PL1, but real output falls from Y to Y1. That is why cost-push is often seen as worse than demand-pull: higher prices with less output, so unemployment can rise too.',
     scenes: [
       { dur: 14, card: [C(0, '<h2>Costs up, AS left</h2>'), C(3, '<p>Higher costs of production: firms supply less at every price level.</p>'), C(8.5, '<p>The price level rises from PL to PL₁, and real output falls from Y to Y₁.</p>')],
         draw(a) { E.draw(a, MD.asad(), { AS: -1 }, a.seg(a.p, 0.35, 0.75)); } },
