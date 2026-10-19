@@ -79,14 +79,14 @@
   };
 
   /* ---------- shift: move the curves on a model ---------- */
-  // q = { kind: 'shift', prompt, model: econ model spec, answer: { curveId: -1 | 0 | 1 }, wrong?: [{ v: {…}, msg }] }
+  // q = { kind: 'shift', prompt, model: econ model spec, answer: { curveId: -1 | 0 | 1 }, accept?: [other right answers], wrong?: [{ v: {…}, msg }] }
   const movable = (q) => (q.model.curves || q.model.panels.flatMap((p) => p.curves)).filter((c) => c.move !== false);
   K.shift = {
     label: 'The right diagram',
     check(q, st) {
       const ids = movable(q).map((c) => c.id);
       const same = (v) => ids.every((id) => (v[id] || 0) === (st[id] || 0));
-      const ok = same(q.answer);
+      const ok = same(q.answer) || (q.accept || []).some((v) => same(v));
       const w = !ok && (q.wrong || []).find((x) => same(x.v));
       const none = ids.every((id) => !st[id]);
       return { ok, msg: ok ? null : w ? w.msg : none ? 'Something does change here. Which curve does the event affect first?' : null };
@@ -184,6 +184,10 @@
       const ta = ans.querySelector('textarea'), btn = ans.querySelector('.markit'), wc = ans.querySelector('.wc');
       ta.oninput = () => { const n = words(ta.value); wc.textContent = n + (n === 1 ? ' word' : ' words'); };
       setTimeout(() => ta.focus({ preventScroll: true }), 50);
+      // a revision: unlock the box so the student can add the missing points, then mark again (AI marking at most 3 times)
+      let marks = 0; const MAX_AI = 3;
+      const unlock = (label) => { ta.readOnly = false; btn.disabled = false; btn.textContent = label; ta.focus({ preventScroll: true }); ta.scrollIntoView({ behavior: 'smooth', block: 'center' }); };
+      const reviseRow = (msg) => `<div class="aim-revise"><p>${msg}</p><div class="row"><button class="btn small rev">Revise my answer</button><button class="btn ghost small moveon">Move on</button></div></div>`;
       btn.onclick = async () => {
         const text = ta.value.trim();
         if (words(text) < 4) { api.fb.innerHTML = '<p class="warn">Write a little more first: at least a full sentence.</p>'; return; }
@@ -191,9 +195,14 @@
         btn.disabled = true; ta.readOnly = true;
         api.fb.innerHTML = '<p class="marking"><span class="pen">Marking</span><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span></p>';
         try {
-          const r = await P.ai.mark(q, text);
+          const r = await P.ai.mark(q, text); marks++;
           const ok = RANK[r.grade] >= RANK[q.target || 'A'];
-          api.finish(ok, null, false, resultHtml(q, r, ok), { grade: r.grade, ai: true });
+          const fin = () => api.finish(ok, null, false, resultHtml(q, r, ok), { grade: r.grade, ai: true });
+          if (ok || marks >= MAX_AI) return fin();
+          api.fb.innerHTML = resultHtml(q, r, ok) + reviseRow(`Use the feedback to improve your answer, then mark it again (${MAX_AI - marks} more ${MAX_AI - marks === 1 ? 'try' : 'tries'}).`);
+          P.math(api.fb);
+          api.fb.querySelector('.rev').onclick = () => { api.fb.querySelector('.aim-revise').remove(); unlock('Mark my revised answer'); };
+          api.fb.querySelector('.moveon').onclick = fin;
         } catch (e) {
           ta.readOnly = false;
           self(text, `<p class="warn">The AI marker did not answer (${esc(e.message)}). Mark yourself against the model answer this time.</p>`);
@@ -201,11 +210,16 @@
       };
       function self(text, pre = '') {
         btn.disabled = true; ta.readOnly = true;
-        api.fb.innerHTML = `${pre}<h4 class="aim-h">Model answer</h4>${modelHtml(q)}<div class="aim-self"><p><b>Mark yourself.</b> Did your answer make the <span class="hl">highlighted points</span>, in your own words?</p><div class="row"><button class="btn small yes">Yes</button><button class="btn ghost small no">Not all of them</button></div></div>`;
+        const model = `${pre}<h4 class="aim-h">Model answer</h4>${modelHtml(q)}`;
+        api.fb.innerHTML = `${model}<div class="aim-self"><p><b>Mark yourself.</b> Did your answer make the <span class="hl">highlighted points</span>, in your own words?</p><div class="row"><button class="btn small yes">Yes</button><button class="btn ghost small no">Not all of them</button></div></div>`;
         P.math(api.fb);
-        const done = (ok) => api.finish(ok, null, false, `${pre}<h4 class="aim-h">Model answer</h4>${modelHtml(q)}<p class="pen big">${ok ? `That is ${P.gradeName[q.target || 'A']}-level writing.` : 'Add the highlighted points to your answer. That is what lifts the grade.'}</p>`, { grade: ok ? q.target || 'A' : null, ai: false });
+        const done = (ok) => api.finish(ok, null, false, `${model}<p class="pen big">${ok ? `That is ${P.gradeName[q.target || 'A']}-level writing.` : 'Add the highlighted points to your answer. That is what lifts the grade.'}</p>`, { grade: ok ? q.target || 'A' : null, ai: false });
         api.fb.querySelector('.yes').onclick = () => done(true);
-        api.fb.querySelector('.no').onclick = () => done(false);
+        api.fb.querySelector('.no').onclick = () => {
+          api.fb.querySelector('.aim-self').outerHTML = reviseRow('Add the missing highlighted points to your answer, in your own words, then compare again.');
+          api.fb.querySelector('.rev').onclick = () => { api.fb.querySelector('.aim-revise').remove(); unlock('Compare again'); };
+          api.fb.querySelector('.moveon').onclick = () => done(false);
+        };
       }
     },
   };

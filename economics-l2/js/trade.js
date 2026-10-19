@@ -11,7 +11,7 @@
   const up = (part, shown, choices, ask) => ({ part, shown, ask, choices: choices.map(([t, ok, why]) => ({ t, ok: !!ok, why })) });
   const St = (say, m) => ({ say, m });
   const $ = (v) => P.money(v);
-  const shift = (prompt, model, answer, steps, o = {}) => ({ kind: 'shift', prompt, model, answer, why: o.why, wrong: o.wrong, more: { idea: o.idea, steps: steps.map((s) => St(s)), trap: o.trap } });
+  const shift = (prompt, model, answer, steps, o = {}) => ({ kind: 'shift', prompt, model, answer, accept: o.accept, why: o.why, wrong: o.wrong, more: { idea: o.idea, steps: steps.map((s) => St(s)), trap: o.trap } });
 
   /* ======================= 1. NZ’s trade: what, with whom, and the balance ======================= */
   P.addUnit({
@@ -32,7 +32,7 @@
         { m: `Exports: 72 + 30 = ${$('102 billion')}. Imports: 78 + 31 = ${$('109 billion')}.`, note: 'add goods and services' },
         { m: `Balance = 102 − 109 = −${$('7 billion')}.`, note: 'exports minus imports' },
         { m: 'It is a deficit: New Zealand paid more for imports than it earned from exports.', note: 'meaning' },
-        { m: 'A deficit has to be financed by borrowing from, or selling assets to, overseas.', note: 'consequence' },
+        { m: 'This is only one part of the current account, which also includes income flows such as interest and dividends paid to and received from overseas. Only an overall current account deficit has to be financed by borrowing from overseas or selling NZ assets to overseas buyers.', note: 'goods and services balance vs current account' },
       ],
     },
     faded() { return balGen()(); },
@@ -352,7 +352,7 @@
   const FXEV = [
     ['More overseas tourists visit New Zealand', { D: 1 }, 'Tourists must buy NZ dollars to spend here: demand for NZD shifts right, and the NZD appreciates (Er to Er1).'],
     ['World dairy prices rise, so NZ export receipts increase', { D: 1 }, 'Overseas buyers pay for NZ exports, so more foreign currency is changed into NZD: demand for NZD rises and the NZD appreciates.'],
-    ['NZ interest rates rise above those overseas', { D: 1 }, 'Foreign savers buy NZD to invest here: demand for NZD rises and the NZD appreciates.'],
+    ['NZ interest rates rise above those overseas', { D: 1 }, 'Foreign savers buy NZD to invest here: demand for NZD rises and the NZD appreciates. Also accepted: New Zealand savers keep more of their money in NZ instead of investing overseas, so the supply of NZD falls too (S left). Both push the NZD up.', [{ D: 1, S: -1 }]],
     ['NZ firms import more machinery from the US', { S: 1 }, 'Importers sell NZD to buy US dollars: supply of NZD shifts right and the NZD depreciates.'],
     ['More New Zealanders holiday overseas', { S: 1 }, 'They sell NZD to buy foreign currency: supply of NZD rises and the NZD depreciates.'],
     ['Overseas students stop coming to NZ universities', { D: -1 }, 'Fewer students buy NZD: demand for NZD shifts left and the NZD depreciates.'],
@@ -378,10 +378,10 @@
         { m: 'The NZ dollar depreciates.', note: 'name it' },
       ],
     },
-    faded() { const [ev, ans, why] = R.pick(FXEV); return shift(`<b>${ev}.</b> Show the effect on the market for NZ dollars.`, MD.fx(), ans, [why], { why, wrong: fxWrong(ans) }); },
+    faded() { const [ev, ans, why, accept] = R.pick(FXEV); return shift(`<b>${ev}.</b> Show the effect on the market for NZ dollars.`, MD.fx(), ans, [why], { why, accept, wrong: fxWrong(ans, accept) }); },
     grades: 'AMAMM',
     gens: [
-      () => { const [ev, ans, why] = R.pick(FXEV); return shift(`<b>${ev}.</b> Show the effect on the market for NZ dollars.`, MD.fx(), ans, [why], { why, wrong: fxWrong(ans), trap: 'Mixing up demand and supply. Ask: who needs NZ dollars (demand), and who is getting rid of them (supply)?' }); },
+      () => { const [ev, ans, why, accept] = R.pick(FXEV); return shift(`<b>${ev}.</b> Show the effect on the market for NZ dollars.`, MD.fx(), ans, [why], { why, accept, wrong: fxWrong(ans, accept), trap: 'Mixing up demand and supply. Ask: who needs NZ dollars (demand), and who is getting rid of them (supply)?' }); },
       () => { const [ev, ans] = R.pick(FXEV); const app = (ans.D || 0) > 0 || (ans.S || 0) < 0;
         return P.mcq({ prompt: `${ev}. What happens to the NZ dollar?`, more: { steps: [St(ans.D ? `Demand for NZD shifts ${ans.D > 0 ? 'right' : 'left'}.` : `Supply of NZD shifts ${ans.S > 0 ? 'right' : 'left'}.`), St(app ? 'The price of the NZD rises: appreciation.' : 'The price of the NZD falls: depreciation.')] } },
           [{ t: app ? 'It appreciates' : 'It depreciates', ok: true }, { t: app ? 'It depreciates' : 'It appreciates', why: 'Work out which curve shifts, then which way the price moves.' }, { t: 'No change: exchange rates are fixed', why: 'NZ has a floating exchange rate set by the market.' }]); },
@@ -428,8 +428,8 @@
       ],
     },
   });
-  function fxWrong(ans) { const k = Object.keys(ans)[0], v = ans[k]; const other = k === 'D' ? 'S' : 'D';
-    return [{ v: { [k]: -v }, msg: 'Right curve, wrong direction.' }, { v: { [other]: v }, msg: k === 'D' ? 'This comes from people who need NZ dollars: that is demand.' : 'This comes from people selling NZ dollars: that is supply.' }, { v: { [other]: -v }, msg: k === 'D' ? 'Think about who needs NZ dollars here: that is demand.' : 'Think about who is selling NZ dollars: that is supply.' }]; }
+  function fxWrong(ans, accept) { const k = Object.keys(ans)[0], v = ans[k]; const other = k === 'D' ? 'S' : 'D';
+    return (accept ? [{ v: { S: -1 }, msg: 'That can happen too, as New Zealand savers keep money at home. But the main effect is overseas investors buying NZ dollars to invest here: show that change in demand as well.' }] : []).concat([{ v: { [k]: -v }, msg: 'Right curve, wrong direction.' }, { v: { [other]: v }, msg: k === 'D' ? 'This comes from people who need NZ dollars: that is demand.' : 'This comes from people selling NZ dollars: that is supply.' }, { v: { [other]: -v }, msg: k === 'D' ? 'Think about who needs NZ dollars here: that is demand.' : 'Think about who is selling NZ dollars: that is supply.' }]); }
 
   /* ======================= 6. Effects of exchange-rate changes ======================= */
   const GROUPS = [

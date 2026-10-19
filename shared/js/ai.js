@@ -37,11 +37,11 @@
 - Merit (explain): gives reasons for how or why, with the steps of the process linked in order, using correct biological terms, related to the context in the question.
 - Excellence (discuss): links several biological ideas together, compares or contrasts, justifies, or explains the significance for the organism, using the resource material and going beyond it. Comprehensive and accurate.
 - N: does not reach Achieved (wrong, off topic, too vague, or only copies the resource).`,
-    economics: `NCEA Economics grade levels for one answer:
-- Achieved (identify / describe): correct definitions, correct direction of change, a correct model change described, a relevant effect stated.
-- Merit (explain in detail): explains the cause-and-effect chain step by step, refers to the model using its labels (for example AD to AD1, P1 to P2), and relates the explanation to the context.
-- Excellence (explain comprehensively): integrates the model changes into a full explanation, compares and contrasts effects on different groups or two causes, and makes a reasoned judgement where asked.
-- N: does not reach Achieved (statements without explanation, wrong direction, contradicts the model, or only rewrites the resource).`,
+    economics: `NCEA Economics grade levels for one answer (Level 2 standards 91222–91224, explanatory note 2):
+- Achieved (analyse): identifies, defines or describes the concepts; explains causes of changes and their impacts on groups, using economic models; correct direction of change.
+- Merit (analyse in depth): gives detailed explanations of causes and impacts, step by step, using the model and its labels (for example AD to AD1, PL to PL1), related to the context.
+- Excellence (analyse comprehensively): integrates the changes shown on the model(s) into detailed explanations, and compares and/or contrasts causes or impacts (for example on different groups, sectors or flows). Where a judgement is asked for, it is justified.
+- N: does not reach Achieved (statements without explanation, wrong direction, contradicts the model, or only rewrites the resource). Keep income, wealth and prices distinct: for example rising house values are a wealth gain, not income.`,
     geography: `NCEA Geography grade levels for one answer (NZQA Level 2 schedules):
 - Achieved (explain): explains the process, factor, strategy or pattern asked about (not just describes it), with some supporting case study or resource evidence (named places, facts, figures).
 - Merit (explain in detail): explains in detail how and why, linking causes to effects step by step, with detailed, specific case study or resource evidence (names, dates, statistics), and uses geographic terms and concepts appropriately.

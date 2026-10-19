@@ -1,15 +1,18 @@
 /* Economic models, drawn the same way as SVG (questions, "shift the curve") and on canvas (explainers).
    Coordinates are 0–1 in both directions (quantity across, price up). Straight-line curves:
      down:  q = b − p        up:  q = p − b        vert: q = b        flat: p = b        ppf: quarter ellipse, radius b
-   A shift s (−1, 0, +1) moves a curve left/right by D (a flat line or the PPF moves by DP).
+   A shift s (−1, 0, +1) moves a curve left/right by D: +1 = right (more quantity at every price); a flat line moves down/up
+   and the PPF in/out by DP.
    Model spec: { kind: 'sd' | 'taker' | 'two' | 'ppf', x, y (axis titles), curves: [{ id, kind, b, label, name, col, move }],
                  eq: { p: ['PL', 'PL1'], q: ['Y', 'Y1'] } (equilibrium labels), panels (for 'two'), gap: 'exports' | 'imports' } */
 (function () {
   const P = window.NP;
   const E = (P.econ = {});
   const D = 0.17, DP = 0.12;
+  // s = +1 always means "right" (more quantity at every price) or, for a flat line, "up".
+  // An upward curve q = p − b moves right when b falls, so its offset is subtracted.
   const lineQ = (c, s) => {
-    const b = c.b + (c.kind === 'flat' ? s * DP : c.kind === 'ppf' ? s * DP : s * D);
+    const b = c.b + (c.kind === 'flat' || c.kind === 'ppf' ? s * DP : c.kind === 'up' ? -s * D : s * D);
     if (c.kind === 'down') return { kind: 'down', q: (p) => b - p, p: (q) => b - q, b };
     if (c.kind === 'up') return { kind: 'up', q: (p) => p - b, p: (q) => q + b, b };
     if (c.kind === 'vert') return { kind: 'vert', b };
@@ -46,12 +49,14 @@
       const sc = curves.find((c) => c.kind === 'up');
       const show = (W, faded, tag) => {
         const p = W.b, qd = now[dn.id].q(p), qs = sc ? now[sc.id].q(p) : null;
-        out.guides.push({ p, qd, qs, faded, tag });
+        const p0 = was[fl.id].b, qd0 = was[dn.id].q(p0), qs0 = sc ? was[sc.id].q(p0) : null;
+        const t = (a, b) => (tag && Math.abs(a - b) > 1e-9 ? tag : '');
+        out.guides.push({ p, qd, qs, faded, tag, tp: t(p, p0), tqd: t(qd, qd0), tqs: qs == null ? '' : t(qs, qs0) });
       };
       const sW = (state && state[fl.id]) || 0, sS = sc ? (state && state[sc.id]) || 0 : 0, sD = (state && state[dn.id]) || 0;
       if (sW || sS || sD) {
         // the starting position, with the original curves
-        const p0 = was[fl.id].b; out.guides.push({ p: p0, qd: was[dn.id].q(p0), qs: sc ? was[sc.id].q(p0) : null, faded: true, tag: '' });
+        const p0 = was[fl.id].b; out.guides.push({ p: p0, qd: was[dn.id].q(p0), qs: sc ? was[sc.id].q(p0) : null, faded: true, tag: '', tp: '', tqd: '', tqs: '' });
         show(now[fl.id], false, '1');
       } else show(now[fl.id], false, '');
       // the domestic equilibrium (no trade)
@@ -68,6 +73,12 @@
     s += `<text x="${X(1)}" y="${Y(0) + 26}" text-anchor="end" class="al">${spec.x}</text><text x="${X(0) + 4}" y="${Y(1) + 2}" class="al">${spec.y}</text>`;
     if (spec.title) s += `<text x="${X(0.5)}" y="${y0 + 12}" text-anchor="middle" class="gl">${spec.title}</text>`;
     const g = geom(spec.curves, state, { eq: spec.eq, domestic: spec.domestic });
+    // keep labels apart: curve and left-axis labels move down a line; bottom-axis labels drop to a second row
+    const placed = [], bottom = [];
+    const put = (x, y, anchor = 'start', w = 40) => { const x0 = anchor === 'end' ? x - w : anchor === 'middle' ? x - w / 2 : x; let yy = y, k = 0;
+      while (k++ < 4 && placed.some((r) => Math.abs(r.y - yy) < 13 && x0 < r.x1 && x0 + w > r.x0)) yy += 13;
+      placed.push({ x0, x1: x0 + w, y: yy }); return yy; };
+    const putB = (x, y) => { let yy = y, k = 0; while (k++ < 3 && bottom.some((r) => Math.abs(r.y - yy) < 11 && Math.abs(r.x - x) < 22)) yy += 11; bottom.push({ x, y: yy }); return yy; };
     for (const { c, L, old, moved } of g.lines) {
       const col = c.col || 'var(--c1)', cls = `mc${old ? ' old' : ''}${moved ? ' new' : ''}`;
       let x1, y1, x2, y2, lx, ly;
@@ -77,20 +88,20 @@
       else if (L.kind === 'flat') { x1 = X(0.0); x2 = X(1); y1 = y2 = Y(L.b); lx = X(1) - 2; ly = y1 - 6; }
       else if (L.kind === 'ppf') { const r = L.b; s += `<path d="M ${X(0)} ${Y(r)} A ${X(r) - X(0)} ${Y(0) - Y(r)} 0 0 1 ${X(r)} ${Y(0)}" class="${cls}" style="stroke:${col}"/>`; s += `<text x="${X(r * 0.72) + 6}" y="${Y(r * 0.72) - 6}" class="ml" style="fill:${col}">${sub(old ? c.label : moved ? c.label + '1' : c.label)}</text>`; continue; }
       s += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" class="${cls}" style="stroke:${col}"/>`;
-      if (c.label) s += `<text x="${Math.min(lx, x0 + w - 4)}" y="${ly}" class="ml" text-anchor="${L.kind === 'flat' ? 'end' : lx > x0 + w - 30 ? 'end' : 'start'}" style="fill:${col}">${sub(moved ? c.label + '1' : c.label)}</text>`;
+      if (c.label) { const an = L.kind === 'flat' ? 'end' : lx > x0 + w - 30 ? 'end' : 'start', tx = Math.min(lx, x0 + w - 4); s += `<text x="${tx}" y="${put(tx, ly, an, c.label.length * 8 + 10)}" class="ml" text-anchor="${an}" style="fill:${col}">${sub(moved ? c.label + '1' : c.label)}</text>`; }
     }
     for (const m of g.marks) {
       const x = X(m.e.q), y = Y(m.e.p), op = m.faded ? ' opacity=".5"' : '';
       if (!m.dot) s += `<line x1="${X(0)}" y1="${y}" x2="${x}" y2="${y}" class="gd"${op}/><line x1="${x}" y1="${y}" x2="${x}" y2="${Y(0)}" class="gd"${op}/>`;
       s += `<circle cx="${x}" cy="${y}" r="4" class="eq"${op}/>`;
-      if (m.lp) s += `<text x="${m.dot ? x + 8 : X(0) - 4}" y="${m.dot ? y - 6 : y + 4}" text-anchor="${m.dot ? 'start' : 'end'}" class="al"${op}>${sub(m.lp)}</text>`;
-      if (m.lq) s += `<text x="${x}" y="${Y(0) + 13}" text-anchor="middle" class="al"${op}>${sub(m.lq)}</text>`;
+      if (m.lp) { const lx = m.dot ? x + 8 : X(0) - 4, an = m.dot ? 'start' : 'end'; s += `<text x="${lx}" y="${put(lx, m.dot ? y - 6 : y + 4, an, 30)}" text-anchor="${an}" class="al"${op}>${sub(m.lp)}</text>`; }
+      if (m.lq) s += `<text x="${x}" y="${putB(x, Y(0) + 13)}" text-anchor="middle" class="al"${op}>${sub(m.lq)}</text>`;
     }
     for (const gd of g.guides) {
       const op = gd.faded ? ' opacity=".45"' : '', y = Y(gd.p);
-      s += `<text x="${X(0) - 4}" y="${y + 4}" text-anchor="end" class="al"${op}>${sub((spec.world || 'Pw') + gd.tag)}</text>`;
       const cur = g.guides[g.guides.length - 1];
-      for (const [q, lab] of [[gd.qd, 'Qd'], [gd.qs, 'Qs']]) if (q != null && q > 0 && q < 1 && !(gd.faded && gd !== cur && (Math.abs(q - cur.qd) < 1e-9 || Math.abs(q - cur.qs) < 1e-9))) s += `<line x1="${X(q)}" y1="${y}" x2="${X(q)}" y2="${Y(0)}" class="gd"${op}/><text x="${X(q)}" y="${Y(0) + 13}" text-anchor="middle" class="al"${op}>${sub(lab + gd.tag)}</text>`;
+      if (!(gd.faded && Math.abs(gd.p - cur.p) < 1e-9)) s += `<text x="${X(0) - 4}" y="${put(X(0) - 4, y + 4, 'end')}" text-anchor="end" class="al"${op}>${sub((spec.world || 'Pw') + (gd.tp || ''))}</text>`;
+      for (const [q, lab, tg] of [[gd.qd, 'Qd', gd.tqd], [gd.qs, 'Qs', gd.tqs]]) if (q != null && q > 0 && q < 1 && !(gd.faded && gd !== cur && (Math.abs(q - cur.qd) < 1e-9 || Math.abs(q - cur.qs) < 1e-9))) s += `<line x1="${X(q)}" y1="${y}" x2="${X(q)}" y2="${Y(0)}" class="gd"${op}/><text x="${X(q)}" y="${putB(X(q), Y(0) + 13)}" text-anchor="middle" class="al"${op}>${sub(lab + (tg || ''))}</text>`;
       if (gd.qs != null && !gd.faded && spec.gap) { const a = Math.min(gd.qd, gd.qs), b = Math.max(gd.qd, gd.qs); s += `<line x1="${X(a)}" y1="${y + 7}" x2="${X(b)}" y2="${y + 7}" class="gap"/><text x="${X((a + b) / 2)}" y="${y + 22}" text-anchor="middle" class="gl2">${spec.gap}</text>`; }
     }
     for (const pt of spec.points || []) s += `<circle cx="${X(pt.q)}" cy="${Y(pt.p)}" r="5" class="eq"/><text x="${X(pt.q) + 8}" y="${Y(pt.p) - 6}" class="ml">${pt.label}</text>`;
@@ -155,8 +166,8 @@
     }
     for (const gd of g.guides) {
       const al = gd.faded ? 0.4 : 1, y = Y(gd.p);
-      a.text((spec.world || 'Pw') + (gd.tag ? '₁' : ''), X(0) - 4, y, { align: 'right', size: 0.72, col: C.muted, alpha: al });
-      for (const [q, lab] of [[gd.qd, 'Qd'], [gd.qs, 'Qs']]) if (q != null && q > 0 && q < 1) { a.alpha(al, () => a.line(X(q), y, X(q), Y(0), C.faint, 1.4, [4, 4])); a.text(lab + (gd.tag ? '₁' : ''), X(q), Y(0) + 12, { align: 'center', size: 0.72, col: C.muted, alpha: al }); }
+      a.text((spec.world || 'Pw') + (gd.tp ? '₁' : ''), X(0) - 4, y, { align: 'right', size: 0.72, col: C.muted, alpha: al });
+      for (const [q, lab, tg] of [[gd.qd, 'Qd', gd.tqd], [gd.qs, 'Qs', gd.tqs]]) if (q != null && q > 0 && q < 1) { a.alpha(al, () => a.line(X(q), y, X(q), Y(0), C.faint, 1.4, [4, 4])); a.text(lab + (tg ? '₁' : ''), X(q), Y(0) + 12, { align: 'center', size: 0.72, col: C.muted, alpha: al }); }
       if (gd.qs != null && !gd.faded && spec.gap) { const lo = Math.min(gd.qd, gd.qs), hi = Math.max(gd.qd, gd.qs); a.line(X(lo), y + 8, X(hi), y + 8, C.pen, 3); a.text(spec.gap, X((lo + hi) / 2), y + 22, { align: 'center', font: 'pen', col: C.pen }); }
     }
     for (const pt of spec.points || []) { a.ctx.fillStyle = C.ink; a.ctx.beginPath(); a.ctx.arc(X(pt.q), Y(pt.p), 5, 0, 7); a.ctx.fill(); a.text(pt.label, X(pt.q) + 8, Y(pt.p) - 8, { font: 'head', size: 0.9 }); }

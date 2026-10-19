@@ -11,10 +11,12 @@
     // wording that differs between subjects (maths defaults)
     const W = Object.assign({
       noun: 'maths', kit: 'Use paper and your calculator.', papers: 'all three papers',
-      mixedTitle: 'Final week: mix all three papers', mixedText: '12 questions across algebra, calculus and probability, in random order, like the real exam. Includes Upgrade questions, and shows your level: Achieved, Merit or Excellence.',
+      mixedTitle: 'Final week: mix all three papers', mixedText: '12 questions across algebra, calculus and probability, in random order, like the real exam. Includes Upgrade questions, and shows how you do on Achieved-, Merit- and Excellence-level questions.',
       how: ['<b>Watch</b> a one-minute animated explainer', '<b>Follow</b> a worked example, step by step', '<b>Finish</b> one yourself, with the start done for you', '<b>Quiz</b>: five quick questions with instant feedback', '<b>Aim higher</b>: one exam question that climbs from Achieved to Merit to Excellence', '<b>Exam tips</b>: what earns the marks'],
       aimIntro: 'One exam-style question in three parts, like the real paper. Part (a) is Achieved level, (b) is Merit, (c) is Excellence. Work each part on paper, check your answer, then compare your working with the model answer. The red notes say what earns the grade.',
     }, cfg.words || {});
+    // what each NCEA level means in this subject (shown in the level key and on the level badges)
+    P.gradeHow = Object.assign({ A: 'use a method correctly', M: 'link the steps and relate it to the context', E: 'reason it through, prove or justify' }, W.gradeHow || {});
     const app = document.getElementById('app');
     const units = (std) => std.units.map((id) => P.unitById[id]).filter(Boolean);
     const allUnits = () => cfg.standards.flatMap(units);
@@ -62,17 +64,19 @@
     /* ---------- NCEA levels: tally answers by grade and describe the profile ---------- */
     const newTally = () => ({ A: [0, 0], M: [0, 0], E: [0, 0] });
     function tally(t, q, ok) { if (!q.grade) return; for (const x of [t, S.g]) { x[q.grade][1]++; if (ok) x[q.grade][0]++; } }
-    const word = (r, n) => (r / n >= 0.75 ? 'solid' : r / n >= 0.5 ? 'getting there' : 'shaky');
+    // Practice results by question level. These are signals for what to practise next, not a predicted NZQA grade:
+    // quiz questions test recognition and method, while the exam is marked on full answers.
+    const MIN = 6; // answers at a level before saying anything about it
+    const word = (r, n) => (r / n >= 0.75 ? 'mostly right' : r / n >= 0.5 ? 'about half right' : 'often wrong');
     function levelSay(t) {
       const gs = ['A', 'M', 'E'].filter((g) => t[g][1]);
       if (!gs.length) return '';
-      let say = gs.map((g) => `${word(...t[g])} at ${P.gradeName[g]}`).join(', ');
-      say = say[0].toUpperCase() + say.slice(1) + '.';
-      const weak = (g) => t[g][1] && t[g][0] / t[g][1] < 0.75;
-      const next = weak('A') ? 'Next step: lock in the Achieved methods. Redo the quizzes for the topics you missed.'
-        : weak('M') || !t.M[1] ? 'Next step: Merit. In each topic, work through part (b) of Aim higher.'
-        : weak('E') || !t.E[1] ? 'Next step: Excellence. Do part (c) of Aim higher in each topic, and the Upgrade questions.'
-        : 'That is Excellence-level work. Keep it ticking over with mixed practice.';
+      const say = gs.map((g) => `${P.gradeName[g]}-level questions: ${t[g][1] < MIN ? `${t[g][1]} answered, too few to judge yet` : `${word(...t[g])} (${t[g][0]} of ${t[g][1]})`}`).join('. ') + '.';
+      const enough = (g) => t[g][1] >= MIN, weak = (g) => enough(g) && t[g][0] / t[g][1] < 0.75;
+      const next = weak('A') ? 'Next step: go back over the Achieved basics. Redo the quizzes for the topics you missed.'
+        : weak('M') || !enough('M') ? 'Next step: Merit. In each topic, work through part (b) of Aim higher.'
+        : weak('E') || !enough('E') ? 'Next step: Excellence. Do part (c) of Aim higher in each topic, and the Upgrade questions.'
+        : 'Strong at every level so far. Keep it ticking over with mixed practice and full written answers.';
       return say + ' ' + next;
     }
     function profileHtml(t, o = {}) {
@@ -80,7 +84,8 @@
       if (!gs.some((g) => t[g][1])) return o.empty || '';
       return `<div class="profile${o.cls ? ' ' + o.cls : ''}">${o.title ? `<h3>${o.title}</h3>` : ''}<div class="lv-rows">${gs.map((g) => { const [r, n] = t[g]; return `<div class="lv-row">${P.lvl(g)}<span class="lv-bar"><i style="width:${n ? (r / n) * 100 : 0}%"></i></span><b>${n ? r + '/' + n : '–'}</b></div>`; }).join('')}</div>${o.say === false ? '' : `<p class="lv-say">${levelSay(t)}</p>`}</div>`;
     }
-    const levelKey = '<p class="muted small lv-key"><b>Achieved</b>: use a method correctly. <b>Merit</b>: link the steps, use a model, relate it to the context. <b>Excellence</b>: devise a strategy, reason it through, prove or justify.</p>';
+    const cap = (x) => x[0].toUpperCase() + x.slice(1);
+    const levelKey = `<p class="muted small lv-key"><b>Achieved</b>: ${P.gradeHow.A}. <b>Merit</b>: ${P.gradeHow.M}. <b>Excellence</b>: ${P.gradeHow.E}.</p><p class="muted small lv-key">${cap(W.levelNote || 'these are practice results on quiz questions, not a predicted NZQA grade. The exam grade depends on full answers to exam questions.')}</p>`;
 
     /* ---------- page chrome ---------- */
     function frame(inner, o = {}) {
@@ -366,7 +371,7 @@
       const next = () => {
         if (k >= items.length) {
           touch();
-          m.querySelector('.qhost').innerHTML = `<div class="result sheet"><p class="score pen">${score}<span>/${items.length}</span></p><h2>${score === items.length ? 'Clean sweep.' : 'Review done.'}</h2><p>Topics you got right come back later; the ones you missed come back tomorrow.</p>${profileHtml(t, { title: 'Your levels' })}<div class="row after"><a class="btn" href="#/">Back to topics</a></div></div>`;
+          m.querySelector('.qhost').innerHTML = `<div class="result sheet"><p class="score pen">${score}<span>/${items.length}</span></p><h2>${score === items.length ? 'Clean sweep.' : 'Review done.'}</h2><p>Topics you got right come back later; the ones you missed come back tomorrow.</p>${profileHtml(t, { title: 'By question level' })}<div class="row after"><a class="btn" href="#/">Back to topics</a></div></div>`;
           m.querySelector('.pips').remove(); return;
         }
         const { u, q } = items[k]; pips[k].classList.add('now');
@@ -404,7 +409,7 @@
           m.querySelector('.pips').remove();
           m.querySelector('.qhost').innerHTML = `<div class="result sheet"><p class="score pen">${score}<span>/${items.length}</span></p><h2>${score === items.length ? 'Exam ready on this one.' : score >= items.length * 0.7 ? 'Solid.' : 'Good practice. Now fix the gaps.'}</h2><p>${mins} minute${mins === 1 ? '' : 's'}.${missed.size ? ' Go back over these topics:' : ''}</p>
             ${missed.size ? `<ol class="units">${[...missed.keys()].map((u) => `<li class="unit-row"><a href="#/u/${u.id}"><span class="ut">${u.title}</span><span class="ub">${stdOf(u).short}</span></a><span class="us">${missed.get(u)} missed</span></li>`).join('')}</ol>` : ''}
-            ${profileHtml(t, { title: 'Your levels', all: true })}
+            ${profileHtml(t, { title: 'By question level', all: true })}
             <div class="row after"><button class="btn again">Another set</button><a class="btn ghost" href="#/">Back to topics</a></div></div>`;
           m.querySelector('.again').onclick = () => practice(code);
           return;
@@ -448,7 +453,7 @@
       return `<div class="stats"><div><b>${mins(d.m * 60)}</b><span>learning in total</span></div><div><b>${d.days.length}</b><span>day${d.days.length === 1 ? '' : 's'} active</span></div><div><b>${weekDays}</b><span>of the last 7 days</span></div><div><b>${lastDay ? (lastDay === today() ? 'Today' : lastDay) : '–'}</b><span>last session</span></div></div>
         ${!d.dg ? '<p class="note-box">The check-up has not been done yet, so weak spots are not known.</p>' : ''}
         ${d.wr && d.wr[0] ? `<p class="note-box"><b>${d.wr[0]} written answer${d.wr[0] === 1 ? '' : 's'}</b>${d.wr[1] ? `, ${d.wr[1]} marked by AI` : ', self-marked'}. Reached: ${['Excellence', 'Merit', 'Achieved'].map((g, i) => `${d.wr[4 - i]} at ${g}`).join(', ')}.</p>` : ''}
-        ${d.g ? profileHtml({ A: d.g[0], M: d.g[1], E: d.g[2] }, { title: 'Level profile: every quiz and practice question so far', all: true, cls: 'sheet', empty: '' }) + (d.g.some((x) => x[1]) ? levelKey : '') : ''}
+        ${d.g ? profileHtml({ A: d.g[0], M: d.g[1], E: d.g[2] }, { title: 'Practice results by question level (not a grade prediction)', all: true, cls: 'sheet', empty: '' }) + (d.g.some((x) => x[1]) ? levelKey : '') : ''}
         ${stds}
         <p class="muted small">Aim higher shows the grade reached on each topic's exam-style question, ${cfg.ai ? 'marked by AI where it is turned on, otherwise self-marked against the model answer' : 'self-marked against the model answer'}.</p>
         ${mine ? '' : `<p class="muted small">Snapshot made ${ago(d.at)}. Ask for a fresh link to see newer progress.</p>`}`;

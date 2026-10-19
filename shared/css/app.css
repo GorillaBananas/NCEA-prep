@@ -478,3 +478,4 @@
 .srow .seg { display: flex; width: 100%; }
 .srow .seg button { flex: 1; padding: .5em .45em; font-size: .9rem; }
 @media (min-width: 640px) { .srow .seg { width: auto; } .srow .seg button { flex: none; padding: .5em .9em; } }
+.aim-revise { margin-top: 12px; padding: 10px 14px; border-left: 3px solid var(--hl); background: var(--paper); border-radius: 0 10px 10px 0; }

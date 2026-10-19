@@ -12,8 +12,10 @@ NP.start({
   words: {
     noun: 'geography', kit: 'Bring coloured pencils, a ruler and a calculator to the real exam. Use named places, dates and figures in every answer.', papers: 'all three standards',
     mixedTitle: 'Final week: mix all three standards',
-    mixedText: '12 questions across the Amazon, Laos and the USA, and map and graph skills, in random order. Includes Upgrade questions, and shows your level: Achieved, Merit or Excellence.',
+    mixedText: '12 questions across the Amazon, Laos and the USA, and map and graph skills, in random order. Includes Upgrade questions, and shows how you do on Achieved-, Merit- and Excellence-level questions.',
     how: ['<b>Watch</b> a one-minute animated explainer', '<b>Follow</b> a model answer, built step by step', '<b>Finish</b> one yourself, with the start done for you', '<b>Quiz</b>: five quick questions with instant feedback', '<b>Aim higher</b>: write three answers that climb from Achieved to Merit to Excellence, marked by AI', '<b>Exam tips</b>: what earned marks in the NZQA reports'],
+    gradeHow: { A: 'explain, with supporting case study or resource evidence', M: 'explain in detail, with detailed evidence and geographic terms', E: 'fully explain with insight, integrating comprehensive evidence and concepts' },
+    levelNote: 'these are practice results on quiz questions, not a predicted NZQA grade. The exam is marked on written answers, maps and graphs. Use Aim higher, with AI marking, for writing practice.',
     aimIntro: 'One exam-style question in three parts. Part (a) is Achieved level, (b) is Merit, (c) is Excellence. Write each answer in the box, with specific case study or resource evidence: names, dates and figures. It is marked against NZQA-style criteria, then you see a model answer. The highlighted lines are what earn the grade.',
   },
   // suggested study order: rotate the three standards; skills early because they are quick marks

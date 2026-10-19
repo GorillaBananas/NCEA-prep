@@ -10,7 +10,7 @@
   const St = (say, m) => ({ say, m });
   const $ = (v) => P.money(v);
   // a "shift the curve" question
-  const shift = (prompt, model, answer, steps, o = {}) => ({ kind: 'shift', prompt, model, answer, why: o.why, wrong: o.wrong, more: { idea: o.idea, steps: steps.map((s) => St(s)), trap: o.trap } });
+  const shift = (prompt, model, answer, steps, o = {}) => ({ kind: 'shift', prompt, model, answer, accept: o.accept, why: o.why, wrong: o.wrong, more: { idea: o.idea, steps: steps.map((s) => St(s)), trap: o.trap } });
   P.econ.shiftQ = shift;
 
   /* ======================= 1. Measuring inflation: the CPI ======================= */

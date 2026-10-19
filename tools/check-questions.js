@@ -86,6 +86,14 @@ function checkQ(q, where) {
     const ids = (q.model.curves || q.model.panels.flatMap((p) => p.curves)).filter((c) => c.move !== false).map((c) => c.id);
     if (P.check(q, {}).ok && ids.some((id) => q.answer[id])) err(where, 'no change accepted', q);
     try { const s1 = P.econ.svg(q.model, q.answer); if (/NaN|undefined/.test(s1)) err(where, 'bad figure', q); } catch (e) { err(where, 'figure threw ' + e.message, q); }
+    // the drawn shift must go the way the answer says: +1 = right (more at every price), or up for a flat line
+    for (const c of (q.model.curves || q.model.panels.flatMap((pn) => pn.curves))) {
+      const sh = (q.answer || {})[c.id]; if (!sh) continue;
+      const L0 = P.econ.lineQ(c, 0), L1 = P.econ.lineQ(c, sh);
+      const d = c.kind === 'down' || c.kind === 'up' ? L1.q(0.5) - L0.q(0.5) : L1.b - L0.b;
+      if (Math.sign(d) !== Math.sign(sh)) err(where, `curve ${c.id} drawn the wrong way for a ${sh > 0 ? 'right/up' : 'left/down'} shift`, q);
+    }
+    (q.accept || []).forEach((v) => { if (!P.check(q, Object.assign({}, v)).ok) err(where, 'accepted alternative rejected', q); });
     texIn(q.why, where + '.why');
   } else if (q.kind === 'sort') {
     if (!Array.isArray(q.cats) || q.cats.length < 2 || !Array.isArray(q.items) || q.items.length < 2) return err(where, 'sort needs 2+ categories and 2+ items', q);
@@ -129,6 +137,29 @@ function checkAim(u, id) {
     if (x.part !== k + 1) err(id, `upgrade ${k} should be on part ${'bc'[k]}`);
     for (const bare of [false, true]) { const q = P.upgradeQ(u, k, bare); q.unit = u; checkQ(q, `${id}.upgrade${k}`); if (q.grade !== 'ME'[k]) err(id, 'upgrade level wrong'); }
   });
+}
+
+// economic-direction tests: the models must move the way economics says they do
+if (P.econ && /econ/.test(subject)) {
+  const E = P.econ, MD = E.models, eqOf = (m, st) => { const cs = m.curves, dn = cs.find((c) => c.kind === 'down'), up = cs.find((c) => c.kind === 'up');
+    return E.meet(E.lineQ(dn, (st || {})[dn.id] || 0), E.lineQ(up, (st || {})[up.id] || 0)); };
+  const expect = (name, cond) => { if (!cond) err('econ-directions', name); };
+  const a0 = eqOf(MD.asad(), {});
+  let a1 = eqOf(MD.asad(), { AS: -1 }); expect('AS left: price level rises', a1.p > a0.p); expect('AS left: real output falls', a1.q < a0.q);
+  a1 = eqOf(MD.asad(), { AS: 1 }); expect('AS right: price level falls', a1.p < a0.p); expect('AS right: real output rises', a1.q > a0.q);
+  a1 = eqOf(MD.asad(), { AD: 1 }); expect('AD right: price level rises', a1.p > a0.p); expect('AD right: real output rises', a1.q > a0.q);
+  a1 = eqOf(MD.asad(), { AD: -1 }); expect('AD left: price level falls', a1.p < a0.p); expect('AD left: real output falls', a1.q < a0.q);
+  const f0 = eqOf(MD.fx(), {}); expect('NZD demand right: exchange rate rises', eqOf(MD.fx(), { D: 1 }).p > f0.p); expect('NZD supply right: exchange rate falls', eqOf(MD.fx(), { S: 1 }).p < f0.p);
+  const tk = MD.taker(true), S0 = tk.curves.find((c) => c.id === 'S'), Pw = tk.curves.find((c) => c.id === 'Pw').b;
+  expect('price-taker: supply right raises quantity supplied at the world price', E.lineQ(S0, 1).q(Pw) > E.lineQ(S0, 0).q(Pw));
+  expect('price-taker: supply left cuts quantity supplied at the world price', E.lineQ(S0, -1).q(Pw) < E.lineQ(S0, 0).q(Pw));
+  const two = MD.two(), pt0 = E.tradePrice(two, {});
+  expect('two-country: NZ supply left raises the trade price', E.tradePrice(two, { Snz: -1 }) > pt0);
+  expect('two-country: NZ supply right lowers the trade price', E.tradePrice(two, { Snz: 1 }) < pt0);
+  expect('two-country: overseas demand right raises the trade price', E.tradePrice(two, { Dos: 1 }) > pt0);
+  const lr = MD.asadLR(), LR = lr.curves.find((c) => c.id === 'LRAS'); expect('LRAS right moves right', E.lineQ(LR, 1).b > E.lineQ(LR, 0).b);
+  const pp = MD.ppf(), PPF = pp.curves[0]; expect('PPF out moves out', E.lineQ(PPF, 1).b > E.lineQ(PPF, 0).b);
+  console.log('  economic-direction tests run');
 }
 
 const ids = cfg.standards.flatMap((s) => s.units);

@@ -9,7 +9,7 @@
   const up = (part, shown, choices, ask) => ({ part, shown, ask, choices: choices.map(([t, ok, why]) => ({ t, ok: !!ok, why })) });
   const St = (say, m) => ({ say, m });
   const $ = (v) => P.money(v);
-  const shift = (prompt, model, answer, steps, o = {}) => ({ kind: 'shift', prompt, model, answer, why: o.why, wrong: o.wrong, more: { idea: o.idea, steps: steps.map((s) => St(s)), trap: o.trap } });
+  const shift = (prompt, model, answer, steps, o = {}) => ({ kind: 'shift', prompt, model, answer, accept: o.accept, why: o.why, wrong: o.wrong, more: { idea: o.idea, steps: steps.map((s) => St(s)), trap: o.trap } });
 
   /* ======================= 1. Measuring growth ======================= */
   P.addUnit({
@@ -464,9 +464,9 @@
           model: [S('Business owners gain: record visitor numbers raise their sales and profits.', 'owners gain', true), S('Low-income workers may find jobs more easily and earn more hours.', 'workers gain some'), S('But rents rise sharply, taking a larger share of their incomes, so their real disposable income may not rise.', 'workers lose some', true), S('So owners clearly gain, while renters gain jobs but lose through housing costs.', 'contrast')],
           earns: 'Merit: the effects on both groups are explained with reasons.', crit: { M: 'Explains business owners gain profits; low-income renters gain work but face higher rents.' } },
         { q: 'Discuss whether this growth makes income distribution in Queenstown more or less equal, and whether the benefits outweigh the costs.', write: true, words: '100–150',
-          model: [S('Owners of hotels and property gain from both higher profits and rising property values, so their incomes and wealth grow fastest.', 'top gains most', true), S('Low-income renters gain some wages but lose much of it to rising rents, so their real incomes grow slowly or fall.', 'bottom gains least', true), S('So the growth is likely to make income distribution less equal.', 'distribution judgement'), S('Benefits include jobs, profits and tax revenue the government can spend; costs include congestion and water pollution, which are not counted in GDP and fall on everyone.', 'weighs benefits and costs'), S('On balance the growth brings real economic benefits, but they are unevenly shared and come with environmental costs, so policies such as more housing and water infrastructure are needed for the benefits to outweigh the costs for most residents.', 'justified judgement', true)],
-          earns: 'Excellence: distribution is analysed group by group, benefits and costs are weighed in context, and a qualified, justified judgement is reached.',
-          crit: { M: 'Explains that owners gain more than renters, so inequality may rise.', E: 'Analyses distribution between groups, weighs benefits against costs (including uncounted environmental costs), and makes a qualified, justified judgement.' } },
+          model: [S('Income: business owners’ profits rise faster than most wages, and many tourism jobs are low-paid, so the gap between high and low incomes is likely to widen.', 'income inequality', true), S('Wealth is different from income: owners of houses and hotels also gain as property values rise. That increases their wealth, even though it is not income until they sell or charge higher rent.', 'wealth, kept separate from income', true), S('Housing affordability hits low-income renters: rents take a bigger share of their pay, so their real disposable income can fall even if their wages rise.', 'affordability and real disposable income'), S('So by income, wealth and living costs, the growth is likely to make distribution less equal.', 'distribution judgement'), S('Benefits include jobs, profits and tax revenue the government can spend; costs include congestion and water pollution, which are not counted in GDP and fall on everyone.', 'weighs benefits and costs'), S('On balance the growth brings real economic benefits, but they are unevenly shared and come with environmental costs, so policies such as more housing and water infrastructure are needed for the benefits to outweigh the costs for most residents.', 'justified judgement', true)],
+          earns: 'Excellence: income, wealth and housing affordability are analysed separately for different groups, benefits and costs are weighed in context, and a qualified, justified judgement is reached.',
+          crit: { M: 'Explains that owners gain more than renters, so inequality may rise.', E: 'Analyses distribution between groups, keeping income inequality (profits vs wages), wealth gains (rising property values) and housing affordability (rents vs real disposable income) distinct; weighs benefits against costs (including uncounted environmental costs); and makes a qualified, justified judgement.' } },
       ],
       up: [
         up(1, ['Owners get more profit. Renters pay more rent.'], [
@@ -475,7 +475,7 @@
           ['Add a third group', 0, 'Deepen the two asked about.'],
           ['Define growth', 0, 'Not asked.']]),
         up(2, ['Growth makes inequality worse and the costs are high.'], [
-          ['Show why distribution becomes less equal (who gains most and least), weigh benefits against costs in the context, and give a qualified judgement', 1, 'Right. Excellence explains and weighs the claims.'],
+          ['Separate income (profits vs wages), wealth (rising property values) and housing affordability (rents vs real disposable income), show who gains most and least, weigh benefits against costs in the context, and give a qualified judgement', 1, 'Right. Excellence explains and weighs the claims, and does not mix up income and wealth.'],
           ['List more costs', 0, 'A longer list is not discussion.'],
           ['Say growth is bad', 0, 'Too sweeping; it has benefits.'],
           ['Repeat part (b)', 0, 'Go further: distribution and the overall judgement.']]),

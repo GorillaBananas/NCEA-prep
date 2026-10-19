@@ -11,8 +11,10 @@ NP.start({
   words: {
     noun: 'economics', kit: 'Bring a ruler and calculator to the real exam. Here, use full sentences and the model’s labels.', papers: 'all three standards',
     mixedTitle: 'Final week: mix all three standards',
-    mixedText: '12 questions across inflation, trade and growth, in random order. Includes model-shifting and Upgrade questions, and shows your level: Achieved, Merit or Excellence.',
+    mixedText: '12 questions across inflation, trade and growth, in random order. Includes model-shifting and Upgrade questions, and shows how you do on Achieved-, Merit- and Excellence-level questions.',
     how: ['<b>Watch</b> a one-minute animated explainer', '<b>Follow</b> a model answer, built step by step', '<b>Finish</b> one yourself: shift the curve or build the chain', '<b>Quiz</b>: five quick questions with instant feedback', '<b>Aim higher</b>: write three answers that climb from Achieved to Merit to Excellence, marked by AI', '<b>Exam tips</b>: what earned marks in the NZQA reports'],
+    gradeHow: { A: 'identify, define or describe the concepts, and explain causes and impacts using economic models', M: 'give detailed explanations of causes and impacts, using the models and the context', E: 'integrate the changes shown on the models into detailed explanations, and compare or contrast causes and their impacts on different groups' },
+    levelNote: 'these are practice results on quiz questions, not a predicted NZQA grade. Quiz questions check that you can recognise and apply the ideas; the exam is marked on written explanations. Use Aim higher, with AI marking, for writing practice.',
     aimIntro: 'One exam-style question in three parts, like the real paper. Part (a) is Achieved level, (b) is Merit, (c) is Excellence. Write each answer in the box, using the model’s labels (AD to AD1, PL to PL1). It is marked against NZQA-style criteria, then you see a model answer. The highlighted lines are what earn the grade.',
   },
   // suggested study order: the models first, then rotate between standards
