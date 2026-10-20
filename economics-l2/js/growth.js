@@ -106,6 +106,7 @@
         board: [{ at: 0.5, html: E.flow({ income: true, spending: true, taxes: true, govspend: true, savings: true, investment: true, exports: true, imports: true }) }] },
     ],
     example: {
+      fig: E.flow({ exports: true, income: true, spending: true, taxes: true }),
       problem: 'Tourist numbers rise strongly. Explain the effect on the flows in the circular flow model.',
       steps: [
         { m: 'Overseas tourists’ spending in NZ is an export, so export receipts from the overseas sector to firms increase.', note: 'the injection' },
@@ -195,6 +196,7 @@
         board: [L(0.5, 'along the curve: more of one = less of the other'), L(3, 'that sacrifice is the <b>opportunity cost</b>'), L(5.5, 'more capital goods now → bigger PPF later', '', { hl: true })] },
     ],
     example: {
+      fig: E.svg(MD.ppf({ points: [{ q: 0.4, p: 0.52, label: 'B' }, { q: 0.25, p: 0.25, label: 'A (recession)' }] }), { PPF: -1 }),
       problem: 'Explain the difference between a fall in output caused by a recession and one caused by an earthquake, using the PPF.',
       steps: [
         { m: 'In a recession, spending falls and firms lay off workers, but the workers and factories still exist.', note: 'recession' },
@@ -276,6 +278,7 @@
         board: [L(0.5, 'spending changes (C, I, G, X − M) → <b>AD</b>'), L(3, 'capacity changes (labour, capital, technology, skills) → <b>AS and LRAS</b>'), L(6, 'investment: AD now, AS later', '', { hl: true })] },
     ],
     example: {
+      fig: E.svg(MD.asadLR(), { AS: 1, LRAS: 1 }),
       problem: 'Explain, using the AS/AD model, how an increase in labour productivity leads to economic growth.',
       steps: [
         { m: 'Higher productivity means each worker produces more, so firms’ costs per unit fall and productive capacity rises.', note: 'the cause' },

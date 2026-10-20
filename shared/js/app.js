@@ -165,7 +165,7 @@
       }
       if (tab === 'example') {
         const ex = typeof u.example === 'function' ? u.example() : u.example;
-        panel.innerHTML = `<div class="example sheet"><div class="ex-problem">${ex.problem}</div><ol class="ex-steps"></ol><div class="row"><button class="btn reveal">Show the first step</button><span class="muted small ex-count"></span></div></div><div class="ex-after" hidden>${nextBtn('Next: your turn', 'turn')}</div>`;
+        panel.innerHTML = `<div class="example sheet"><div class="ex-problem">${ex.problem}</div>${ex.fig ? `<div class="q-fig ex-fig">${ex.fig}</div>` : ''}<ol class="ex-steps"></ol><div class="row"><button class="btn reveal">Show the first step</button><span class="muted small ex-count"></span></div></div><div class="ex-after" hidden>${nextBtn('Next: your turn', 'turn')}</div>`;
         P.math(panel);
         const list = panel.querySelector('.ex-steps'), btn = panel.querySelector('.reveal'), cnt = panel.querySelector('.ex-count');
         let k = 0;

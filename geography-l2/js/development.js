@@ -41,6 +41,7 @@
         board: [L(0.5, '<b>economic</b>: GDP or GNI per capita, % working in farming'), L(3, '<b>social</b>: life expectancy, under-5 mortality, literacy, schooling'), L(5.5, '<b>composite</b>: HDI = health + education + income'), L(8, 'always quote data for BOTH places', '', { hl: true })] },
     ],
     example: {
+      fig: G.worldMap(),
       problem: 'Using indicators, describe the differences in development between Laos and the USA.',
       steps: [
         { m: 'On the Human Development Index (2023), the USA scores 0.938 (rank 17) and Laos 0.617 (rank 147), so the USA is far more developed overall.', note: 'composite indicator, both places' },
@@ -120,6 +121,7 @@
         board: [L(0.5, 'subsistence farming and informal work: not counted'), L(3, 'exchange rates distort comparisons (use PPP)'), L(5.5, 'data from poor, rural areas can be old or unreliable'), L(8, 'use several indicators, not one', '', { hl: true })] },
     ],
     example: {
+      fig: table(),
       problem: 'With reference to ONE named indicator, explain the disadvantages of using this indicator to measure differences in development in case study areas. (2023 paper, part a.)',
       steps: [
         { m: 'Indicator: GNI per capita, which is about 73,650 international dollars in the USA and 8,106 in Laos (2023, adjusted for prices).', note: 'name it, with data for both' },
@@ -197,6 +199,7 @@
         board: [L(0.5, '<b>landlocked</b> → higher transport costs → fewer, dearer exports'), L(3, '<b>mountains</b> → costly roads → villages cut off from schools and clinics'), L(5.5, '<b>monsoon</b> → floods and droughts → lost harvests for farming families'), L(8, 'USA: two coasts, plains, Mississippi, resources → trade and industry', '', { hl: true })] },
     ],
     example: {
+      fig: G.laosMap({ mekong: 'Mekong River', mountains: 'Annamite mountains', landlocked: 'No coastline' }),
       problem: 'Name ONE factor and explain how it contributes to differences in development in named case study areas. (2024 paper, part a.) Factor: location.',
       steps: [
         { m: 'Factor: location. Laos is the only landlocked country in Southeast Asia; the USA has long coastlines on the Atlantic and Pacific Oceans.', note: 'name it for both places' },
@@ -274,6 +277,7 @@
         board: [L(0.5, 'industrialisation: factories, railways, cities'), L(3, 'market economy and global trade'), L(5.5, 'investment in schools and universities: 13.9 years of schooling'), L(8, '150+ years of growth against Laos’s 40 years of reform', '', { hl: true })] },
     ],
     example: {
+      fig: G.timeline(LAOS_TIME, { y0: 1880, y1: 2030, step: 30, title: 'Key events in Laos, 1893–2021' }),
       problem: 'Name ONE factor and explain how it contributes to differences in development in named case study areas. Factor: war (a cultural factor).',
       steps: [
         { m: 'Factor: war. From 1964 to 1973 the USA dropped more than 2 million tonnes of bombs on Laos in about 580,000 bombing missions.', note: 'name and evidence' },
@@ -348,6 +352,7 @@
         board: [L(0.5, 'land handed back → farm more → food and income rise'), L(3, 'fewer casualties → families keep workers, children stay in school'), L(5.5, 'cheaper building → roads, schools, clinics, investment'), L(8, 'limit: about 80 million items remain; US aid paused in 2025, partly restored in 2026', '', { hl: true })] },
     ],
     example: {
+      fig: G.laosMap({ mountains: 'Annamite mountains', mekong: 'Mekong River' }),
       problem: 'Explain how a government and/or an NGO has taken a strategy that reduces differences in development between your case studies. Strategy: UXO clearance in Laos.',
       steps: [
         { m: 'Strategy: clearing unexploded ordnance, coordinated by the Lao government’s National Regulatory Authority and carried out with NGOs such as the HALO Trust and MAG, funded by donors including the USA.', note: 'name it and who does it' },
@@ -426,6 +431,7 @@
         board: [L(0.5, 'cheaper, faster transport → more exports, tourism, jobs'), L(3, 'freight to Europe in as little as 15 days'), L(5.5, 'cost: about 6 billion US dollars for the Lao section, mostly loans'), L(8, 'who benefits? profits, land, ticket prices', '', { hl: true })] },
     ],
     example: {
+      fig: G.laosMap({ rail: 'Laos–China Railway', mekong: 'Mekong River' }),
       problem: 'Name ONE strategy and explain how it has reduced (or could reduce) differences in development in named case study areas. (2024 paper, part b.)',
       steps: [
         { m: 'Strategy: the Laos–China Railway, a project of the Lao government with China, opened in December 2021, linking Vientiane to Kunming.', note: 'name it, who, when' },

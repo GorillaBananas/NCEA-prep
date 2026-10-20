@@ -67,6 +67,7 @@
         board: [L(0.5, 'mutation → new alleles'), L(2.5, 'crossing over → new combinations on one chromosome'), L(4.5, 'independent assortment → new mixes of chromosomes'), L(6.5, 'random fertilisation → new combinations of gametes', '', { hl: true })] },
     ],
     example: {
+      fig: Bio.crossing({ chiasma: 'chiasma', recombinant: 'recombinant chromatid' }),
       problem: 'Explain how crossing over increases genetic variation.',
       steps: [
         { m: 'During meiosis, homologous chromosomes pair up.', note: 'when' },

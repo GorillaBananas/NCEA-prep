@@ -36,6 +36,7 @@
         board: [L(0.5, '<b>elements</b>: climate, vegetation, soils, landforms (relief, rivers)'), L(3, '<b>processes</b>: convection, evapotranspiration, leaching, nutrient cycling, erosion, deposition, flooding'), L(6, '<b>characteristic</b>: what the environment is like, e.g. dense vegetation, infertile soils, high rainfall', '', { hl: true })] },
     ],
     example: {
+      fig: G.amazonMap({ andes: 'Andes', basin: 'Amazon basin', river: 'Amazon River', mouth: 'Mouth (Atlantic)', negro: 'Rio Negro' }),
       problem: 'Describe the location of your large natural environment.',
       steps: [
         { m: 'The Amazon rainforest is in northern South America, in the basin of the Amazon River.', note: 'name and continent' },
@@ -125,6 +126,7 @@
         board: [L(0.5, 'Atlantic moisture → rain → trees transpire it back'), L(3, 'the forest recycles about a quarter to a half of its rain'), L(6, '“flying rivers” carry moisture to the Andes and southern Brazil'), L(9, 'two-way interaction: climate ⇄ vegetation', '', { hl: true })] },
     ],
     example: {
+      fig: G.convection({ sun: 'strong sun', et: 'evaporation', rising: 'air rises', condense: 'condenses', cloud: 'cloud', rain: 'rain' }),
       problem: 'Explain how convectional rainfall forms in the Amazon.',
       steps: [
         { m: 'The Amazon is on the equator, so the sun is high all year and heats the ground and the forest intensely.', note: 'insolation' },
@@ -206,6 +208,7 @@
         board: [L(0.5, '<b>buttress roots</b>: support tall trees whose roots are shallow (thin soil)'), L(3, '<b>drip tips</b>: shed heavy rain so fungi do not grow'), L(5.5, '<b>lianas, epiphytes</b>: climb or perch to reach light'), L(8, '<b>evergreen</b>: no cold season, water all year, so most leaves are kept', '', { hl: true })] },
     ],
     example: {
+      fig: G.layers({ emergent: 'Emergent', canopy: 'Canopy', understorey: 'Understorey', shrub: 'Shrub layer', floor: 'Forest floor' }),
       problem: 'Explain how the climate of the Amazon leads to the layered structure of the vegetation.',
       steps: [
         { m: 'The equatorial climate is hot (about 27 °C) and wet (about 2,360 mm a year) all year, so there is no season when plants stop growing.', note: 'climate' },
@@ -291,6 +294,7 @@
         board: [F(0.5, G.nutrient({ leaching: 'more leaching', runoff: 'more runoff' }, { cleared: true }))] },
     ],
     example: {
+      fig: G.nutrient({ fall: 'leaf fall', decomp: 'decay', uptake: 'uptake', rain: 'rain', leaching: 'leaching' }),
       problem: 'Explain why the soils of the Amazon are infertile, even though the forest is so lush.',
       steps: [
         { m: 'Heavy rain (about 2,360 mm a year at Manaus) soaks down through the soil, dissolving soluble nutrients and carrying them below the roots: leaching.', note: 'leaching' },
@@ -371,6 +375,7 @@
         board: [L(0.5, 'outside bend: fast water → lateral <b>erosion</b>'), L(3, 'inside bend: slow water → <b>deposition</b>'), L(5.5, 'meander neck narrows, then is cut through in a flood'), L(8, 'old bend is sealed off by deposits: <b>oxbow lake</b>', '', { hl: true })] },
     ],
     example: {
+      fig: G.flood(),
       problem: 'Explain how the annual flood pulse shapes the floodplain of the Amazon.',
       steps: [
         { m: 'Heavy wet-season rain and snowmelt in the Andes raise the river: at Manaus it rises about 10 m, peaking around June.', note: 'cause, with evidence' },
@@ -459,6 +464,7 @@
         board: [L(0.5, 'climate → soil: heavy rain leaches nutrients'), L(3, 'vegetation → soil: leaf litter supplies nutrients'), L(5.5, 'soil → vegetation: poor soil → shallow roots, buttresses'), L(8, 'two-way links + evidence throughout = Excellence', '', { hl: true })] },
     ],
     example: {
+      fig: G.climate(),
       problem: 'Name ONE characteristic of your large natural environment. Explain how the elements or processes of the environment interact to create this characteristic. (Characteristic: high rainfall.)',
       steps: [
         { m: 'Characteristic: the high rainfall of the Amazon rainforest, about 2,360 mm a year at Manaus.', note: 'name it, with evidence' },
@@ -551,6 +557,7 @@
         board: [F(0.5, G.line([{ name: 'cleared', pts: [[2004, 27.8], [2008, 12.9], [2012, 4.6], [2016, 7.9], [2019, 10.1], [2021, 13.0], [2023, 9.0], [2025, 5.8]] }], { x0: 2004, x1: 2025, y0: 0, y1: 30, xstep: 3, ystep: 5, ylab: 'Thousand km² a year', title: 'Forest cleared each year, Brazilian Amazon (INPE PRODES)' }))] },
     ],
     example: {
+      fig: G.line([{ name: 'cleared', pts: [[2004, 27.8], [2008, 12.9], [2012, 4.6], [2016, 7.9], [2019, 10.1], [2021, 13.0], [2023, 9.0], [2025, 5.8]] }], { x0: 2004, x1: 2025, y0: 0, y1: 30, xstep: 3, ystep: 5, ylab: 'Thousand km² a year', title: 'Forest cleared each year, Brazilian Amazon (INPE PRODES)' }),
       problem: 'Explain how your chosen large natural environment is formed and changes over time. (2024 paper, part a.)',
       steps: [
         { m: 'Formation: as the Andes rose, the river system was reorganised; by about 10 million years ago the Amazon drained east to the Atlantic.', note: 'long-term natural formation' },
@@ -636,6 +643,7 @@
         board: [F(0.5, G.timeline([{ y: 1970, t: 'Highway' }, { y: 1988, t: 'Constitution' }, { y: 2004, t: 'Clearing plan' }, { y: 2021, t: '13,038 km²' }, { y: 2025, t: 'COP30' }], { y0: 1960, y1: 2030, step: 10, title: 'How Brazil’s government has seen the Amazon, 1970–2025' }))] },
     ],
     example: {
+      fig: G.timeline([{ y: 1970, t: 'Highway' }, { y: 1988, t: 'Constitution' }, { y: 2004, t: 'Clearing plan' }, { y: 2021, t: '13,038 km²' }, { y: 2025, t: 'COP30' }], { y0: 1960, y1: 2030, step: 10, title: 'How Brazil’s government has seen the Amazon, 1970–2025' }),
       problem: 'Explain how one person or group’s perception of your chosen large natural environment has changed over time. (2024 paper, part b.)',
       steps: [
         { m: 'Group: the government of Brazil, which controls about 60% of the Amazon rainforest.', note: 'name the group' },

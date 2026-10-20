@@ -194,6 +194,7 @@
         board: [L(0.5, 'show ONLY the features asked for'), L(3, 'match each grid square of the source to the frame'), L(5.5, 'colour areas; symbols for points; every colour in the key'), L(8, 'title = what + where + when', '', { hl: true })] },
     ],
     example: {
+      fig: G.precis(null, { title: 'Précis map of Port Avela, showing land use in 2020' }),
       problem: 'Complete a précis map showing the airport, the old town and the mangrove reserve of Port Avela. What must you do to reach Merit?',
       steps: [
         { m: 'Locate each feature square by square from the source map: old town in 2242, airport in 2643, mangrove reserve in 2348.', note: 'accurate location' },
@@ -276,6 +277,7 @@
         board: [L(0.5, '<b>T</b>: population rose steadily from 1950 to 2020'), L(3, '<b>D</b>: from 0.2 million (1950) to 3.4 million (2020), 17 times larger'), L(5.5, '<b>E</b>: fastest from 1970 to 2010 (+0.5 to +0.7 million a decade); slowing after 2010'), L(8, 'relationship: as population rose, urban area rose (15% → 84%): positive', '', { hl: true })] },
     ],
     example: {
+      fig: avelaPop(),
       problem: 'Describe the pattern shown in Figure 1 (population of Port Avela, 1950–2020) in detail.',
       steps: [
         { m: 'Trend: the population of Port Avela increased throughout the period, from 1950 to 2020.', note: 'trend' },
@@ -361,6 +363,7 @@
         board: [L(0.5, 'events in chronological order'), L(3, 'regular intervals marked along the line'), L(5.5, 'each event at its exact year, labelled'), L(8, 'title: what + where + when', '', { hl: true })] },
     ],
     example: {
+      fig: G.timeline(EVENTS.map(([y], k) => ({ y, t: String(k + 1) })), { y0: 1800, y1: 2040, step: 40, title: 'Timeline of key events in the development of Port Avela, 1819–2018' }),
       problem: 'Draw a timeline 18 cm long of the Port Avela events from 1800 to 2040. Where do 1972 and 2005 go?',
       steps: [
         { m: 'The line covers 240 years in 18 cm, so 1 cm = 240 ÷ 18 ≈ 13.3 years. Simpler: make it 24 cm long, 1 cm = 10 years, if there is room.', note: 'choose the scale' },

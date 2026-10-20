@@ -47,6 +47,7 @@
         board: [L(0.5, 'respiration, to release energy as ATP'), L(2.5, 'starch, to store energy (insoluble)'), L(4.5, 'cellulose, to build cell walls'), L(6.5, 'sucrose, to carry in the phloem'), L(8.5, 'with nitrates: amino acids and proteins')] },
     ],
     example: {
+      fig: Bio.chloroplast({ outer: 'outer membrane', granum: 'granum', stroma: 'stroma' }),
       problem: 'Describe where photosynthesis takes place in a leaf cell, and state its reactants and products.',
       steps: [
         { m: 'Photosynthesis happens in the chloroplasts, most of them in the palisade mesophyll cells near the top of the leaf.', note: 'where, exactly' },
@@ -252,6 +253,7 @@
         board: [L(0.5, 'dawn: <b>light</b> limiting'), L(3, 'midday: light high → <b>CO₂</b> or <b>temperature</b> limiting'), L(6, 'very hot afternoon: stomata close → <b>CO₂</b> limiting'), L(8.5, 'night: no photosynthesis; respiration continues', '', { hl: true })] },
     ],
     example: {
+      fig: P.svg.graph([{ f: (x) => (x < 4 ? 1.5 * x : 6), col: 'var(--c3)' }], { x0: 0, x1: 10, y0: 0, y1: 8, step: 1, ystep: 1, w: 420, h: 240, alt: 'Rate of photosynthesis against light intensity' }),
       problem: 'A graph shows the rate of photosynthesis rising as light intensity increases from 0 to 4 units, then staying level from 4 to 10 units. Explain the shape of the graph.',
       steps: [
         { m: 'From 0 to 4 units, the rate rises because light is the limiting factor.', note: 'name it' },
@@ -357,6 +359,7 @@
         } },
     ],
     example: {
+      fig: Bio.mitochondrion({ outer: 'outer membrane', crista: 'crista', matrix: 'matrix' }),
       problem: 'Explain why a muscle cell contains many mitochondria with many cristae.',
       steps: [
         { m: 'Muscle cells need a lot of energy to contract, supplied as ATP.', note: 'the need' },
@@ -544,6 +547,7 @@
         board: [L(0.5, '<b>catalyst</b>: speeds up a reaction, not used up'), L(2.5, '<b>active site</b>: the part with a specific shape'), L(4.5, '<b>specific</b>: only one substrate fits'), L(6.5, '<b>enzyme–substrate complex</b>: substrate bound in the active site'), L(8.5, '<b>activation energy</b>: lowered by the enzyme', '', { hl: true })] },
     ],
     example: {
+      fig: Bio.enzyme('complex', { site: 'substrate in the active site', enzyme: 'enzyme' }),
       problem: 'Explain why the enzyme amylase breaks down starch but not protein.',
       steps: [
         { m: 'Amylase has an active site with a specific shape.', note: 'specificity' },
@@ -845,6 +849,7 @@
         board: [L(0.5, 'low → high concentration'), L(2.5, 'carrier protein + <b>ATP</b>'), L(4.5, 'cells doing a lot of it have many mitochondria', '', { hl: true })] },
     ],
     example: {
+      fig: Bio.membrane({ carrier: 'carrier protein' }),
       problem: 'Explain why root hair cells need many mitochondria to absorb nitrate ions from the soil.',
       steps: [
         { m: 'The nitrate concentration in the soil water is lower than inside the root hair cell.', note: 'the gradient' },

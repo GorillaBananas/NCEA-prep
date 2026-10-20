@@ -209,6 +209,7 @@
         board: [L(0.5, 'axes: Price level (PL) and Real output (Y)'), L(2.5, 'new curve: AD₁ with an arrow'), L(4.5, 'new equilibrium: PL₁, Y₁'), L(6.5, '“…shifting AD to AD₁, raising the price level from PL to PL₁”', '', { hl: true })] },
     ],
     example: {
+      fig: E.svg(MD.asad(), { AD: 1 }),
       problem: 'The government cuts income tax rates. Explain, using the AS/AD model, how this could cause inflation.',
       steps: [
         { m: 'Lower income tax rates raise households’ disposable income.', note: 'the event' },
@@ -280,6 +281,7 @@
         board: [L(0.5, '<b>demand-pull</b>: AD right → PL up, Y up'), L(3, '<b>cost-push</b>: AS left → PL up, Y down', '', { hl: true }), L(6, 'cost-push also risks job losses: harder for the Reserve Bank')] },
     ],
     example: {
+      fig: E.svg(MD.asad(), { AS: -1 }),
       problem: 'World oil prices rise by 40%. Explain, using the AS/AD model, how this could cause inflation in New Zealand.',
       steps: [
         { m: 'Oil is a major input: fuel for transport, farming and manufacturing.', note: 'why oil matters' },

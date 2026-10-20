@@ -115,6 +115,7 @@
         draw(a) { E.draw(a, MD.taker(false), {}, 1); } },
     ],
     example: {
+      fig: E.svg(MD.taker(true), { Pw: 1 }),
       problem: `World kiwifruit price ${$('6')} per tray. At that price NZ growers supply 200 million trays and NZ consumers buy 20 million. Calculate exports and export receipts. Then explain what happens if the world price rises to ${$('7')}.`,
       steps: [
         { m: 'Exports = Qs − Qd = 200 − 20 = 180 million trays.', note: 'the gap' },
@@ -211,6 +212,7 @@
         board: [L(0.5, 'label both countries’ S and D, and their domestic prices'), L(2.5, 'draw Pt across both panels'), L(4.5, 'mark X (NZ: Qs − Qd) and M (overseas: Qd − Qs): equal lengths'), L(6.5, 'after a change: Pt₁, X₁, M₁, and say receipts go from Pt × X to Pt₁ × X₁', '', { hl: true })] },
     ],
     example: {
+      fig: E.svg(MD.two(), { Dos: 1 }),
       problem: 'Using the two-country model, explain the effect of higher US demand for NZ beef on NZ export receipts.',
       steps: [
         { m: 'US demand shifts right from D US to D US1, so at the old trade price the US wants to import more than NZ exports.', note: 'the change' },
@@ -286,6 +288,7 @@
         board: [L(0.5, 'FTAs: lower tariffs both ways'), L(2.5, 'cheaper imports: lower cost of living'), L(4.5, 'protection invites retaliation against our exports', '', { hl: true })] },
     ],
     example: {
+      fig: E.svg(MD.taker(false, { alt: 'Price-taker importer: a tariff raises the price from Pw to Pw1' }), { Pw: 1 }),
       problem: 'Explain how a tariff on imported shoes would affect NZ shoe makers and NZ consumers.',
       steps: [
         { m: 'A tariff is a tax on imports, so imported shoes cost more: the price in NZ rises from Pw to Pw + tariff.', note: 'what it does' },
@@ -370,6 +373,7 @@
         board: [L(0.5, 'foreigners need NZD → <b>demand</b>'), L(2.5, 'New Zealanders need foreign currency → <b>supply</b> of NZD'), L(4.5, 'D right or S left → <b>appreciation</b>'), L(6.5, 'D left or S right → <b>depreciation</b>', '', { hl: true })] },
     ],
     example: {
+      fig: E.svg(MD.fx(), { S: 1 }),
       problem: 'NZ firms increase their imports of vehicles from Japan. Explain the effect on the value of the NZ dollar.',
       steps: [
         { m: 'To pay Japanese sellers, NZ importers must sell NZ dollars to buy yen.', note: 'who sells NZD' },

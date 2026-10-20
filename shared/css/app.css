@@ -489,3 +489,4 @@
 .board .photo img { max-height: 230px; width: auto; max-width: 100%; }
 @media (min-width: 821px) { .board .photo img { max-height: 320px; } }
 .photo.pair { display: block; }
+.ex-fig { margin: 4px 0 10px; }
