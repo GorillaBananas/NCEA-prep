@@ -98,12 +98,23 @@
   B.seq = (label, s) => `<div class="seq"><span class="seql">${label}</span><code>${s.match(/.{1,3}/g).join(' ')}</code></div>`;
 
   /* ---------- real images (stored in biology-l2/img, from Wikimedia Commons, with credits) ---------- */
-  // photo(file, alt, credit, o): an <img> figure with a small credit line; o.tags = [[label, x%, y%]] adds lettered tags on top
-  B.photo = (file, alt, credit, o = {}) => `<figure class="photo${o.cls ? ' ' + o.cls : ''}"><div class="ph"><img src="img/${file}" alt="${P.esc(alt)}" loading="lazy">${(o.tags || []).map(([t, x, y]) => `<span class="ptag" style="left:${x}%;top:${y}%">${t}</span>`).join('')}</div><figcaption>${credit}</figcaption></figure>`;
-  // "label the micrograph": tags = { key: [x%, y%] }, names = { key: 'Name' }
+  // credit line for a Wikimedia Commons image; the licence links to its deed (see biology-l2/img/CREDITS.md)
+  const LIC = { 'CC BY 2.0': 'by/2.0', 'CC BY 3.0': 'by/3.0', 'CC BY-SA 2.0': 'by-sa/2.0', 'CC BY-SA 3.0': 'by-sa/3.0', 'CC BY-SA 4.0': 'by-sa/4.0' };
+  B.wm = (file, who, lic, licUrl) => { const u = licUrl || (LIC[lic] && `https://creativecommons.org/licenses/${LIC[lic]}/`); return `Image: <a href="https://commons.wikimedia.org/wiki/File:${file}" target="_blank" rel="noopener">${who}</a>, ${u ? `<a href="${u}" target="_blank" rel="noopener">${lic}</a>` : lic}, via Wikimedia Commons.`; };
+  // photo(file, alt, credit, o): an <img> figure with a small credit line.
+  // o.tags = [[label, x%, y%]] puts a lettered tag at (x, y); [[label, x%, y%, lx%, ly%]] puts the tag at (lx, ly)
+  // with a leader line to a dot at (x, y), so the tag does not hide the feature
+  B.photo = (file, alt, credit, o = {}) => {
+    const tags = o.tags || [], lead = tags.filter((t) => t.length > 3);
+    const svg = lead.length ? `<svg class="plines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${lead.map(([, x, y, lx, ly]) => `<line x1="${lx}" y1="${ly}" x2="${x}" y2="${y}"/>`).join('')}</svg>` : '';
+    const dots = lead.map(([, x, y]) => `<span class="pdot" style="left:${x}%;top:${y}%"></span>`).join('');
+    const spans = tags.map(([t, x, y, lx, ly]) => `<span class="ptag" style="left:${lx ?? x}%;top:${ly ?? y}%">${t}</span>`).join('');
+    return `<figure class="photo${o.cls ? ' ' + o.cls : ''}"><div class="ph"><img src="img/${file}" alt="${P.esc(alt)}" loading="lazy">${svg}${dots}${spans}</div><figcaption>${credit}</figcaption></figure>`;
+  };
+  // "label the micrograph": spots = { key: [x%, y%] or [x%, y%, labelX%, labelY%] }, names = { key: 'Name' }
   B.photoLabelGen = (file, alt, credit, spots, names, o = {}) => () => {
     const keys = P.R.shuffle(Object.keys(names)).slice(0, o.n || 3), L = 'ABCD';
-    return { kind: 'match', prompt: o.prompt || 'Match each letter on the micrograph to the right label.', fig: B.photo(file, alt, credit, { tags: keys.map((k, i) => [L[i], spots[k][0], spots[k][1]]) }),
+    return { kind: 'match', prompt: o.prompt || 'Match each letter on the micrograph to the right label.', fig: B.photo(file, alt, credit, { tags: keys.map((k, i) => [L[i], ...spots[k]]) }),
       pairs: keys.map((k, i) => ({ k: L[i], a: names[k] })), extra: o.extra || [],
       more: { idea: o.idea, steps: keys.map((k, i) => ({ say: `<b>${L[i]}</b> is the <b>${names[k].toLowerCase()}</b>${o.why && o.why[k] ? ': ' + o.why[k] : '.'}` })), trap: o.trap } };
   };

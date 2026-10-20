@@ -6,6 +6,21 @@
    Exam tips draw on the 2025 NZQA assessment report. */
 (function () {
   const P = NP, R = P.R, Bio = P.bio;
+  // real images (Wikimedia Commons; see biology-l2/img/CREDITS.md)
+  const WM = Bio.wm;
+  const CR = {
+    chloro: WM('Chloroplast_in_leaf_of_Anemone_sp_TEM_12000x.png', 'and3k and caper437', 'CC BY-SA 3.0', 'https://creativecommons.org/licenses/by-sa/3.0/') + ' Resized.',
+    mito: WM('Mitochondria,_mammalian_lung_-_TEM.jpg', 'Louisa Howard, Dartmouth Electron Microscope Facility', 'public domain'),
+    turgid: WM('Rhoeo_Discolor_epidermis.jpg', 'Mnolf', 'CC BY-SA 3.0', 'https://creativecommons.org/licenses/by-sa/3.0/') + ' Resized.',
+    plasmo: WM('Rhoeo_Discolor_-_Plasmolysis.jpg', 'Mnolf', 'CC BY-SA 3.0', 'https://creativecommons.org/licenses/by-sa/3.0/') + ' Resized.',
+  };
+  const CHL_ALT = 'Transmission electron micrograph of a chloroplast in a leaf cell, about 12 000 times magnified';
+  const MITO_ALT = 'Transmission electron micrograph of two mitochondria in a lung cell';
+  const CHL_SPOTS = { granum: [47, 58, 45, 91], stroma: [56, 44, 68, 89], thylakoid: [33, 74, 22, 89], wall: [30, 37, 10, 10] };  // [target x%, y%, tag x%, y%]
+  const CHL_NAMES = { granum: 'Granum (stack of thylakoids)', stroma: 'Stroma', thylakoid: 'Thylakoid membrane', wall: 'Cell wall' };
+  const MITO_SPOTS = { outer: [40.5, 55, 48, 64], crista: [20, 62.7, 12, 14], matrix: [22, 52.5, 30, 14] };
+  const MITO_NAMES = { outer: 'Outer membrane', crista: 'Crista (fold of inner membrane)', matrix: 'Matrix' };
+  const osmoPair = (labels) => `<div class="photo-pair">${Bio.photo('cells-turgid.jpg', 'Plant epidermis cells, turgid: the coloured vacuole fills each cell', CR.turgid, { tags: labels ? [[labels[0], 8, 10]] : [] })}${Bio.photo('cells-plasmolysed.jpg', 'Plant epidermis cells after plasmolysis: the coloured cytoplasm and vacuole have shrunk away from the cell walls', CR.plasmo, { tags: labels ? [[labels[1], 8, 10]] : [] })}</div>`;
   const C = (at, html) => ({ at, html });
   const L = (at, html, note, o = {}) => Object.assign({ at, html: `<span class="bq">${html}</span>`, note }, o);
   const S = (m, note, key) => ({ m, note, key: !!key });
@@ -43,6 +58,8 @@
           a.tag('granum (stack of thylakoids)', W * 0.06, H * 0.9, cx - W * 0.22, cy, { alpha: a.seg(a.p, 0.25, 0.35) });
           a.tag('stroma', W * 0.72, H * 0.9, cx + W * 0.1, cy + H * 0.2, { alpha: a.seg(a.p, 0.6, 0.7) });
         } },
+      { dur: 12, card: [C(0, '<h2>The real thing</h2>'), C(3, '<p>An electron micrograph of a chloroplast. <b>G</b>: the dark stripes are stacks of thylakoids, grana. The light-dependent stage happens here.</p>'), C(7.5, '<p><b>S</b>: the paler material around them is the stroma, where the light-independent stage happens. Exams can show you a micrograph, not a drawing.</p>')],
+        board: [{ at: 0.5, html: Bio.photo('chloroplast-tem.jpg', CHL_ALT, CR.chloro, { tags: [['G', ...CHL_SPOTS.granum], ['S', ...CHL_SPOTS.stroma]] }) }] },
       { dur: 11, card: [C(0, '<h2>What the plant does with glucose</h2>'), C(3, '<p>Glucose is not just food. It is the raw material for most of the plant.</p>')],
         board: [L(0.5, 'respiration, to release energy as ATP'), L(2.5, 'starch, to store energy (insoluble)'), L(4.5, 'cellulose, to build cell walls'), L(6.5, 'sucrose, to carry in the phloem'), L(8.5, 'with nitrates: amino acids and proteins')] },
     ],
@@ -57,8 +74,9 @@
       ],
     },
     faded() { return Bio.labelGen((w) => Bio.chloroplast(w), { outer: 'Outer membrane', granum: 'Granum', stroma: 'Stroma', thylakoid: 'Thylakoid' }, { n: 4, extra: ['Matrix', 'Crista', 'Nucleus'], prompt: 'Label the chloroplast.', idea: 'Light is absorbed in the thylakoid membranes (stacked into grana). The light-independent reactions happen in the stroma.' })(); },
-    grades: 'AAAMM',
+    grades: 'AAAAMM',
     gens: [
+      Bio.photoLabelGen('chloroplast-tem.jpg', CHL_ALT, CR.chloro, CHL_SPOTS, CHL_NAMES, { n: 3, prompt: 'This is an electron micrograph of a chloroplast. Match each letter to the right label.', extra: ['Matrix', 'Crista'], idea: 'In a micrograph, grana are the dark stacks of membranes; the stroma is the paler fluid around them. The thick band outside is the cell wall.' }),
       P.terms([['photosynthesis', 'Using light energy to make glucose from carbon dioxide and water, releasing oxygen.'], ['chlorophyll', 'The green pigment that absorbs light energy, found in the thylakoid membranes.'], ['chloroplast', 'The organelle where photosynthesis happens.'], ['stomata', 'Pores in the leaf surface where carbon dioxide diffuses in and oxygen diffuses out.'], ['thylakoid', 'A flattened membrane sac inside a chloroplast, holding chlorophyll.'], ['stroma', 'The fluid inside the chloroplast where the light-independent reactions happen.'], ['granum', 'A stack of thylakoids.']]),
       Bio.labelGen((w) => Bio.chloroplast(w), { outer: 'Outer membrane', granum: 'Granum', stroma: 'Stroma', thylakoid: 'Thylakoid', starch: 'Starch grain' }, { n: 4, extra: ['Matrix', 'Crista'], prompt: 'Label the chloroplast.' }),
       P.bank([
@@ -349,6 +367,8 @@
           a.text('Krebs: matrix → CO₂', W * 0.62, H * 0.6, { align: 'center', font: 'head', size: 0.8, bg: c.sheet, alpha: a.seg(a.p, 0.5, 0.6) });
           a.text('ETC on cristae: O₂ → H₂O, ~34 ATP', W * 0.62, H * 0.92, { align: 'center', font: 'head', size: 0.78, col: c.pen, alpha: a.seg(a.p, 0.75, 0.85) });
         } },
+      { dur: 12, card: [C(0, '<h2>Under the electron microscope</h2>'), C(3, '<p>Two real mitochondria. <b>C</b>: the dark lines inside are cristae, folds of the inner membrane. The electron transport chain is here.</p>'), C(8, '<p><b>M</b>: between them is the matrix, where the Krebs cycle happens.</p>')],
+        board: [{ at: 0.5, html: Bio.photo('mitochondria-tem.jpg', MITO_ALT, CR.mito, { tags: [['C', ...MITO_SPOTS.crista], ['M', ...MITO_SPOTS.matrix]] }) }] },
       { dur: 12, card: [C(0, '<h2>Why the folds matter</h2>'), C(3, '<p>The inner membrane is folded into cristae. That gives a large surface area for the electron transport chain.</p>'), C(8, '<p>More membrane, more ATP made. Very active cells, like muscle and sperm, have many mitochondria with many cristae.</p>')],
         draw(a) {
           const { W, H, C: c } = a;
@@ -369,8 +389,9 @@
       ],
     },
     faded() { return Bio.labelGen((w) => Bio.mitochondrion(w), { outer: 'Outer membrane', inner: 'Inner membrane', crista: 'Crista', matrix: 'Matrix' }, { n: 4, extra: ['Stroma', 'Granum', 'Thylakoid'], prompt: 'Label the mitochondrion.', idea: 'The Krebs cycle happens in the matrix; the electron transport chain is on the inner membrane, folded into cristae.' })(); },
-    grades: 'AAAMM',
+    grades: 'AAAAMM',
     gens: [
+      Bio.photoLabelGen('mitochondria-tem.jpg', MITO_ALT, CR.mito, MITO_SPOTS, MITO_NAMES, { n: 3, prompt: 'This is an electron micrograph of mitochondria. Match each letter on the left-hand mitochondrion to the right label.', extra: ['Granum', 'Stroma'], idea: 'The cristae are the dark folded lines inside; the matrix is the material between them; the outer membrane is the smooth outline.' }),
       P.terms([['aerobic respiration', 'Releasing energy from glucose using oxygen, producing carbon dioxide, water and lots of ATP.'], ['ATP', 'The molecule cells use to carry and supply energy.'], ['glycolysis', 'The first stage of respiration, in the cytoplasm, splitting glucose into two pyruvate.'], ['Krebs cycle', 'The stage in the mitochondrial matrix that releases carbon dioxide.'], ['electron transport chain', 'The stage on the inner mitochondrial membrane that uses oxygen and makes most of the ATP.'], ['cristae', 'Folds of the inner mitochondrial membrane that give a large surface area.'], ['matrix', 'The fluid inside the inner membrane of a mitochondrion.']]),
       Bio.labelGen((w) => Bio.mitochondrion(w), { outer: 'Outer membrane', inner: 'Inner membrane', crista: 'Crista', matrix: 'Matrix', ims: 'Intermembrane space' }, { n: 4, extra: ['Stroma', 'Thylakoid'], prompt: 'Label the mitochondrion.' }),
       P.bank([
@@ -845,6 +866,8 @@
         } },
       { dur: 12, card: [C(0, '<h2>Osmosis is about water.</h2>'), C(3, '<p>Water diffuses across a partially permeable membrane from where there is more free water (dilute) to less (concentrated).</p>'), C(8, '<p>Plant cells in pure water swell and go turgid. In salty water they lose water and wilt.</p>')],
         board: [L(0.5, 'dilute solution (more water) → concentrated solution (less water)'), L(3.5, 'through a <b>partially permeable</b> membrane'), L(6, 'no energy needed', '', { hl: true })] },
+      { dur: 13, card: [C(0, '<h2>Osmosis you can see</h2>'), C(3, '<p>Left: in pure water the vacuoles fill each cell. The cells are turgid.</p>'), C(7.5, '<p>Right: in salty water, water leaves by osmosis. The cytoplasm pulls away from the wall: plasmolysis.</p>')],
+        board: [{ at: 0.5, html: osmoPair(['A', 'B']) }, L(5, '<b>A</b> turgid (in water). <b>B</b> plasmolysed (in a concentrated solution).')] },
       { dur: 12, card: [C(0, '<h2>Against the gradient: active transport.</h2>'), C(3, '<p>Carrier proteins pump particles from low to high concentration. This costs ATP from respiration.</p>'), C(7.5, '<p>Example: root hair cells taking up mineral ions from dilute soil water.</p>')],
         board: [L(0.5, 'low → high concentration'), L(2.5, 'carrier protein + <b>ATP</b>'), L(4.5, 'cells doing a lot of it have many mitochondria', '', { hl: true })] },
     ],
@@ -859,8 +882,12 @@
       ],
     },
     faded() { return Bio.labelGen((w) => Bio.membrane(w), { bilayer: 'Phospholipid bilayer', channel: 'Channel protein', carrier: 'Carrier protein' }, { n: 3, extra: ['Cell wall', 'Ribosome'], prompt: 'Label the membrane.' })(); },
-    grades: 'AAMM',
+    grades: 'AAAMM',
     gens: [
+      P.bank([
+        { q: 'These cells were put in two different solutions. Which statement is correct?', fig: osmoPair(['A', 'B']), a: 'A was in pure water and is turgid; B was in a concentrated salt solution and is plasmolysed', why: 'In B, water left the cells by osmosis, so the cytoplasm and vacuole shrank away from the cell walls.', w: [['A was in salt solution; B was in pure water', 'The other way round: B has shrunk.'], ['Both cells have burst', 'Plant cells do not burst: the cell wall stops them.'], ['B gained water by active transport', 'B lost water, and osmosis needs no ATP.']] },
+        { q: 'In cell B, what fills the gap between the cell wall and the shrunken cytoplasm?', fig: osmoPair(['A', 'B']), a: 'The outside solution, which passes through the fully permeable cell wall', why: 'The cell wall lets the solution through; the membrane is partially permeable.', w: [['Air', 'There is no air inside the slide.'], ['Pure water from the vacuole', 'The water left the cell.'], ['Nothing: it is a vacuum', 'The space fills with the outside solution.']] },
+      ]),
       P.terms([['diffusion', 'The net movement of particles from high to low concentration.'], ['osmosis', 'The diffusion of water across a partially permeable membrane, from a dilute to a more concentrated solution.'], ['facilitated diffusion', 'Diffusion through channel or carrier proteins, down the concentration gradient, with no energy used.'], ['active transport', 'Moving particles against their concentration gradient using carrier proteins and ATP.'], ['concentration gradient', 'A difference in concentration between two areas.'], ['partially permeable membrane', 'A membrane that lets some particles through but not others.']]),
       P.bank([
         { q: 'Which process moves glucose into a cell down its concentration gradient through a carrier protein, with no ATP?', a: 'Facilitated diffusion', why: 'Down the gradient + protein + no energy = facilitated diffusion.', w: [['Active transport', 'Active transport goes against the gradient and uses ATP.'], ['Osmosis', 'Osmosis is the movement of water.'], ['Simple diffusion', 'Glucose is too big to cross the lipid layer without a protein.']] },

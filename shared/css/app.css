@@ -481,12 +481,18 @@
 .aim-revise { margin-top: 12px; padding: 10px 14px; border-left: 3px solid var(--hl); background: var(--paper); border-radius: 0 10px 10px 0; }
 /* real images with credits (biology) */
 .photo { margin: 0; max-width: 460px; }
-.photo .ph { position: relative; line-height: 0; }
+.photo .ph { position: relative; line-height: 0; display: inline-block; max-width: 100%; vertical-align: top; }
 .photo img { width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); display: block; }
 .photo figcaption { font-size: .72rem; color: var(--muted); margin-top: 4px; line-height: 1.3; }
 .photo .ptag { position: absolute; transform: translate(-50%, -50%); width: 26px; height: 26px; border-radius: 50%; background: var(--sheet); border: 2px solid var(--ink); color: var(--ink); font: 800 .8rem/22px var(--f-head); text-align: center; box-shadow: 0 0 0 2px rgba(255,255,255,.6); }
+.photo .plines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.photo .plines line { stroke: #fff; stroke-width: 2.5; vector-effect: non-scaling-stroke; filter: drop-shadow(0 0 1px #000) drop-shadow(0 0 1px #000); }
+.photo .pdot { position: absolute; transform: translate(-50%, -50%); width: 9px; height: 9px; border-radius: 50%; background: #ffd23f; border: 2px solid #111; }
 .board .photo { max-width: 100%; }
 .board .photo img { max-height: 230px; width: auto; max-width: 100%; }
 @media (min-width: 821px) { .board .photo img { max-height: 320px; } }
 .photo.pair { display: block; }
 .ex-fig { margin: 4px 0 10px; }
+.photo-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-width: 460px; }
+.photo-pair .photo figcaption { font-size: .62rem; }
+.board .photo-pair .photo img { max-height: 190px; }

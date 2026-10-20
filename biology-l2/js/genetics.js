@@ -11,6 +11,8 @@
   const up = (part, shown, choices, ask) => ({ part, shown, ask, choices: choices.map(([t, ok, why]) => ({ t, ok: !!ok, why })) });
   const St = (say, m) => ({ say, m });
   const PFMT = 'Give a fraction, decimal or percentage, e.g. 1/4, 0.25 or 25%.';
+  // real images (Wikimedia Commons; see biology-l2/img/CREDITS.md)
+  const ROAN = Bio.photo('roan-shorthorn.jpg', 'A light roan Shorthorn heifer: her coat is a mix of red hairs and white hairs', Bio.wm('Light_Roan_Shorthorn_Heifer_DSCN1872b.jpg', 'Robert Scarth', 'CC BY-SA 2.0') + ' Cropped and resized.');
 
   /* ---------- genetics engine ---------- */
   // a genotype is an array of alleles; capital letter = dominant. sort so 'Tt' not 'tT'
@@ -327,6 +329,8 @@
           const cow = (x, cols, lab, al) => { a.box(x - s - 3, H * 0.34 - 3, 2 * s + 4, 4 * cs + 4, { stroke: c.line, alpha: al }); for (let i = 0; i < 6; i++) for (let j = 0; j < 4; j++) a.box(x - s + i * cs, H * 0.34 + j * cs, cs - 2, cs - 2, { fill: cols[(i + j) % cols.length], stroke: c.faint, lw: 1, alpha: al }); a.text(lab, x, H * 0.34 + 4 * cs + 22, { align: 'center', font: 'head', alpha: al }); };
           cow(W * 0.18, [c.pen], 'red', a.seg(a.p, 0.05, 0.15)); cow(W * 0.5, [c.pen, c.paper], 'roan', a.seg(a.p, 0.35, 0.45)); cow(W * 0.82, [c.paper], 'white', a.seg(a.p, 0.15, 0.25));
         } },
+      { dur: 10, card: [C(0, '<h2>A real roan</h2>'), C(3, '<p>This Shorthorn heifer is CᴿCᵂ. Up close, red hairs and white hairs grow side by side.</p>'), C(7, '<p>No hair is pink. A pink blend would be incomplete dominance.</p>')],
+        board: [{ at: 0.5, html: ROAN }] },
       { dur: 13, card: [C(0, '<h2>Multiple alleles: ABO blood groups</h2>'), C(3, '<p>Three alleles in the population: Iᴬ, Iᴮ and i. Each person has two of them.</p>'), C(8, '<p>Iᴬ and Iᴮ are codominant. Both are dominant to i.</p>')],
         board: [L(0.5, 'I<sup>A</sup>I<sup>A</sup> or I<sup>A</sup>i → group A'), L(2.5, 'I<sup>B</sup>I<sup>B</sup> or I<sup>B</sup>i → group B'), L(4.5, 'I<sup>A</sup>I<sup>B</sup> → group AB', 'codominant', { hl: true }), L(6.5, 'ii → group O', 'recessive')] },
       { dur: 12, card: [C(0, '<h2>A favourite exam cross</h2>'), C(3, '<p>Group A (Iᴬi) × group B (Iᴮi). Their children can be any of the four blood groups.</p>')],
@@ -347,6 +351,7 @@
       P.terms([['codominance', 'Both alleles are fully expressed in a heterozygote, e.g. roan cattle, or blood group AB.'], ['incomplete dominance', 'The heterozygote has a blend of the two phenotypes, e.g. pink snapdragons from red and white.'], ['multiple alleles', 'A gene with more than two alleles in the population, e.g. the ABO blood group gene.'], ['complete dominance', 'One allele completely hides the other in a heterozygote.']]),
       bloodGen(),
       P.bank([
+        { q: 'This Shorthorn heifer has a roan coat. Up close, each hair is either red or white. What is her genotype, and what pattern of inheritance does it show?', fig: ROAN, a: 'CᴿCᵂ: codominance, because both alleles are fully expressed', why: 'Red hairs (from Cᴿ) and white hairs (from Cᵂ) both appear. Neither allele is hidden, and no hair is a blend.', w: [['CᴿCᴿ: complete dominance', 'CᴿCᴿ is red all over.'], ['CᴿCᵂ: incomplete dominance', 'Incomplete dominance gives a blend, such as pink. Here each hair is red or white.'], ['CᵂCᵂ: multiple alleles', 'CᵂCᵂ is white, and only two alleles are involved.']] },
         { q: 'A red-flowered and a white-flowered snapdragon produce all pink offspring. What does this show?', a: 'Incomplete dominance: the heterozygote is a blend', why: 'Pink is in between. In codominance you would see both red and white.', w: [['Codominance', 'Codominance shows both colours, not a blend.'], ['Complete dominance', 'Then the offspring would be red or white.'], ['Multiple alleles', 'Only two alleles are involved.']] },
         { q: 'Why is blood group AB an example of codominance?', a: 'Both the A and the B antigens are made: neither allele is hidden', why: 'Both alleles are fully expressed.', w: [['Because AB is a blend of A and B', 'It is not a blend; both are fully present.'], ['Because O is recessive', 'True, but that is about i.'], ['Because there are three alleles', 'That is multiple alleles, a different idea.']] },
         { q: 'How many ABO alleles can one person carry?', a: 'Two', why: 'There are three alleles in the population, but each person has only two copies of the gene.', w: [['Three', 'Three exist in the population.'], ['One', 'Body cells have two copies of each gene.'], ['Four', 'No.']] },
