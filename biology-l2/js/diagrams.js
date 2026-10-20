@@ -97,6 +97,17 @@
   };
   B.seq = (label, s) => `<div class="seq"><span class="seql">${label}</span><code>${s.match(/.{1,3}/g).join(' ')}</code></div>`;
 
+  /* ---------- real images (stored in biology-l2/img, from Wikimedia Commons, with credits) ---------- */
+  // photo(file, alt, credit, o): an <img> figure with a small credit line; o.tags = [[label, x%, y%]] adds lettered tags on top
+  B.photo = (file, alt, credit, o = {}) => `<figure class="photo${o.cls ? ' ' + o.cls : ''}"><div class="ph"><img src="img/${file}" alt="${P.esc(alt)}" loading="lazy">${(o.tags || []).map(([t, x, y]) => `<span class="ptag" style="left:${x}%;top:${y}%">${t}</span>`).join('')}</div><figcaption>${credit}</figcaption></figure>`;
+  // "label the micrograph": tags = { key: [x%, y%] }, names = { key: 'Name' }
+  B.photoLabelGen = (file, alt, credit, spots, names, o = {}) => () => {
+    const keys = P.R.shuffle(Object.keys(names)).slice(0, o.n || 3), L = 'ABCD';
+    return { kind: 'match', prompt: o.prompt || 'Match each letter on the micrograph to the right label.', fig: B.photo(file, alt, credit, { tags: keys.map((k, i) => [L[i], spots[k][0], spots[k][1]]) }),
+      pairs: keys.map((k, i) => ({ k: L[i], a: names[k] })), extra: o.extra || [],
+      more: { idea: o.idea, steps: keys.map((k, i) => ({ say: `<b>${L[i]}</b> is the <b>${names[k].toLowerCase()}</b>${o.why && o.why[k] ? ': ' + o.why[k] : '.'}` })), trap: o.trap } };
+  };
+
   /* ---------- canvas drawers for explainers (a = player api) ---------- */
   B.cv = {
     chloroplast(a, cx, cy, w, h, al = 1) {
