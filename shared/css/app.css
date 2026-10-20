@@ -495,4 +495,5 @@
 .ex-fig { margin: 4px 0 10px; }
 .photo-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-width: 460px; }
 .photo-pair .photo figcaption { font-size: .62rem; }
+.photo-pair .ph img { aspect-ratio: 4 / 3; object-fit: cover; }
 .board .photo-pair .photo img { max-height: 190px; }

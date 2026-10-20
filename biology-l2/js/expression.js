@@ -9,6 +9,10 @@
   const S = (m, note, key) => ({ m, note, key: !!key });
   const up = (part, shown, choices, ask) => ({ part, shown, ask, choices: choices.map(([t, ok, why]) => ({ t, ok: !!ok, why })) });
   const St = (say, m) => ({ say, m });
+  // real images (Wikimedia Commons; see biology-l2/img/CREDITS.md)
+  const RABBIT = Bio.photo('himalayan-rabbit.jpg', 'An adult Himalayan rabbit: white body with dark ears, nose, feet and tail', Bio.wm('Himalayanrabbitchilling.JPG', 'Amber', 'CC BY 3.0') + ' Cropped and resized.');
+  const SICKLE = Bio.photo('sickle-cells.jpg', 'Light micrograph of a blood smear from a person with sickle cell anaemia: most red blood cells are round, some are long and curved', Bio.wm('Sickle_Cell_Anemia_(5610746554).jpg', 'Ed Uthman', 'CC BY 2.0') + ' Cropped and resized.', { tags: [['N', 28.3, 31.4, 10, 10], ['S', 52.5, 39.3, 66, 10]] });
+  const KITS = Bio.photo('himalayan-kits.jpg', 'Two Himalayan rabbit kits from one litter, held in a hand: the left one, which got cold, is grey; the right one, kept warm in the nest, is pink', Bio.wm('Chilled_and_Warm_Himalayan_rabbit_kits.JPG', 'SableSteel', 'CC BY-SA 3.0') + ' Cropped and resized.');
 
   /* ---------- the genetic code (mRNA codons) ---------- */
   const BASES = 'UCAG', AA1 = 'FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG';
@@ -307,6 +311,8 @@
     scenes: [
       { dur: 14, card: [C(0, '<h2>Substitution: one base swapped</h2>'), C(3, '<p>GAG → GUG: glutamic acid becomes valine. That one change causes sickle cell anaemia.</p>'), C(8.5, '<p>Every other codon stays the same, and the protein is the same length.</p>')],
         board: [L(0.5, 'normal: <code>CUG ACU CCU <b>GAG</b> GAG</code> → Leu Thr Pro <b>Glu</b> Glu'), L(4, 'sickle: <code>CUG ACU CCU <b>GUG</b> GAG</code> → Leu Thr Pro <b>Val</b> Glu', 'missense', { hl: true }), L(8, '<span class="muted">same length; one amino acid different</span>')] },
+      { dur: 12, card: [C(0, '<h2>What one base does</h2>'), C(3, '<p>A blood smear from a person with sickle cell anaemia. <b>N</b>: a normal, round red blood cell. <b>S</b>: a sickle-shaped cell.</p>'), C(7.5, '<p>With valine in place of glutamic acid, haemoglobin molecules stick together into long fibres when oxygen is low. The fibres pull the cell into a sickle shape. Sickle cells carry less oxygen and can block small blood vessels.</p>')],
+        board: [{ at: 0.5, html: SICKLE }] },
       { dur: 13, card: [C(0, '<h2>Three outcomes of a substitution</h2>')],
         board: [L(0.5, '<b>silent</b>: GGU → GGC, both Gly: no change', 'redundant code'), L(3.5, '<b>missense</b>: one amino acid changes; effect depends on where'), L(6.5, '<b>nonsense</b>: UGG (Trp) → UGA (stop): protein cut short', '', { hl: true })] },
       { dur: 14, card: [C(0, '<h2>Frameshift: insertion or deletion</h2>'), C(3, '<p>Delete one base and every codon after it is read out of step.</p>'), C(8, '<p>All the amino acids after the mutation can change, and a stop codon often appears. Usually the protein does not work at all.</p>')],
@@ -509,6 +515,8 @@
           a.alpha(a.seg(a.p, 0.75, 0.85), () => { a.ellipse(cx - W * 0.04, cy - H * 0.04, W * 0.06, H * 0.05, { fill: c.ink, stroke: c.c1, lw: 3 }); a.text('ice pack → dark fur', cx - W * 0.04, cy + H * 0.34, { align: 'center', font: 'pen', col: c.c1 }); });
           a.text('cool parts: enzyme works', W * 0.04, H * 0.08, { font: 'pen', col: c.pen, alpha: a.seg(a.p, 0.4, 0.5) });
         } },
+      { dur: 13, card: [C(0, '<h2>The real thing</h2>'), C(3, '<p>Left: an adult. Only the coolest parts, ears, nose, feet and tail, are dark.</p>'), C(7.5, '<p>Right: two kits from one litter. The grey one fell out of the nest into air at about 21 °C. Its skin cooled, so the enzyme works and dark fur is growing. Its nest-mate stayed in the nest at about 35 °C and is still pink.</p>')],
+        board: [{ at: 0.5, html: `<div class="photo-pair">${RABBIT}${KITS}</div>` }] },
       { dur: 12, card: [C(0, '<h2>More examples</h2>')],
         board: [L(0.5, '<b>hydrangeas</b>: same plant, blue flowers in acid soil, pink in alkaline soil'), L(3.5, '<b>height</b>: genes for tall + poor nutrition → shorter than possible'), L(6.5, '<b>identical twins</b>: same genotype; differences come from environment', '', { hl: true })] },
     ],
@@ -526,6 +534,7 @@
     gens: [
       P.terms([['phenotype', 'The characteristics an organism shows, resulting from genotype and environment.'], ['genotype', 'The alleles an organism has.'], ['temperature-sensitive enzyme', 'An enzyme that works only within a certain temperature range.'], ['environmental factor', 'Something outside the genes, such as temperature, soil pH or diet, that affects the phenotype.'], ['identical twins', 'Twins from one fertilised egg, with the same genotype.']]),
       P.bank([
+        { q: 'These Himalayan kits are from the same litter, so they have the same allele for the pigment enzyme. The grey one fell out of the warm nest and got cold. Why is it growing dark fur and its nest-mate is not?', fig: KITS, a: 'The enzyme that makes dark pigment only works below about 35 °C, so it works in the cold kit’s skin', why: 'Same genotype, different temperature, different phenotype: the environment changes how the gene is expressed.', w: [['The grey kit has a different allele', 'Same litter and same breed: the difference is temperature.'], ['Cold causes a mutation for dark fur', 'Temperature changes the enzyme’s activity, not the DNA.'], ['The warm kit’s enzyme was denatured by heat for good', 'At 35 °C the enzyme is inactive; cool the skin and new fur grows dark.']] },
         { q: 'Hydrangeas of the same variety have blue flowers in one garden and pink in another. What is the most likely cause?', a: 'Different soil pH affecting the flower pigments', why: 'Same genotype; the environment (soil) changes the phenotype.', w: [['Different genotypes', 'Same variety, same genotype.'], ['Mutations in each garden', 'Too unlikely to be the cause.'], ['Codominance', 'Not the explanation here.']] },
         { q: 'Identical twins raised apart differ in height by 8 cm. What does this show?', a: 'The environment, such as nutrition, affects phenotype as well as genotype', why: 'Same genotype, different environments, different phenotypes.', w: [['They are not really identical', 'They have the same genotype.'], ['Height is controlled only by genes', 'Then they would be the same height.'], ['One has a mutation for height', 'Unnecessary: environment explains it.']] },
         { q: 'Why does a Himalayan rabbit kept somewhere very cold develop more dark fur?', a: 'More of its skin is below the temperature at which the pigment enzyme works', why: 'The enzyme is active in more places, so more pigment is made.', w: [['The cold causes a mutation', 'Cold does not change the allele.'], ['Dark fur is dominant in the cold', 'Dominance does not change with temperature.'], ['It eats more pigment', 'Pigment is made by an enzyme.']] },

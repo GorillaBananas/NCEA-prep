@@ -12,6 +12,7 @@
   const St = (say, m) => ({ say, m });
   const PFMT = 'Give a fraction, decimal or percentage, e.g. 1/4, 0.25 or 25%.';
   // real images (Wikimedia Commons; see biology-l2/img/CREDITS.md)
+  const ROBIN = Bio.photo('black-robin.jpg', 'A Chatham Island black robin on a branch in the forest', Bio.wm('Petroica_traversi_2235630.jpg', 'Peter de Lange', 'CC0', 'https://creativecommons.org/publicdomain/zero/1.0/') + ' Cropped and resized.');
   const ROAN = Bio.photo('roan-shorthorn.jpg', 'A light roan Shorthorn heifer: her coat is a mix of red hairs and white hairs', Bio.wm('Light_Roan_Shorthorn_Heifer_DSCN1872b.jpg', 'Robert Scarth', 'CC BY-SA 2.0') + ' Cropped and resized.');
 
   /* ---------- genetics engine ---------- */
@@ -701,6 +702,8 @@
           runs.forEach((r, k) => a.plot(v, (x) => r[Math.min(20, Math.floor(x))], cols[k], 3, a.seg(a.p, 0.05 + k * 0.2, 0.3 + k * 0.2)));
           a.alpha(a.seg(a.p, 0.7, 0.8), () => a.text('large population: steady', v.X(9), v.Y(0.57), { font: 'pen', col: a.C.c3 }));
         } },
+      { dur: 9, card: [C(0, '<h2>Meet the black robin</h2>'), C(3, '<p>A small forest bird found only on the Chatham Islands. Watch what happened to its gene pool.</p>')],
+        board: [{ at: 0.5, html: ROBIN }] },
       { dur: 13, card: [C(0, '<h2>Bottleneck: the black robin</h2>'), C(3, '<p>By 1980 only five Chatham Island black robins were left, with one breeding female, Old Blue.</p>'), C(8, '<p>Today’s birds all descend from her and her mate. Most of the population’s alleles were lost: very little genetic variation remains.</p>')],
         draw(a) {
           const { W, H, C: c } = a; const cols = [c.c1, c.c2, c.c3, c.c4, c.pen];
